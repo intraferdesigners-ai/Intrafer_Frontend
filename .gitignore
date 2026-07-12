@@ -38,3 +38,4 @@ next-env.d.ts
 # downloaded assets (regenerate with: npm run download-images)
 /public/images/*
 !/public/images/.gitkeep
+.claude/
