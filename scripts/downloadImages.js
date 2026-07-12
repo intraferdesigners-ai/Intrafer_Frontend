@@ -130,7 +130,7 @@ const IMAGES = [
   ['before-after/bedroom-before.jpg',  'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&q=80'],
   ['before-after/bedroom-after.jpg',   'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80'],
   ['before-after/bathroom-before.jpg', 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80'],
-  ['before-after/bathroom-after.jpg',  'https://images.unsplash.com/photo-1620626011761-996317702149?w=800&q=80'],
+  ['before-after/bathroom-after.jpg',  'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80'],
 
   // ── How it works steps ────────────────────────────────────────────────────
   ['how-it-works/step1.jpg', 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80'],
