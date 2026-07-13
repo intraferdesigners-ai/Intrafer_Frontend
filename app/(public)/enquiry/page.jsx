@@ -58,7 +58,7 @@ function EnquiryForm() {
         vendorId,
       }));
 
-      router.push(`/enquiry/verify?userId=${data.userId}`);
+      router.push(`/enquiry/verify?userId=${data.data.userId}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to send OTP. Please try again.');
     }
