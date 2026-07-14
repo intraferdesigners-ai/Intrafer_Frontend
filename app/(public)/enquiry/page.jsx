@@ -26,8 +26,8 @@ function EnquiryForm() {
   const [name,         setName]         = useState('');
   const [email,        setEmail]        = useState('');
   const [phone,        setPhone]        = useState('');
-  const [projectType,  setProjectType]  = useState('Residential');
-  const [budget,       setBudget]       = useState('₹5–10 Lakhs');
+  const [projectType,  setProjectType]  = useState('');
+  const [budget,       setBudget]       = useState('');
   const [city,         setCity]         = useState('');
   const [requirements, setRequirements] = useState('');
   const [loading,      setLoading]      = useState(false);
@@ -37,7 +37,7 @@ function EnquiryForm() {
     e.preventDefault();
     setError('');
 
-    if (!name.trim() || !email.trim() || !phone.trim() || !city.trim() || !requirements.trim()) {
+    if (!name.trim() || !email.trim() || !phone.trim() || !city.trim()) {
       setError('Please fill in all fields.');
       return;
     }
@@ -69,6 +69,12 @@ function EnquiryForm() {
     fontSize: '10px', fontWeight: 600, letterSpacing: '.1em',
     textTransform: 'uppercase', color: 'var(--text-hint)',
     display: 'block', marginBottom: '5px',
+  };
+
+  const optionalLabelStyle = { ...labelStyle, display: 'flex', justifyContent: 'space-between' };
+  const optionalBadgeStyle = {
+    fontSize: '10px', color: 'var(--text-hint)', fontWeight: 400,
+    letterSpacing: 'normal', textTransform: 'none',
   };
 
   return (
@@ -115,24 +121,32 @@ function EnquiryForm() {
             <p className="caps-label-primary" style={{ marginBottom: '12px' }}>PROJECT DETAILS</p>
 
             <div style={{ marginBottom: '12px' }}>
-              <label style={labelStyle}>Project type</label>
+              <label style={optionalLabelStyle}>
+                <span>Project type</span>
+                <span style={optionalBadgeStyle}>Optional</span>
+              </label>
               <select
                 value={projectType}
                 onChange={(e) => setProjectType(e.target.value)}
                 className="form-select-styled"
               >
+                <option value="">No preference</option>
                 {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px', marginBottom: '12px' }}>
               <div>
-                <label style={labelStyle}>Budget range</label>
+                <label style={optionalLabelStyle}>
+                  <span>Budget range</span>
+                  <span style={optionalBadgeStyle}>Optional</span>
+                </label>
                 <select
                   value={budget}
                   onChange={(e) => setBudget(e.target.value)}
                   className="form-select-styled"
                 >
+                  <option value="">No preference</option>
                   {BUDGET_RANGES.map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
@@ -140,7 +154,10 @@ function EnquiryForm() {
             </div>
 
             <div>
-              <label style={labelStyle}>Requirements</label>
+              <label style={optionalLabelStyle}>
+                <span>Requirements</span>
+                <span style={optionalBadgeStyle}>Optional</span>
+              </label>
               <textarea
                 className="form-textarea-styled"
                 rows={4}

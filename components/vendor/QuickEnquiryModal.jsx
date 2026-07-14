@@ -25,8 +25,8 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
   const [name,         setName]         = useState('');
   const [email,        setEmail]        = useState('');
   const [phone,        setPhone]        = useState('');
-  const [projectType,  setProjectType]  = useState('Residential');
-  const [budget,       setBudget]       = useState('₹5–10 Lakhs');
+  const [projectType,  setProjectType]  = useState('');
+  const [budget,       setBudget]       = useState('');
   const [requirements, setRequirements] = useState('');
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
@@ -51,7 +51,6 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
     if (!name.trim())                          return setError('Please enter your name.');
     if (!email.trim() || !email.includes('@')) return setError('Please enter a valid email.');
     if (!/^[6-9]\d{9}$/.test(phone))          return setError('Please enter a valid 10-digit mobile number.');
-    if (!requirements.trim())                  return setError('Please briefly describe your project.');
 
     setLoading(true);
     try {
@@ -82,6 +81,15 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
     background: 'var(--surface)', color: 'var(--text)',
     fontSize: '16px', cursor: 'pointer',
     minHeight: '48px',
+  };
+
+  const fieldLabelStyle = {
+    display: 'flex', justifyContent: 'space-between',
+    fontSize: '12px', fontWeight: 500, color: 'var(--text-sub)', marginBottom: '6px',
+  };
+  const optionalBadgeStyle = {
+    fontSize: '10px', color: 'var(--text-hint)', fontWeight: 400,
+    letterSpacing: 'normal', textTransform: 'none',
   };
 
   const formContent = (
@@ -124,26 +132,31 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
       {/* Project type + Budget */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px' }}>
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-sub)', marginBottom: '6px' }}>
-            Project type
+          <label style={fieldLabelStyle}>
+            <span>Project type</span>
+            <span style={optionalBadgeStyle}>Optional</span>
           </label>
           <select value={projectType} onChange={e => setProjectType(e.target.value)} style={selectStyle}>
+            <option value="">No preference</option>
             {PROJECT_TYPES.map(t => <option key={t}>{t}</option>)}
           </select>
         </div>
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-sub)', marginBottom: '6px' }}>
-            Budget range
+          <label style={fieldLabelStyle}>
+            <span>Budget range</span>
+            <span style={optionalBadgeStyle}>Optional</span>
           </label>
           <select value={budget} onChange={e => setBudget(e.target.value)} style={selectStyle}>
+            <option value="">No preference</option>
             {BUDGET_RANGES.map(b => <option key={b}>{b}</option>)}
           </select>
         </div>
       </div>
 
       <div>
-        <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-sub)', marginBottom: '6px' }}>
-          Requirements
+        <label style={fieldLabelStyle}>
+          <span>Requirements</span>
+          <span style={optionalBadgeStyle}>Optional</span>
         </label>
         <textarea
           value={requirements}
