@@ -931,16 +931,21 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .grid-responsive-2 { grid-template-columns: 1fr; gap: 12px; }
   .grid-cards        { grid-template-columns: 1fr; gap: 12px; }
 
-  /* Dashboard: slide-in sidebar drawer */
+  /* Dashboard: slide-in sidebar drawer.
+     !important on position/transform/display: a later, unconditional
+     .dashboard-sidebar / .dashboard-sidebar-overlay redeclaration further
+     down this file (same specificity, later source order) would otherwise
+     win the cascade at every viewport and silently undo this mobile
+     off-canvas behavior. */
   .dashboard-sidebar {
-    position: fixed;
+    position: fixed !important;
     top: 0; left: 0; bottom: 0;
     height: 100%;
-    transform: translateX(-100%);
+    transform: translateX(-100%) !important;
     box-shadow: 4px 0 24px rgba(0,0,0,.15);
   }
-  .dashboard-sidebar.open { transform: translateX(0); }
-  .dashboard-sidebar-overlay { display: block; }
+  .dashboard-sidebar.open { transform: translateX(0) !important; }
+  .dashboard-sidebar-overlay { display: block !important; }
   .dashboard-content { padding-bottom: 72px; }
   .bottom-tab-bar    { display: flex; }
   .mobile-tab-bar    { display: flex; }
@@ -1006,7 +1011,14 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .safe-bottom { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 .safe-top    { padding-top:    max(16px, env(safe-area-inset-top)); }
 
-/* ── DASHBOARD LAYOUT ── */
+/* ── DASHBOARD LAYOUT ──
+   Duplicates .dashboard-layout/.dashboard-sidebar/.dashboard-content
+   declared above (~line 790) — this later block wins the cascade for any
+   property it redeclares. The mobile off-canvas behavior for
+   .dashboard-sidebar / .dashboard-sidebar-overlay lives in the
+   @media (max-width: 768px) block above and uses !important specifically
+   to survive being overridden by this block. Don't remove those
+   !important flags without also removing this duplication. */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
