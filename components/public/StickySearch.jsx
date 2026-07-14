@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
+import CitySelect from '../ui/CitySelect';
 
 export default function StickySearch() {
   const router = useRouter();
@@ -32,18 +33,15 @@ export default function StickySearch() {
         Find designers
       </span>
 
-      <div style={{ flex: 1, maxWidth: '600px', margin: '0 auto', display: 'flex', gap: '8px', minWidth: 0 }}>
-        <input
-          value={city}
-          onChange={e => setCity(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && router.push('/vendors' + (city ? `?city=${encodeURIComponent(city)}` : ''))}
-          placeholder="City — e.g. Bangalore"
-          style={{
-            flex: 1, minWidth: 0, padding: '9px 14px',
-            border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
-            fontSize: '13px', background: 'var(--bg-parchment)', color: 'var(--text)',
-          }}
-        />
+      <div style={{ flex: 1, maxWidth: '600px', margin: '0 auto', display: 'flex', gap: '8px', minWidth: 0, alignItems: 'center' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <CitySelect
+            value={city}
+            onChange={(val) => setCity(val)}
+            placeholder="City — e.g. Bangalore"
+            onKeyDown={e => e.key === 'Enter' && router.push('/vendors' + (city ? `?city=${encodeURIComponent(city)}` : ''))}
+          />
+        </div>
         <button
           onClick={() => router.push('/vendors' + (city ? `?city=${encodeURIComponent(city)}` : ''))}
           style={{

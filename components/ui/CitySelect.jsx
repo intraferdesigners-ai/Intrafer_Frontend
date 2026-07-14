@@ -2,19 +2,30 @@
 import { useState, useRef, useEffect } from 'react';
 
 const INDIAN_CITIES = [
-  'Ahmedabad', 'Bangalore', 'Bhopal', 'Bhubaneswar',
-  'Chandigarh', 'Chennai', 'Coimbatore', 'Delhi NCR',
+  'Agra', 'Ahmedabad', 'Ajmer', 'Aligarh', 'Allahabad',
+  'Amravati', 'Amritsar', 'Aurangabad',
+  'Bangalore', 'Bareilly', 'Bhopal', 'Bhubaneswar',
+  'Chandigarh', 'Chennai', 'Coimbatore',
+  'Dehradun', 'Delhi NCR',
   'Faridabad', 'Ghaziabad', 'Goa', 'Gurugram',
-  'Guwahati', 'Hyderabad', 'Indore', 'Jaipur',
-  'Jodhpur', 'Kanpur', 'Kochi', 'Kolkata',
-  'Lucknow', 'Ludhiana', 'Mumbai', 'Mysore',
-  'Nagpur', 'Nashik', 'Noida', 'Patna',
-  'Pune', 'Raipur', 'Rajkot', 'Surat',
-  'Thiruvananthapuram', 'Udaipur', 'Vadodara',
-  'Varanasi', 'Visakhapatnam', 'Other',
+  'Guwahati', 'Gwalior',
+  'Howrah', 'Hubli', 'Hyderabad',
+  'Indore', 'Jabalpur', 'Jaipur', 'Jalandhar',
+  'Jammu', 'Jodhpur',
+  'Kanpur', 'Kochi', 'Kolkata', 'Kozhikode',
+  'Lucknow', 'Ludhiana',
+  'Madurai', 'Mangalore', 'Meerut', 'Mumbai', 'Mysore',
+  'Nagpur', 'Nashik', 'Navi Mumbai', 'Noida',
+  'Patna', 'Pune',
+  'Raipur', 'Rajkot', 'Ranchi',
+  'Srinagar', 'Surat',
+  'Thane', 'Thiruvananthapuram', 'Tiruchirappalli',
+  'Udaipur',
+  'Vadodara', 'Varanasi', 'Vijayawada', 'Visakhapatnam',
+  'Other',
 ];
 
-export default function CitySelect({ value, onChange, placeholder }) {
+export default function CitySelect({ value, onChange, placeholder, onKeyDown }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [inputVal, setInputVal] = useState(value || '');
@@ -34,8 +45,13 @@ export default function CitySelect({ value, onChange, placeholder }) {
   useEffect(() => { setInputVal(value || ''); }, [value]);
 
   const filtered = INDIAN_CITIES.filter(c =>
-    c.toLowerCase().includes(search.toLowerCase())
-  );
+    c.toLowerCase().startsWith(search.toLowerCase())
+  ).concat(
+    INDIAN_CITIES.filter(c =>
+      !c.toLowerCase().startsWith(search.toLowerCase()) &&
+      c.toLowerCase().includes(search.toLowerCase())
+    )
+  ).slice(0, 8);
 
   const handleSelect = (city) => {
     setInputVal(city);
@@ -83,6 +99,7 @@ export default function CitySelect({ value, onChange, placeholder }) {
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
+          onKeyDown={onKeyDown}
           placeholder={placeholder || 'Search city...'}
           autoComplete="off"
           style={{

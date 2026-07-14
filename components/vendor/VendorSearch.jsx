@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, MapPin } from 'lucide-react';
-import Input from '../ui/Input';
+import { Search } from 'lucide-react';
 import Button from '../ui/Button';
+import CitySelect from '../ui/CitySelect';
 
 const SPECIALIZATIONS = [
   'All', 'Residential', 'Modular Kitchen', 'Living Room',
@@ -75,12 +75,11 @@ export default function VendorSearch() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
         {/* City */}
         <div style={{ flex: '1 1 160px' }}>
-          <Input
-            label="City"
-            placeholder="e.g. Bangalore"
-            icon={MapPin}
+          <label style={LABEL_STYLE}>City</label>
+          <CitySelect
             value={city}
-            onChange={(e) => setCity(e.target.value)}
+            onChange={(val) => setCity(val)}
+            placeholder="Search city..."
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
         </div>
