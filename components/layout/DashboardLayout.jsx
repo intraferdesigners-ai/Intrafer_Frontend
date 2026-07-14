@@ -5,12 +5,15 @@ import { useRouter, usePathname } from 'next/navigation';
 import useAuthStore from '../../store/authStore';
 import { isAuthenticated } from '../../lib/auth';
 import Sidebar from './Sidebar';
+import MobileTabBar from './MobileTabBar';
 import ErrorBoundary from '../ui/ErrorBoundary';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { initFromCookies } = useAuthStore();
+  const { initFromCookies, role } = useAuthStore();
+  const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -69,7 +72,15 @@ export default function DashboardLayout({ children }) {
               <line x1="2" y1="13" x2="16" y2="13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
-          <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)' }}>Dashboard</span>
+          <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)', flex: 1 }}>Intrafer</span>
+          <button
+            onClick={toggleTheme}
+            className="mobile-menu-btn"
+            aria-label="Toggle theme"
+            style={{ display: 'flex' }}
+          >
+            <span style={{ fontSize: '16px' }}>{theme === 'dark' ? '☀️' : '🌙'}</span>
+          </button>
         </div>
 
         <ErrorBoundary fallback={
@@ -81,6 +92,8 @@ export default function DashboardLayout({ children }) {
           {children}
         </ErrorBoundary>
       </main>
+
+      <MobileTabBar role={role} />
     </div>
   );
 }

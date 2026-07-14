@@ -182,10 +182,7 @@ export default function EnquiryDetailPage() {
               </h1>
 
               {/* Details grid */}
-              <div style={{
-                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 24px',
-                marginBottom: 28,
-              }}>
+              <div className="form-row" style={{ gap: '16px 24px', marginBottom: 28 }}>
                 <DetailRow icon={MapPin}    label="City"      value={lead.city}   />
                 <DetailRow icon={Banknote}  label="Budget"    value={lead.budget} />
                 <DetailRow icon={Calendar}  label="Submitted" value={formatDate(lead.createdAt)} />
@@ -331,7 +328,7 @@ export default function EnquiryDetailPage() {
             </div>
 
             {/* ── RIGHT COLUMN — Timeline ── */}
-            <div style={{
+            <div className="lead-timeline-card" style={{
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-xl)', padding: 24, position: 'sticky', top: 88,
             }}>

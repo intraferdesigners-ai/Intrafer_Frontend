@@ -217,18 +217,18 @@ export default function VendorDashboard() {
             }}
               className="lead-row"
             >
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--color-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 }}>
                   ENQ-{lead._id?.slice(-8).toUpperCase()}
                 </div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', marginBottom: 2 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {lead.projectType}
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--color-text-sub)' }}>
+                <div style={{ fontSize: 12, color: 'var(--color-text-sub)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {[lead.city, lead.budget].filter(Boolean).join(' · ')}
                 </div>
               </div>
-              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
                 <Badge status={lead.status} />
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-hint)' }}>
                   {formatDate(lead.createdAt)}

@@ -1239,3 +1239,66 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
   }
   .search-widget-grid > .search-btn button { width: 100%; }
 }
+
+/* ── DASHBOARD RESPONSIVE OVERHAUL ── */
+/* Note: .dashboard-sidebar, .dashboard-sidebar-overlay, .dashboard-content,
+   .mobile-tab-bar, .mobile-menu-btn, .admin-table-row/-header/-cell-actions,
+   .lead-detail-layout/.lead-timeline-card and .stats-grid-3/-4 already exist
+   above and are reused as-is — only the missing pieces are added here. */
+
+.dashboard-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .dashboard-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dashboard-page-header button,
+  .dashboard-page-header a {
+    width: 100%;
+    display: flex;
+  }
+}
+
+.stats-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* Always-on horizontal scroll for wide tables (not just <640px) */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+}
+
+.plan-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .plan-cards-grid { grid-template-columns: 1fr; }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 640px) {
+  .form-row,
+  .form-row-3 { grid-template-columns: 1fr; }
+}

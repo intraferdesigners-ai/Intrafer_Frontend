@@ -228,7 +228,7 @@ export default function UserDashboard() {
                   borderRadius: 'var(--radius-lg)', padding: '14px 16px', marginBottom: 8,
                   transition: 'border-color 150ms ease-out',
                 }}>
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <div style={{
                       fontFamily: 'var(--font-mono)', fontSize: 10,
                       color: 'var(--color-text-hint)', letterSpacing: '0.06em',
@@ -236,18 +236,18 @@ export default function UserDashboard() {
                     }}>
                       {lead._id?.slice(-8).toUpperCase()}
                     </div>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', marginBottom: 2 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {lead.projectType}
                     </div>
                     {lead.vendorId?.businessName && (
-                      <div style={{ fontSize: 12, color: 'var(--color-text-sub)' }}>
+                      <div style={{ fontSize: 12, color: 'var(--color-text-sub)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {lead.vendorId.businessName}
                       </div>
                     )}
                   </div>
                   <div style={{
                     textAlign: 'right', display: 'flex', flexDirection: 'column',
-                    alignItems: 'flex-end', gap: 6,
+                    alignItems: 'flex-end', gap: 6, flexShrink: 0,
                   }}>
                     <Badge status={lead.status} />
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-hint)' }}>

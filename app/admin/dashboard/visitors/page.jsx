@@ -137,7 +137,7 @@ export default function VisitorsPage() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24, marginBottom: 28 }}>
+      <div className="two-col-layout-admin" style={{ marginBottom: 28 }}>
         {/* Top vendors table */}
         {stats?.topVendors?.length > 0 && (
           <div style={{
@@ -147,24 +147,26 @@ export default function VisitorsPage() {
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>Top viewed vendors</div>
             </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-parchment)' }}>
-                  <th style={{ ...HEADER_CELL, textAlign: 'left' }}>Vendor</th>
-                  <th style={{ ...HEADER_CELL, textAlign: 'right' }}>Clicks</th>
-                  <th style={{ ...HEADER_CELL, textAlign: 'right' }}>Unique</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.topVendors.map((v, i) => (
-                  <tr key={i}>
-                    <td style={{ ...TABLE_CELL }}>{v.name || '—'}</td>
-                    <td style={{ ...TABLE_CELL, textAlign: 'right', fontWeight: 600, color: 'var(--primary)' }}>{v.totalClicks}</td>
-                    <td style={{ ...TABLE_CELL, textAlign: 'right', color: 'var(--text-mid)' }}>{v.uniqueVisitors}</td>
+            <div className="table-responsive" style={{ border: 'none', borderRadius: 0 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: 'var(--bg-parchment)' }}>
+                    <th style={{ ...HEADER_CELL, textAlign: 'left' }}>Vendor</th>
+                    <th style={{ ...HEADER_CELL, textAlign: 'right' }}>Clicks</th>
+                    <th style={{ ...HEADER_CELL, textAlign: 'right' }}>Unique</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {stats.topVendors.map((v, i) => (
+                    <tr key={i}>
+                      <td style={{ ...TABLE_CELL }}>{v.name || '—'}</td>
+                      <td style={{ ...TABLE_CELL, textAlign: 'right', fontWeight: 600, color: 'var(--primary)' }}>{v.totalClicks}</td>
+                      <td style={{ ...TABLE_CELL, textAlign: 'right', color: 'var(--text-mid)' }}>{v.uniqueVisitors}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
@@ -207,48 +209,50 @@ export default function VisitorsPage() {
           </div>
         ) : (
           <>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-parchment)' }}>
-                  <th style={{ ...HEADER_CELL, textAlign: 'left' }}>Name</th>
-                  <th style={{ ...HEADER_CELL, textAlign: 'left' }}>Contact</th>
-                  <th style={{ ...HEADER_CELL, textAlign: 'left' }}>City</th>
-                  <th style={{ ...HEADER_CELL, textAlign: 'center' }}>Vendors viewed</th>
-                  <th style={{ ...HEADER_CELL, textAlign: 'left' }}>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visitors.map((v) => (
-                  <tr key={v._id} style={{ cursor: 'default' }}>
-                    <td style={{ ...TABLE_CELL, fontWeight: 500 }}>{v.name || '—'}</td>
-                    <td style={{ ...TABLE_CELL }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {v.contactType === 'phone'
-                          ? <Phone size={12} color="var(--text-hint)" />
-                          : v.contactType === 'email'
-                            ? <Mail size={12} color="var(--text-hint)" />
-                            : null}
-                        <span>{v.contact || '—'}</span>
-                      </div>
-                    </td>
-                    <td style={{ ...TABLE_CELL, color: 'var(--text-mid)' }}>{v.city || '—'}</td>
-                    <td style={{ ...TABLE_CELL, textAlign: 'center' }}>
-                      {v.vendorInterests?.length > 0 ? (
-                        <span style={{
-                          background: 'var(--primary-bg)', color: 'var(--primary)',
-                          padding: '2px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                        }}>
-                          {v.vendorInterests.length}
-                        </span>
-                      ) : '—'}
-                    </td>
-                    <td style={{ ...TABLE_CELL, color: 'var(--text-hint)', fontSize: 12 }}>
-                      {formatDate(v.createdAt)}
-                    </td>
+            <div className="table-responsive" style={{ border: 'none', borderRadius: 0 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: 'var(--bg-parchment)' }}>
+                    <th style={{ ...HEADER_CELL, textAlign: 'left' }}>Name</th>
+                    <th style={{ ...HEADER_CELL, textAlign: 'left' }}>Contact</th>
+                    <th style={{ ...HEADER_CELL, textAlign: 'left' }}>City</th>
+                    <th style={{ ...HEADER_CELL, textAlign: 'center' }}>Vendors viewed</th>
+                    <th style={{ ...HEADER_CELL, textAlign: 'left' }}>Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {visitors.map((v) => (
+                    <tr key={v._id} style={{ cursor: 'default' }}>
+                      <td style={{ ...TABLE_CELL, fontWeight: 500 }}>{v.name || '—'}</td>
+                      <td style={{ ...TABLE_CELL }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {v.contactType === 'phone'
+                            ? <Phone size={12} color="var(--text-hint)" />
+                            : v.contactType === 'email'
+                              ? <Mail size={12} color="var(--text-hint)" />
+                              : null}
+                          <span>{v.contact || '—'}</span>
+                        </div>
+                      </td>
+                      <td style={{ ...TABLE_CELL, color: 'var(--text-mid)' }}>{v.city || '—'}</td>
+                      <td style={{ ...TABLE_CELL, textAlign: 'center' }}>
+                        {v.vendorInterests?.length > 0 ? (
+                          <span style={{
+                            background: 'var(--primary-bg)', color: 'var(--primary)',
+                            padding: '2px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                          }}>
+                            {v.vendorInterests.length}
+                          </span>
+                        ) : '—'}
+                      </td>
+                      <td style={{ ...TABLE_CELL, color: 'var(--text-hint)', fontSize: 12 }}>
+                        {formatDate(v.createdAt)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             {/* Pagination */}
             {total > LIMIT && (

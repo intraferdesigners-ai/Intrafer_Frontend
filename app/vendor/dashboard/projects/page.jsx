@@ -74,15 +74,15 @@ export default function VendorProjectsPage() {
   return (
     <div>
       {/* Heading + add button */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+      <div className="dashboard-page-header">
         <h1 style={{
           fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 300,
           color: 'var(--color-text)', margin: 0,
         }}>
           Portfolio
         </h1>
-        <Link href="/vendor/dashboard/projects/new">
-          <Button variant="primary" size="sm">
+        <Link href="/vendor/dashboard/projects/new" style={{ textDecoration: 'none' }}>
+          <Button variant="primary" size="sm" style={{ width: '100%' }}>
             <Plus size={16} />
             Add project
           </Button>

@@ -167,9 +167,7 @@ export default function VendorLeadDetailPage() {
             </h1>
 
             {/* Details grid */}
-            <div style={{
-              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 24,
-            }}>
+            <div className="form-row" style={{ gap: '14px 24px', marginBottom: 24 }}>
               <DetailItem icon={MapPin}   label="City"        value={lead.city}              />
               <DetailItem icon={Banknote} label="Budget"      value={lead.budget}            />
               <DetailItem icon={Calendar} label="Submitted"   value={formatDate(lead.createdAt)} />
@@ -299,7 +297,7 @@ export default function VendorLeadDetailPage() {
           </div>
 
           {/* ── RIGHT COLUMN — Actions + Timeline ── */}
-          <div style={{
+          <div className="lead-timeline-card" style={{
             background: 'var(--color-surface)', border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-xl)', padding: 24, position: 'sticky', top: 88,
           }}>

@@ -155,7 +155,7 @@ export default function VendorProfilePage() {
         {/* Location */}
         <div>
           <span style={SECTION_LABEL}>Location</span>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+          <div className="form-row-3" style={{ gap: 12 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               <label style={{
                 fontSize: 10, fontWeight: 600, letterSpacing: '.1em',
@@ -206,7 +206,7 @@ export default function VendorProfilePage() {
         <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 0 }} />
 
         {/* Save */}
-        <Button variant="primary" size="lg" loading={saving} onClick={handleSave}>
+        <Button variant="primary" size="lg" loading={saving} onClick={handleSave} style={{ width: '100%' }}>
           Save changes
         </Button>
       </div>

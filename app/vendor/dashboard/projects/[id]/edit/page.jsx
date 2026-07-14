@@ -228,7 +228,7 @@ export default function EditProjectPage() {
                   {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="form-row" style={{ gap: 12 }}>
                 <Input
                   label="Location"
                   value={form.location}

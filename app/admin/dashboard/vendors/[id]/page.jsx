@@ -193,7 +193,7 @@ export default function AdminVendorDetailPage() {
         </div>
 
         {/* Right — Stats & subscription */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'sticky', top: '88px' }}>
+        <div className="lead-timeline-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'sticky', top: '88px' }}>
           <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', padding: '20px' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.08em', color: 'var(--color-text-hint)', textTransform: 'uppercase', marginBottom: '16px' }}>Stats</p>
             {[
