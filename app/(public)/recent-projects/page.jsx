@@ -30,11 +30,10 @@ export default async function RecentProjectsPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }} className="grid-mobile-1">
           {projects.map((project) => {
             const img = project.images?.[0] || project.coverImage;
-            const vendorId = project.vendor?._id || project.vendorId?._id || project.vendorId;
             return (
               <Link
                 key={project._id}
-                href={vendorId ? `/vendors/${vendorId}` : '/vendors'}
+                href={project._id ? `/projects/${project._id}` : '/vendors'}
                 style={{ textDecoration: 'none' }}
               >
                 <div style={{
