@@ -12,10 +12,11 @@ import { IMAGES } from '../lib/images';
 import { BLOG_POSTS } from '../lib/blog-data';
 import {
   ArrowRight, Building2, Shield, Lock, Star,
-  Clock, Users, ImageIcon, Search,
+  Clock, Users, ImageIcon,
 } from 'lucide-react';
 import AnimatedCounter from '../components/ui/AnimatedCounter';
 import StickySearch from '../components/public/StickySearch';
+import HeroSearch from '../components/public/HeroSearch';
 
 export const metadata = {
   title: 'Find Verified Interior Designers in India | Intrafer',
@@ -176,19 +177,7 @@ export default async function Home() {
               ))}
             </div>
             {/* Search widget */}
-            <div className="search-widget-grid" style={{ marginTop: '24px', background: 'var(--surface)', border: '1px solid var(--border-sub)', borderRadius: 'var(--r-lg)', display: 'flex', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
-              {[{ label: 'CITY', value: 'Bangalore' }, { label: 'STYLE', value: 'Residential' }, { label: 'BUDGET', value: '₹10–20 Lakhs' }].map((f, i, arr) => (
-                <div key={f.label} style={{ flex: 1, padding: '13px 16px', borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                  <div style={{ fontSize: '9px', letterSpacing: '.1em', color: 'var(--text-hint)', marginBottom: '3px' }}>{f.label}</div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-sub)' }}>{f.value}</div>
-                </div>
-              ))}
-              <Link href="/vendors" className="search-btn" style={{ display: 'flex' }}>
-                <button style={{ padding: '13px 22px', background: 'var(--primary)', color: '#fff', border: 'none', fontSize: '13px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
-                  <Search size={13} /> Search
-                </button>
-              </Link>
-            </div>
+            <HeroSearch />
           </div>
           {/* Right — hero image collage (hidden on mobile) */}
           <div className="hide-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
