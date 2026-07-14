@@ -70,7 +70,7 @@ export default function LeadCapturePopup() {
       if (!hasFilledPopup() && !localStorage.getItem('intrafer_popup_not_interested')) {
         rescheduleRef.current = setTimeout(() => {
           if (shouldShowPopup() && !isExcluded) setVisible(true);
-        }, 60000);
+        }, 300000); // 5 minutes
       }
     }
     return () => clearTimeout(rescheduleRef.current);
