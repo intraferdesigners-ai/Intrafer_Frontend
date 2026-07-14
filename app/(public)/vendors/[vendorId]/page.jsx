@@ -271,15 +271,25 @@ export default async function VendorProfilePage({ params }) {
           <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0 0 28px' }} />
 
           {/* Before/After slider */}
-          {projects.length >= 1 && projects[0]?.images?.length >= 1 && (
-            <div style={{ marginBottom: 32 }}>
-              <span style={LABEL}>BEFORE &amp; AFTER</span>
-              <BeforeAfterSlider
-                before={`/images/vendors/studio-1/cover.jpg`}
-                after={projects[0].images[0]}
-              />
-            </div>
-          )}
+          {projects.length >= 1 && (() => {
+            // Prefer a project where the vendor explicitly set before/after images
+            const projectWithBA = projects.find(p => p.beforeImage && p.afterImage);
+
+            // Fallback: first project with at least 2 images
+            const fallbackProject = projects.find(p => p.images?.length >= 2);
+
+            const beforeImg = projectWithBA?.beforeImage || fallbackProject?.images?.[0] || null;
+            const afterImg  = projectWithBA?.afterImage  || fallbackProject?.images?.[1] || null;
+
+            if (!beforeImg || !afterImg) return null;
+
+            return (
+              <div style={{ marginBottom: 32 }}>
+                <span style={LABEL}>BEFORE &amp; AFTER</span>
+                <BeforeAfterSlider before={beforeImg} after={afterImg} />
+              </div>
+            );
+          })()}
 
           {/* Portfolio */}
           <div>

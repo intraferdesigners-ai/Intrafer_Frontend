@@ -51,6 +51,8 @@ export default function NewProjectPage() {
   });
   const [imageFiles,      setImageFiles]      = useState([]);
   const [imagePreviews,   setImagePreviews]   = useState([]);
+  const [beforeIndex,     setBeforeIndex]     = useState(null);
+  const [afterIndex,      setAfterIndex]      = useState(null);
   const [loading,         setLoading]         = useState(false);
   const [uploadProgress,  setUploadProgress]  = useState(0);
 
@@ -66,6 +68,9 @@ export default function NewProjectPage() {
     URL.revokeObjectURL(imagePreviews[index]);
     setImageFiles((prev)   => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    const shift = (idx) => (idx === null ? null : idx === index ? null : idx > index ? idx - 1 : idx);
+    setBeforeIndex(shift);
+    setAfterIndex(shift);
   };
 
   const handleSubmit = async (e) => {
@@ -81,6 +86,8 @@ export default function NewProjectPage() {
       fd.append('completedYear', form.completedYear);
       fd.append('isPublished',   form.isPublished);
       imageFiles.forEach((file) => fd.append('images', file));
+      if (beforeIndex !== null) fd.append('beforeImageIndex', beforeIndex);
+      if (afterIndex  !== null) fd.append('afterImageIndex',  afterIndex);
 
       setUploadProgress(0);
       await api.post('/vendor/projects', fd, {
@@ -257,6 +264,75 @@ export default function NewProjectPage() {
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {imagePreviews.length >= 2 && (
+              <div style={{ marginTop: 20 }}>
+                <span style={SECTION_LABEL}>Before &amp; after selection</span>
+                <p style={{ fontSize: 12, color: 'var(--color-text-hint)', margin: '-6px 0 12px' }}>
+                  Select which photos to use for the before/after comparison slider on your public profile.
+                </p>
+
+                <div style={{ marginBottom: 12 }}>
+                  <label style={FIELD_LABEL}>Before image</label>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {imagePreviews.map((url, i) => (
+                      <div
+                        key={url}
+                        onClick={() => setBeforeIndex(i)}
+                        style={{
+                          width: 80, height: 80, borderRadius: 'var(--radius-md)',
+                          overflow: 'hidden', cursor: 'pointer',
+                          border: beforeIndex === i ? '3px solid var(--color-primary)' : '3px solid transparent',
+                          position: 'relative', flexShrink: 0,
+                          opacity: afterIndex === i ? 0.4 : 1,
+                        }}
+                      >
+                        <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        {beforeIndex === i && (
+                          <div style={{
+                            position: 'absolute', bottom: 0, left: 0, right: 0,
+                            background: 'var(--color-primary)', color: '#fff',
+                            fontSize: 9, fontWeight: 700, textAlign: 'center', padding: 2,
+                          }}>
+                            BEFORE
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label style={FIELD_LABEL}>After image</label>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {imagePreviews.map((url, i) => (
+                      <div
+                        key={url}
+                        onClick={() => setAfterIndex(i)}
+                        style={{
+                          width: 80, height: 80, borderRadius: 'var(--radius-md)',
+                          overflow: 'hidden', cursor: 'pointer',
+                          border: afterIndex === i ? '3px solid var(--color-success)' : '3px solid transparent',
+                          position: 'relative', flexShrink: 0,
+                          opacity: beforeIndex === i ? 0.4 : 1,
+                        }}
+                      >
+                        <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        {afterIndex === i && (
+                          <div style={{
+                            position: 'absolute', bottom: 0, left: 0, right: 0,
+                            background: 'var(--color-success)', color: '#fff',
+                            fontSize: 9, fontWeight: 700, textAlign: 'center', padding: 2,
+                          }}>
+                            AFTER
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>
