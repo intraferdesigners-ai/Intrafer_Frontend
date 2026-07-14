@@ -116,7 +116,7 @@ export default function AdminSubscriptionsPage() {
                     background: 'var(--primary-bg)', color: 'var(--primary)',
                     borderRadius: '20px',
                   }}>
-                    {sub.planName || 'Basic'}
+                    {sub.planName || 'Unknown plan'}
                   </span>
                 </div>
 

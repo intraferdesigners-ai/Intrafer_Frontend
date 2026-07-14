@@ -23,26 +23,26 @@ const STEPS = [
 
 const PLANS = [
   {
-    name: 'Starter', price: '₹999', period: '/month', highlight: false,
+    name: '3 Months', price: '₹7,999', period: ' for 3 months', highlight: false,
     desc: 'Perfect for designers just getting started.',
-    features: ['Up to 5 leads/month', 'Basic profile', 'Email notifications'],
+    features: ['Upto 10 leads/month', 'Profile listing', 'Portfolio showcase', 'Email support'],
   },
   {
-    name: 'Pro', price: '₹2,499', period: '/month', highlight: true,
+    name: '6 Months', price: '₹14,999', period: ' for 6 months', highlight: true,
     desc: 'For active designers who want to grow.',
-    features: ['Up to 20 leads/month', 'Featured profile listing', 'WhatsApp + Email alerts', 'Analytics dashboard', 'Priority support'],
+    features: ['Upto 10 leads/month', 'Priority listing', 'WhatsApp + Email alerts', 'Analytics dashboard', 'Priority support'],
   },
   {
-    name: 'Studio', price: '₹4,999', period: '/month', highlight: false,
+    name: '12 Months', price: '₹19,999', period: ' for 12 months', highlight: false,
     desc: 'For established studios managing high volume.',
-    features: ['Unlimited leads', 'Top of search listing', 'Dedicated account manager', 'Multi-member access', 'Custom portfolio pages'],
+    features: ['Upto 10 leads/month', 'Top of search listing', 'Featured badge', 'Dedicated account manager', 'Custom portfolio pages'],
   },
 ];
 
 const FAQS = [
   { q: 'How are leads verified?',              a: 'Every user submits an OTP-verified enquiry. We confirm phone and email before the lead reaches you.' },
   { q: 'Can I cancel my subscription?',        a: 'Yes, cancel anytime. Your listing stays active until the end of your current billing period.' },
-  { q: 'How many leads will I get?',           a: 'Depends on your location and specialization. On average Pro subscribers receive 12–18 leads/month in metro cities.' },
+  { q: 'How many leads will I get?',           a: 'Depends on your location and specialization — all plans offer upto 10 leads/month.' },
   { q: 'What happens after I accept a lead?',  a: "The client's phone and email are instantly revealed. You contact them directly — Intrafer is not involved." },
   { q: 'Is my portfolio public?',              a: 'Yes, your profile and portfolio are publicly visible on the marketplace, which also helps your own SEO.' },
 ];

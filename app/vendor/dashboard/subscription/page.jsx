@@ -8,28 +8,62 @@ import Button from '../../../../components/ui/Button';
 import Spinner from '../../../../components/ui/Spinner';
 import { formatDate, formatINR } from '../../../../lib/utils';
 
+// name is also what's sent to /subscriptions/create-order and stored as
+// Subscription.planName — must match the backend PLANS array exactly.
 const PLANS = [
   {
-    name: 'Basic',
-    price: 299900,
-    leadsPerMonth: 5,
-    durationDays: 30,
-    features: ['5 leads/month', 'Profile listing', 'Portfolio showcase', 'Email support'],
+    name: '3 Month',
+    displayName: '3 Months',
+    price: 799900,
+    period: '3 months',
+    leadsPerMonth: 10,
+    durationDays: 90,
+    badge: null,
+    features: [
+      'Upto 10 leads per month',
+      'Profile listing',
+      'Portfolio showcase',
+      'WhatsApp alerts',
+      'Analytics dashboard',
+      'Email support',
+    ],
   },
   {
-    name: 'Pro',
-    price: 699900,
-    leadsPerMonth: 15,
-    durationDays: 30,
-    features: ['15 leads/month', 'Priority listing', 'WhatsApp alerts', 'Analytics', 'Featured badge'],
-    popular: true,
+    name: '6 Month',
+    displayName: '6 Months',
+    price: 1499900,
+    period: '6 months',
+    leadsPerMonth: 10,
+    durationDays: 180,
+    badge: 'MOST POPULAR',
+    features: [
+      'Upto 10 leads per month',
+      'Profile listing',
+      'Portfolio showcase',
+      'WhatsApp alerts',
+      'Analytics dashboard',
+      'Priority listing',
+      'Email + Phone support',
+    ],
   },
   {
-    name: 'Premium',
+    name: '12 Month',
+    displayName: '12 Months',
     price: 1999900,
-    leadsPerMonth: 999,
+    period: '12 months',
+    leadsPerMonth: 10,
     durationDays: 365,
-    features: ['Unlimited leads', 'Top listing', 'Dedicated support', 'Early access', '1 year plan'],
+    badge: 'BEST VALUE',
+    features: [
+      'Upto 10 leads per month',
+      'Profile listing',
+      'Portfolio showcase',
+      'WhatsApp alerts',
+      'Analytics dashboard',
+      'Priority listing',
+      'Featured badge',
+      'Dedicated support',
+    ],
   },
 ];
 
@@ -166,27 +200,26 @@ export default function SubscriptionPage() {
       }}>
         {PLANS.map((plan) => {
           const isCurrentPlan = activePlanName === plan.name;
-          const suffix        = plan.durationDays >= 365 ? '/yr' : '/mo';
 
           return (
             <div
               key={plan.name}
               style={{
                 background: 'var(--color-surface)',
-                border: plan.popular ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
+                border: plan.badge ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-xl)', padding: 24,
                 position: 'relative',
               }}
             >
-              {/* Popular badge */}
-              {plan.popular && (
+              {/* Badge */}
+              {plan.badge && (
                 <div style={{
                   position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)',
                   background: 'var(--color-primary)', color: '#fff',
                   fontSize: 10, padding: '3px 14px', borderRadius: 20,
                   letterSpacing: '0.06em', fontWeight: 600, whiteSpace: 'nowrap',
                 }}>
-                  MOST POPULAR
+                  {plan.badge}
                 </div>
               )}
 
@@ -195,7 +228,7 @@ export default function SubscriptionPage() {
                 fontSize: 13, fontWeight: 600, color: 'var(--color-primary)',
                 letterSpacing: '0.04em', margin: '0 0 8px',
               }}>
-                {plan.name.toUpperCase()}
+                {plan.displayName.toUpperCase()}
               </p>
 
               {/* Price */}
@@ -206,7 +239,7 @@ export default function SubscriptionPage() {
                 }}>
                   {formatINR(plan.price)}
                 </span>
-                <span style={{ fontSize: 13, color: 'var(--color-text-hint)' }}>{suffix}</span>
+                <span style={{ fontSize: 13, color: 'var(--color-text-hint)' }}>for {plan.period}</span>
               </div>
 
               {/* Leads badge */}
@@ -214,9 +247,9 @@ export default function SubscriptionPage() {
                 display: 'inline-block', marginBottom: 12,
                 fontSize: 11, padding: '3px 10px', borderRadius: 20,
                 background: 'var(--color-accent-bg)', color: 'var(--color-primary)',
-                fontWeight: 500,
+                fontWeight: 600,
               }}>
-                {plan.leadsPerMonth >= 999 ? 'Unlimited leads' : `${plan.leadsPerMonth} leads/mo`}
+                Upto {plan.leadsPerMonth} leads / month
               </span>
 
               {/* Features */}

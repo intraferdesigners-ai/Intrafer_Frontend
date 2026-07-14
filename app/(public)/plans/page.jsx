@@ -9,46 +9,52 @@ import { formatINR } from '@/lib/utils';
 
 const FALLBACK_PLANS = [
   {
-    name: 'Basic',
-    price: 299900,
-    leadsPerMonth: 5,
-    durationDays: 30,
+    name: '3 Month',
+    displayName: '3 Months',
+    price: 799900,
+    period: '3 months',
+    leadsPerMonth: 10,
+    durationDays: 90,
     features: [
-      '5 qualified leads per month',
+      'Upto 10 qualified leads per month',
       'Verified designer badge',
-      'Portfolio (up to 5 projects)',
-      'Basic analytics',
+      'Portfolio showcase',
+      'Analytics dashboard',
       'Email support',
     ],
   },
   {
-    name: 'Pro',
-    price: 699900,
-    leadsPerMonth: 15,
-    durationDays: 30,
+    name: '6 Month',
+    displayName: '6 Months',
+    price: 1499900,
+    period: '6 months',
+    leadsPerMonth: 10,
+    durationDays: 180,
     popular: true,
     features: [
-      '15 qualified leads per month',
+      'Upto 10 qualified leads per month',
       'Priority placement in search',
-      'Unlimited portfolio projects',
+      'Portfolio showcase',
       'Advanced analytics dashboard',
       'Priority email + WhatsApp support',
       'Lead quality guarantee',
     ],
   },
   {
-    name: 'Premium',
+    name: '12 Month',
+    displayName: '12 Months',
     price: 1999900,
-    leadsPerMonth: 999,
+    period: '12 months',
+    leadsPerMonth: 10,
     durationDays: 365,
     features: [
-      'Unlimited leads for 12 months',
+      'Upto 10 qualified leads per month',
       'Top featured placement',
-      'Unlimited portfolio projects',
+      'Portfolio showcase',
       'Full analytics + export',
       'Dedicated account manager',
       'Lead quality guarantee',
-      'Annual billing (best value)',
+      'Best value — 12 month billing',
     ],
   },
 ];
@@ -68,7 +74,7 @@ const FAQS = [
   },
   {
     q: 'Is there a free trial?',
-    a: 'We don\'t offer a free trial, but the Basic plan at ₹2,999/month is a low-risk way to evaluate the platform. Most designers recoup this within their first accepted project.',
+    a: 'We don\'t offer a free trial, but the 3 Month plan at ₹7,999 is a low-risk way to evaluate the platform. Most designers recoup this within their first accepted project.',
   },
   {
     q: 'How do I get paid — do you take a commission?',
@@ -169,14 +175,14 @@ export default function PlansPage() {
                 </div>
               )}
 
-              <p className="caps-label-primary" style={{ marginBottom: '8px' }}>{plan.name.toUpperCase()}</p>
+              <p className="caps-label-primary" style={{ marginBottom: '8px' }}>{(plan.displayName || plan.name).toUpperCase()}</p>
 
               <div style={{ marginBottom: '6px' }}>
                 <span style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 400, color: 'var(--text)' }}>
-                  {formatINR((plan.price || 0) * 100)}
+                  {formatINR(plan.price || 0)}
                 </span>
                 <span style={{ fontSize: '13px', color: 'var(--text-hint)', marginLeft: '4px' }}>
-                  / {plan.durationDays >= 300 ? 'year' : 'month'}
+                  for {plan.period}
                 </span>
               </div>
 
@@ -186,7 +192,7 @@ export default function PlansPage() {
                 fontSize: '11px', fontWeight: 600, padding: '4px 10px',
                 borderRadius: '20px', letterSpacing: '.04em',
               }}>
-                {plan.leadsPerMonth >= 999 ? 'Unlimited leads' : `${plan.leadsPerMonth} leads / month`}
+                Upto {plan.leadsPerMonth} leads / month
               </div>
 
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px', marginBottom: '24px' }}>

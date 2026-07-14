@@ -149,18 +149,10 @@ export default function AdminSettingsPage() {
             </div>
           </div>
           <div>
-            {fieldLabel('Basic plan — max leads/month')}
-            <input type="number" min="1" max="100"
-              value={settings.max_leads_per_vendor_basic}
-              onChange={(e) => update('max_leads_per_vendor_basic', parseInt(e.target.value, 10))}
-              className="form-input-styled settings-number-input"
-              style={{ maxWidth: '120px' }} />
-          </div>
-          <div>
-            {fieldLabel('Pro plan — max leads/month')}
+            {fieldLabel('Max leads per vendor / month')}
             <input type="number" min="1" max="500"
-              value={settings.max_leads_per_vendor_pro}
-              onChange={(e) => update('max_leads_per_vendor_pro', parseInt(e.target.value, 10))}
+              value={settings.max_leads_per_vendor}
+              onChange={(e) => update('max_leads_per_vendor', parseInt(e.target.value, 10))}
               className="form-input-styled settings-number-input"
               style={{ maxWidth: '120px' }} />
           </div>
