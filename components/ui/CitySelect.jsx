@@ -25,7 +25,7 @@ const INDIAN_CITIES = [
   'Other',
 ];
 
-export default function CitySelect({ value, onChange, placeholder, onKeyDown }) {
+export default function CitySelect({ value, onChange, placeholder, onKeyDown, compact = false }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [inputVal, setInputVal] = useState(value || '');
@@ -103,12 +103,12 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown }) 
           placeholder={placeholder || 'Search city...'}
           autoComplete="off"
           style={{
-            width: '100%', height: '48px',
+            width: '100%', height: compact ? '38px' : '48px',
             padding: '0 40px 0 42px',
             background: 'var(--bg-parchment)',
             border: '1.5px solid var(--border)',
             borderRadius: 'var(--r-md)',
-            fontSize: '15px', color: 'var(--text)',
+            fontSize: compact ? '14px' : '15px', color: 'var(--text)',
             outline: 'none',
             transition: 'border-color 150ms',
             boxSizing: 'border-box',

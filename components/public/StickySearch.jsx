@@ -40,6 +40,7 @@ export default function StickySearch() {
             onChange={(val) => setCity(val)}
             placeholder="City — e.g. Bangalore"
             onKeyDown={e => e.key === 'Enter' && router.push('/vendors' + (city ? `?city=${encodeURIComponent(city)}` : ''))}
+            compact={true}
           />
         </div>
         <button
