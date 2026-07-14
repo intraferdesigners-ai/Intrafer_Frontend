@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Building2, Eye, EyeOff, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Building2, Eye, EyeOff, Pencil, Trash2, GripVertical } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
@@ -221,6 +221,19 @@ export default function VendorProjectsPage() {
                     {project.isPublished ? <Eye size={14} /> : <EyeOff size={14} />}
                     {project.isPublished ? 'Unpublish' : 'Publish'}
                   </button>
+                  <Link
+                    href={`/vendor/dashboard/projects/${project._id}/edit`}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      textDecoration: 'none',
+                      fontSize: 12, fontWeight: 500, padding: '4px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--color-text-hint)',
+                    }}
+                  >
+                    <Pencil size={14} />
+                    Edit
+                  </Link>
                   <button
                     type="button"
                     onClick={() => setDeleteModal({ id: project._id, title: project.title })}
