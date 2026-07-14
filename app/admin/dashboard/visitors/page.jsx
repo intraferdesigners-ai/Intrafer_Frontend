@@ -137,7 +137,7 @@ export default function VisitorsPage() {
         </div>
       )}
 
-      <div className="two-col-layout-admin" style={{ marginBottom: 28 }}>
+      <div className="visitors-grid">
         {/* Top vendors table */}
         {stats?.topVendors?.length > 0 && (
           <div style={{

@@ -1302,3 +1302,16 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
   .form-row,
   .form-row-3 { grid-template-columns: 1fr; }
 }
+
+.visitors-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+@media (max-width: 768px) {
+  .visitors-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

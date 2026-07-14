@@ -20,10 +20,8 @@ const TABS = {
     { href: '/admin/dashboard',           label: 'Home',      icon: 'home'      },
     { href: '/admin/dashboard/vendors',   label: 'Vendors',   icon: 'building'  },
     { href: '/admin/dashboard/leads',     label: 'Leads',     icon: 'list'      },
-    { href: '/admin/dashboard/users',     label: 'Users',     icon: 'users'     },
-    { href: '/admin/dashboard/analytics', label: 'Analytics', icon: 'chart-bar' },
-    { href: '/admin/dashboard/profile',   label: 'Profile',   icon: 'user'      },
-    { href: '/admin/dashboard/settings',  label: 'Settings',  icon: 'settings'  },
+    { href: '/admin/dashboard/visitors',  label: 'Visitors',  icon: 'users'     },
+    { href: '/admin/dashboard/analytics', label: 'Stats',     icon: 'chart-bar' },
   ],
 };
 
