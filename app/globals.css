@@ -945,7 +945,13 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     box-shadow: 4px 0 24px rgba(0,0,0,.15);
   }
   .dashboard-sidebar.open { transform: translateX(0) !important; }
-  .dashboard-sidebar-overlay { display: block !important; }
+  /* display:block keeps the element mounted so opacity can transition
+     smoothly, but that means it's a full-viewport, z-index:59 hit target
+     at ALL times unless pointer-events explicitly follows .open — without
+     this, the invisible (opacity:0) closed overlay silently swallows every
+     tap on the page underneath it. */
+  .dashboard-sidebar-overlay { display: block !important; pointer-events: none; }
+  .dashboard-sidebar-overlay.open { pointer-events: auto; }
   .dashboard-content { padding-bottom: 72px; }
   .bottom-tab-bar    { display: flex; }
   .mobile-tab-bar    { display: flex; }
