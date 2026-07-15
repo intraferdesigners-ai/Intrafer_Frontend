@@ -39,7 +39,8 @@ export default function HeroSearch() {
       className="search-widget-grid"
       style={{
         marginTop: '24px', background: 'var(--surface)', border: '1px solid var(--border-sub)',
-        borderRadius: 'var(--r-lg)', display: 'flex', overflow: 'hidden', boxShadow: 'var(--shadow-sm)',
+        borderRadius: 'var(--r-lg)', display: 'flex', boxShadow: 'var(--shadow-sm)',
+        position: 'relative',
       }}
     >
       <div style={{ flex: 1, padding: '13px 16px', borderRight: '1px solid var(--border)' }}>
@@ -61,6 +62,7 @@ export default function HeroSearch() {
           padding: '13px 22px', background: 'var(--primary)', color: '#fff', border: 'none',
           fontSize: '13px', fontWeight: 500, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center',
+          borderTopRightRadius: 'var(--r-lg)', borderBottomRightRadius: 'var(--r-lg)',
         }}
       >
         <Search size={13} /> Search

@@ -137,7 +137,7 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown, co
           border: '1px solid var(--border)',
           borderRadius: 'var(--r-md)',
           boxShadow: 'var(--shadow-lg)',
-          zIndex: 100,
+          zIndex: 1000,
           maxHeight: '220px',
           overflowY: 'auto',
         }}>
