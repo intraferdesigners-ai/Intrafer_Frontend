@@ -1,132 +1,141 @@
-import Image from 'next/image';
-import { IMAGES } from '@/lib/images';
+import Link from 'next/link';
+import RevealOnScroll from '@/components/v2/ui/RevealOnScroll';
+import V2Button from '@/components/v2/ui/Button';
 
 export const metadata = {
-  title: "About Intrafer | India's Interior Designer Marketplace",
+  title: 'About Us | Intrafer',
+  description: 'We built Intrafer to make great interior design accessible to every Indian homeowner.',
+  openGraph: {
+    title: 'About Us | Intrafer',
+    description: 'We built Intrafer to make great interior design accessible to every Indian homeowner.',
+    url: 'https://intrafer.in/about',
+    siteName: 'Intrafer',
+    type: 'website',
+  },
 };
 
+const VALUES = [
+  { title: 'Honesty', desc: "We don't show you what you want to see. We show you what's actually true." },
+  { title: 'Trust', desc: 'Every review is verified. Every portfolio is checked. Every designer is accountable.' },
+  { title: 'Access', desc: "Great design shouldn't require a personal connection. We're building that connection at scale." },
+];
+
 const STATS = [
-  { value: '500+',   label: 'VERIFIED DESIGNERS' },
-  { value: '12,000+',label: 'ENQUIRIES PLACED'   },
-  { value: '4.9★',   label: 'AVERAGE RATING'     },
-  { value: '48h',    label: 'RESPONSE GUARANTEE'  },
-];
-
-const STEPS = [
-  { n: '01', title: 'Portfolio review',   desc: "We manually review every project in a designer's portfolio. We check that images are real, credits are accurate, and completed work matches the quoted quality." },
-  { n: '02', title: 'Credential check',   desc: 'We verify business registration, past client references, and professional background. Designers from recognized institutions are highlighted in their profiles.' },
-  { n: '03', title: 'Quality assessment', desc: "New designers start on probation — their first 3 leads are monitored for quality. Designers who don't respond within 48 hours are flagged and eventually removed." },
-];
-
-const TEAM = [
-  { initials: 'RS', name: 'Rahul Sharma',  role: 'Co-founder & CEO', bio: 'Former design consultant, 8 years in interior industry.' },
-  { initials: 'PK', name: 'Priya Kumar',   role: 'Co-founder & CTO', bio: 'Ex-Flipkart engineer, passionate about marketplace design.' },
-  { initials: 'AM', name: 'Aryan Mehta',   role: 'Head of Design',   bio: 'Architect turned product designer, IIT Bombay.' },
+  { value: '480+', label: 'Verified designers' },
+  { value: '12', label: 'Cities across India' },
+  { value: '3,800+', label: 'Projects completed' },
+  { value: '4.9★', label: 'Average rating' },
 ];
 
 export default function AboutPage() {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-
-      {/* ── HERO ── */}
-      <section style={{ background: 'var(--bg-parchment)', padding: '108px 40px 80px', textAlign: 'center' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '12px' }}>OUR STORY</p>
-          <h1 className="section-heading" style={{ marginBottom: '18px' }}>
-            We believe everyone deserves a beautiful home
-          </h1>
-          <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.8, maxWidth: '540px', margin: '0 auto 40px' }}>
-            Intrafer was built to solve a simple problem: finding a trustworthy interior designer is harder than it should be.
-            We created a marketplace where verification, transparency, and quality are built in from day one.
-          </p>
-          <div style={{ position: 'relative', height: '400px', borderRadius: 'var(--r-2xl)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', maxWidth: '960px', margin: '0 auto' }}>
-            <Image src={IMAGES.banners.about} alt="Interior design inspiration" fill style={{ objectFit: 'cover' }} priority sizes="(max-width: 768px) 100vw, 960px" />
-          </div>
+    <div style={{ fontFamily: 'var(--v2-font-ui)' }}>
+      {/* Hero */}
+      <section style={{ background: '#0F172A', padding: 'clamp(64px,9vw,96px) clamp(16px,4vw,36px) clamp(48px,6vw,72px)' }}>
+        <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
+          <RevealOnScroll direction="up">
+            <h1 style={{
+              fontFamily: 'var(--v2-font-display)', fontSize: 'clamp(30px,5vw,46px)',
+              fontWeight: 500, color: '#F8F7F4', letterSpacing: '-0.02em', lineHeight: 1.2,
+              margin: 0,
+            }}>
+              We built Intrafer because finding a good designer in India was harder than it needed to be.
+            </h1>
+          </RevealOnScroll>
         </div>
       </section>
 
-      <div className="divider" />
-
-      {/* ── MISSION ── */}
-      <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '64px', alignItems: 'start' }} className="grid-mobile-1">
-          <div>
-            <h2 className="section-heading">Why we built Intrafer</h2>
-          </div>
-          <div>
-            <p style={{ fontSize: '15px', color: 'var(--text-sub)', lineHeight: 1.85, marginBottom: '20px' }}>
-              The interior design industry in India is fragmented and opaque. Homeowners struggle to find designers they can trust — recommendations are scattered across WhatsApp groups and local referrals, portfolio images are often stock photos, and pricing is impossible to benchmark without getting multiple quotes.
+      {/* Story */}
+      <section style={{ background: '#F8F7F4', padding: 'clamp(56px,8vw,88px) clamp(16px,4vw,36px)' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <RevealOnScroll direction="up">
+            <p style={{
+              fontFamily: 'var(--v2-font-display)', fontSize: 'clamp(22px,3vw,28px)',
+              fontStyle: 'italic', fontWeight: 400, color: '#0F172A',
+              lineHeight: 1.5, margin: '0 0 48px',
+            }}>
+              "The average Indian homeowner speaks to 8 designers before choosing one. We wanted to make that number smaller — and the choice easier."
             </p>
-            <p style={{ fontSize: '15px', color: 'var(--text-sub)', lineHeight: 1.85, marginBottom: '20px' }}>
-              We built a platform where designers are verified, portfolios are real, and enquiries are free for homeowners. Our verification process checks every designer's completed work, credentials, and client references before they appear on Intrafer.
-            </p>
-            <p style={{ fontSize: '15px', color: 'var(--text-sub)', lineHeight: 1.85 }}>
-              Today Intrafer connects homeowners with 500+ verified designers across India. We're growing quickly — but our commitment to verification standards remains absolute.
-            </p>
-          </div>
-        </div>
-      </section>
+          </RevealOnScroll>
 
-      <div className="divider" />
-
-      {/* ── STATS ── */}
-      <section style={{ background: 'var(--bg-parchment)', padding: '60px 40px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '20px' }} className="grid-mobile-1">
-          {STATS.map((s) => (
-            <div key={s.label} style={{ textAlign: 'center', padding: '24px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', boxShadow: 'var(--shadow-sm)' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 400, color: 'var(--text)', lineHeight: 1, marginBottom: '6px' }}>{s.value}</div>
-              <div style={{ fontSize: '10px', letterSpacing: '.1em', color: 'var(--text-hint)', textTransform: 'uppercase' }}>{s.label}</div>
+          <RevealOnScroll direction="up">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <p style={{ fontSize: '16px', color: '#334155', lineHeight: 1.85, margin: 0 }}>
+                Interior design in India is a ₹1.5 lakh crore industry. But if you've ever tried to renovate a home, you know the process is still frustratingly old-fashioned. You ask a friend for a referral. You search Instagram. You cold-call a studio. Half the time, the designer you find doesn't do the style you want, or doesn't work in your city, or shows up with a portfolio full of images they didn't actually create.
+              </p>
+              <p style={{ fontSize: '16px', color: '#334155', lineHeight: 1.85, margin: 0 }}>
+                We started Intrafer to change that. Not to be a directory of every designer in the country — but to be a place where homeowners could find designers they could actually trust, based on real work, real reviews, and real credentials.
+              </p>
+              <p style={{ fontSize: '16px', color: '#334155', lineHeight: 1.85, margin: 0 }}>
+                Every designer on Intrafer is personally reviewed before they go live. We check their portfolio, verify their completed projects, and make sure the work they show is work they actually did. It takes time. We think it's worth it.
+              </p>
             </div>
+          </RevealOnScroll>
+        </div>
+      </section>
+
+      {/* Mission */}
+      <section style={{ background: '#0F172A', padding: 'clamp(56px,8vw,88px) clamp(16px,4vw,36px)', textAlign: 'center' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <RevealOnScroll direction="up">
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.12em', color: '#3B82F6', textTransform: 'uppercase', marginBottom: '20px' }}>
+              Our mission
+            </p>
+            <p style={{
+              fontFamily: 'var(--v2-font-display)', fontSize: 'clamp(24px,3.5vw,34px)',
+              fontStyle: 'italic', fontWeight: 400, color: '#F8F7F4', lineHeight: 1.4, margin: 0,
+            }}>
+              To make great interior design accessible to every Indian homeowner — not just those who know the right people.
+            </p>
+          </RevealOnScroll>
+        </div>
+      </section>
+
+      {/* Values */}
+      <section style={{ background: '#F8F7F4', padding: 'clamp(48px,7vw,80px) clamp(16px,4vw,36px)' }}>
+        <div style={{ maxWidth: '1140px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
+          {VALUES.map((v, i) => (
+            <RevealOnScroll key={v.title} direction="up" delay={i * 100}>
+              <div>
+                <h3 style={{
+                  fontFamily: 'var(--v2-font-display)', fontSize: '20px', fontWeight: 500,
+                  color: '#0F172A', margin: '0 0 10px',
+                }}>{v.title}</h3>
+                <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.7, margin: 0 }}>{v.desc}</p>
+              </div>
+            </RevealOnScroll>
           ))}
         </div>
       </section>
 
-      <div className="divider" />
-
-      {/* ── HOW WE VERIFY ── */}
-      <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>TRUST & QUALITY</p>
-          <h2 className="section-heading" style={{ marginBottom: '44px' }}>How we verify designers</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px' }} className="grid-mobile-1">
-            {STEPS.map((s) => (
-              <div key={s.n} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '28px', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: '52px', fontWeight: 400, color: 'var(--border-emp)', lineHeight: 1, marginBottom: '14px' }}>{s.n}</div>
-                <div style={{ width: '28px', height: '2px', background: 'var(--primary)', marginBottom: '14px' }} />
-                <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', marginBottom: '8px' }}>{s.title}</p>
-                <p style={{ fontSize: '13px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{s.desc}</p>
+      {/* Numbers */}
+      <section style={{ background: '#0F172A', padding: 'clamp(48px,7vw,72px) clamp(16px,4vw,36px)' }}>
+        <div style={{ maxWidth: '1140px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+          {STATS.map((s, i) => (
+            <RevealOnScroll key={s.label} direction="up" delay={i * 100}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontFamily: 'var(--v2-font-display)', fontSize: 'clamp(28px,3.5vw,36px)', fontWeight: 500,
+                  color: '#F8F7F4', marginBottom: '6px',
+                }}>{s.value}</div>
+                <div style={{ fontSize: '13px', color: '#94A3B8' }}>{s.label}</div>
               </div>
-            ))}
-          </div>
+            </RevealOnScroll>
+          ))}
         </div>
       </section>
 
-      <div className="divider" />
-
-      {/* ── TEAM ── */}
-      <section style={{ background: 'var(--bg-parchment)', padding: '80px 40px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>THE TEAM</p>
-          <h2 className="section-heading" style={{ marginBottom: '44px' }}>Built by designers and technologists</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px' }} className="grid-mobile-1">
-            {TEAM.map((m) => (
-              <div key={m.name} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '28px', boxShadow: 'var(--shadow-sm)', textAlign: 'center' }}>
-                <div style={{
-                  width: '60px', height: '60px', borderRadius: '50%',
-                  background: 'var(--primary-bg)', color: 'var(--primary)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 400,
-                  margin: '0 auto 16px', border: '2px solid var(--primary-light)',
-                }}>
-                  {m.initials}
-                </div>
-                <div style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', marginBottom: '4px' }}>{m.name}</div>
-                <div style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: 500, marginBottom: '8px' }}>{m.role}</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-mid)' }}>{m.bio}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* CTA */}
+      <section style={{ background: '#F8F7F4', padding: 'clamp(56px,8vw,88px) clamp(16px,4vw,36px)', textAlign: 'center' }}>
+        <RevealOnScroll direction="up">
+          <h2 style={{
+            fontFamily: 'var(--v2-font-display)', fontSize: 'clamp(24px,3.5vw,32px)',
+            fontWeight: 500, color: '#0F172A', margin: '0 0 24px',
+          }}>Join the designers on Intrafer</h2>
+          <Link href="/for-designers">
+            <V2Button variant="primary" size="lg">List your studio →</V2Button>
+          </Link>
+        </RevealOnScroll>
       </section>
     </div>
   );

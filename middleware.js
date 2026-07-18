@@ -13,16 +13,31 @@ const ROLE_DASHBOARDS = {
 };
 
 export function middleware(request) {
-  const { pathname } = request.nextUrl;
+  const hostname = request.headers.get('host') || '';
+  const url = request.nextUrl.clone();
+  const { pathname } = url;
+
+  // V2: designer subdomain rewrite (public marketing pages)
+  const isDesignerSubdomain =
+    hostname.startsWith('designers.') ||
+    hostname.startsWith('designers-') ||
+    url.searchParams.get('site') === 'designers'; // for local testing
+
+  if (isDesignerSubdomain && !pathname.startsWith('/designers')) {
+    url.pathname = '/designers' + pathname;
+    return NextResponse.rewrite(url);
+  }
+
+  // V1: auth/role protection — unchanged
   const token = request.cookies.get('intrafer_token')?.value;
   const role  = request.cookies.get('intrafer_role')?.value;
 
   for (const [path, requiredRole] of Object.entries(PROTECTED)) {
     if (pathname.startsWith(path)) {
       if (!token) {
-        const url = new URL('/auth/login', request.url);
-        url.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(url);
+        const loginUrl = new URL('/auth/login', request.url);
+        loginUrl.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(loginUrl);
       }
       if (role !== requiredRole) {
         const dest = ROLE_DASHBOARDS[role] || '/';
@@ -41,5 +56,7 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/user/:path*', '/vendor/:path*', '/admin/:path*', '/auth/:path*'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|images|api).*)',
+  ],
 };

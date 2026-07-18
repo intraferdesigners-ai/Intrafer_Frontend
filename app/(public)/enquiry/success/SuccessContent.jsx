@@ -36,34 +36,34 @@ export default function SuccessContent() {
       {/* Animated check */}
       <div className="scale-in" style={{
         width: '80px', height: '80px', borderRadius: '50%',
-        background: 'var(--success-bg)', display: 'inline-flex',
+        background: '#DCFCE7', display: 'inline-flex',
         alignItems: 'center', justifyContent: 'center',
       }}>
-        <CheckCircle size={44} color="var(--success)" strokeWidth={1.5} />
+        <CheckCircle size={44} color="#16A34A" strokeWidth={1.5} />
       </div>
 
       <h1 style={{
-        fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 400,
-        color: 'var(--text)', letterSpacing: '-.02em', marginTop: '24px', marginBottom: '8px',
+        fontFamily: 'var(--v2-font-display)', fontSize: '36px', fontWeight: 400,
+        color: '#0F172A', letterSpacing: '-.02em', marginTop: '24px', marginBottom: '8px',
       }}>
         Enquiry sent!
       </h1>
-      <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '28px', lineHeight: 1.7 }}>
+      <p style={{ fontSize: '15px', color: '#64748B', marginBottom: '28px', lineHeight: 1.7 }}>
         Your enquiry has been submitted successfully. A verified designer will be in touch soon.
       </p>
 
       {/* ENQ ID box */}
       <div style={{
-        background: 'var(--bg-parchment)', border: '1px solid var(--border)',
-        borderRadius: 'var(--r-lg)', padding: '20px', marginBottom: '28px', textAlign: 'center',
+        background: '#F1F5F9', border: '1px solid #E2E8F0',
+        borderRadius: '14px', padding: '20px', marginBottom: '28px', textAlign: 'center',
       }}>
-        <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.12em', color: 'var(--text-hint)', textTransform: 'uppercase', marginBottom: '8px' }}>
+        <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.12em', color: '#94A3B8', textTransform: 'uppercase', marginBottom: '8px' }}>
           YOUR ENQUIRY ID
         </p>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '20px', fontWeight: 600, color: 'var(--primary)', margin: '0 0 6px', letterSpacing: '.04em' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '20px', fontWeight: 600, color: '#3B82F6', margin: '0 0 6px', letterSpacing: '.04em' }}>
           {shortId}
         </p>
-        <p style={{ fontSize: '11px', color: 'var(--text-hint)', margin: 0 }}>Save this for reference</p>
+        <p style={{ fontSize: '11px', color: '#94A3B8', margin: 0 }}>Save this for reference</p>
       </div>
 
       {/* Timeline */}
@@ -73,18 +73,18 @@ export default function SuccessContent() {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
               <div style={{
                 width: '10px', height: '10px', borderRadius: '50%',
-                background: i === 0 ? 'var(--primary)' : 'transparent',
-                border: i === 0 ? 'none' : '2px solid var(--border-emp)',
+                background: i === 0 ? '#3B82F6' : 'transparent',
+                border: i === 0 ? 'none' : '2px solid #CBD5E1',
               }} />
               {i < PIPELINE.length - 1 && (
-                <div style={{ width: '1px', height: '24px', background: 'var(--border)', marginTop: '3px' }} />
+                <div style={{ width: '1px', height: '24px', background: '#E2E8F0', marginTop: '3px' }} />
               )}
             </div>
             <div>
-              <p style={{ fontSize: '14px', fontWeight: i === 0 ? 500 : 400, color: i === 0 ? 'var(--text)' : 'var(--text-mid)', margin: '0 0 2px' }}>
+              <p style={{ fontSize: '14px', fontWeight: i === 0 ? 500 : 400, color: i === 0 ? '#0F172A' : '#64748B', margin: '0 0 2px' }}>
                 {step.label}
               </p>
-              <p style={{ fontSize: '12px', color: 'var(--text-hint)', margin: 0 }}>{step.time}</p>
+              <p style={{ fontSize: '12px', color: '#94A3B8', margin: 0 }}>{step.time}</p>
             </div>
           </div>
         ))}
@@ -93,8 +93,8 @@ export default function SuccessContent() {
       {/* Vendor card */}
       {vendor && (
         <div style={{
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 'var(--r-xl)', padding: '16px',
+          background: '#FFFFFF', border: '1px solid #E2E8F0',
+          borderRadius: '20px', padding: '16px',
           display: 'flex', gap: '14px', textAlign: 'left', marginBottom: '20px',
         }}>
           {vendor.portfolioImages?.[0] && (
@@ -103,10 +103,10 @@ export default function SuccessContent() {
             </div>
           )}
           <div>
-            <p style={{ fontSize: '11px', color: 'var(--text-hint)', margin: '0 0 4px' }}>Your enquiry was sent to</p>
-            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', margin: 0 }}>{vendor.businessName}</p>
+            <p style={{ fontSize: '11px', color: '#94A3B8', margin: '0 0 4px' }}>Your enquiry was sent to</p>
+            <p style={{ fontSize: '15px', fontWeight: 500, color: '#0F172A', margin: 0 }}>{vendor.businessName}</p>
             {vendor.location?.city && (
-              <p style={{ fontSize: '12px', color: 'var(--text-hint)', margin: '2px 0 0' }}>{vendor.location.city}</p>
+              <p style={{ fontSize: '12px', color: '#94A3B8', margin: '2px 0 0' }}>{vendor.location.city}</p>
             )}
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function SuccessContent() {
       {/* WhatsApp CTA */}
       {vendor && (
         <div style={{ marginBottom: '28px', textAlign: 'left' }}>
-          <p style={{ fontSize: '13px', color: 'var(--text-hint)', marginBottom: '10px' }}>
+          <p style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '10px' }}>
             While you wait, you can also reach out directly:
           </p>
           <a
@@ -127,7 +127,7 @@ export default function SuccessContent() {
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
               padding: '10px 20px', background: '#25D366', color: '#fff',
-              borderRadius: 'var(--r-md)', fontSize: '13px', fontWeight: 500,
+              borderRadius: '10px', fontSize: '13px', fontWeight: 500,
               textDecoration: 'none',
             }}
           >
@@ -143,22 +143,22 @@ export default function SuccessContent() {
       {/* Action buttons */}
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
         <Link href="/user/dashboard" style={{
-          padding: '12px 24px', background: 'var(--primary)', color: '#fff',
-          borderRadius: 'var(--r-md)', fontSize: '14px', fontWeight: 500,
+          padding: '12px 24px', background: '#3B82F6', color: '#fff',
+          borderRadius: '10px', fontSize: '14px', fontWeight: 500,
           textDecoration: 'none',
         }}>
           View my dashboard →
         </Link>
         <Link href="/vendors" style={{
-          padding: '12px 20px', background: 'var(--surface)', color: 'var(--text-sub)',
-          border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
+          padding: '12px 20px', background: '#FFFFFF', color: '#334155',
+          border: '1px solid #E2E8F0', borderRadius: '10px',
           fontSize: '14px', textDecoration: 'none',
         }}>
           Browse more designers
         </Link>
       </div>
 
-      <p style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '24px', lineHeight: 1.6 }}>
+      <p style={{ fontSize: '12px', color: '#94A3B8', marginTop: '24px', lineHeight: 1.6 }}>
         🔒 Your contact details are only shared after the designer accepts your enquiry.
       </p>
     </div>

@@ -1,12 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Star, Building2, ChevronLeft } from 'lucide-react';
-import Button from '../../../../components/ui/Button';
-import VendorCard from '../../../../components/vendor/VendorCard';
-import ProjectsSection from '../../../../components/vendor/ProjectsSection';
-import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
-import { getInitials, formatDate } from '../../../../lib/utils';
-import VendorProfileTracker from '../../../../components/vendor/VendorProfileTracker';
+import BeforeAfterSlider from '@/components/ui/BeforeAfterSlider';
+import VendorProfileTracker from '@/components/vendor/VendorProfileTracker';
+import VendorCardV2 from '@/components/v2/vendors/VendorCard';
+import EnquiryCard from '@/components/v2/vendors/EnquiryCard';
+import RevealOnScroll from '@/components/v2/ui/RevealOnScroll';
+import { formatDate } from '@/lib/utils';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -46,20 +45,16 @@ async function fetchSimilar(id) {
 export async function generateMetadata({ params }) {
   try {
     const vendor = await fetchVendor(params.vendorId);
-    if (!vendor) return { title: 'Vendor not found' };
-    return {
-      title: vendor.businessName,
-      description: (vendor.description || '').slice(0, 155),
-    };
+    if (!vendor) return { title: 'Designer not found' };
+    return { title: vendor.businessName, description: (vendor.description || '').slice(0, 155) };
   } catch {
-    return { title: 'Vendor not found' };
+    return { title: 'Designer not found' };
   }
 }
 
-const LABEL = {
-  fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
-  color: 'var(--text-hint)', textTransform: 'uppercase',
-  margin: '0 0 10px', display: 'block',
+const EYEBROW = {
+  fontSize: '11px', fontWeight: 600, letterSpacing: '.1em',
+  color: '#3B82F6', textTransform: 'uppercase', margin: '0 0 14px', display: 'block',
 };
 
 export default async function VendorProfilePage({ params }) {
@@ -71,323 +66,228 @@ export default async function VendorProfilePage({ params }) {
 
   if (!vendor) {
     return (
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
-        <Building2 size={48} color="var(--text-hint)" />
-        <h1 style={{ fontSize: 24, fontWeight: 400, color: 'var(--text)', margin: '16px 0 8px' }}>
+      <div style={{ maxWidth: '760px', margin: '0 auto', padding: '96px 24px', textAlign: 'center' }}>
+        <span style={{ fontSize: '40px' }}>🏢</span>
+        <h1 style={{ fontFamily: 'var(--v2-font-display)', fontSize: '24px', fontWeight: 500, color: '#0F172A', margin: '16px 0 8px' }}>
           Designer not found
         </h1>
-        <Link href="/vendors" style={{ fontSize: 14, color: 'var(--primary)', textDecoration: 'none' }}>
+        <Link href="/vendors" style={{ fontSize: '14px', color: '#3B82F6', textDecoration: 'none' }}>
           ← Browse all designers
         </Link>
-      </main>
+      </div>
     );
   }
 
-  const specs    = vendor.specializations || [];
+  const specs = vendor.specializations || [];
   const location = [vendor.location?.city, vendor.location?.state].filter(Boolean).join(', ') || 'India';
   const coverImg = vendor.portfolioImages?.[0] || null;
+  const reviews = Array.isArray(vendor.reviews) ? vendor.reviews : [];
+
+  const projectWithBA = projects.find(p => p.beforeImage && p.afterImage);
+  const fallbackProject = projects.find(p => p.images?.length >= 2);
+  const beforeImg = projectWithBA?.beforeImage || fallbackProject?.images?.[0] || null;
+  const afterImg = projectWithBA?.afterImage || fallbackProject?.images?.[1] || null;
 
   return (
-    <main style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
+    <div style={{ fontFamily: 'var(--v2-font-ui)' }}>
       <VendorProfileTracker vendorId={String(vendor._id)} />
-      <Link
-        href="/vendors"
-        className="back-link"
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 4,
-          fontSize: 13, color: 'var(--text-hint)',
-          textDecoration: 'none', marginBottom: 24,
-        }}
-      >
-        <ChevronLeft size={16} />
-        All designers
-      </Link>
 
-      {/* Two-column grid */}
-      <div className="vendor-profile-layout">
-
-        {/* ── LEFT COLUMN ── */}
-        <div>
-
-          {/* ── COVER BANNER (avatar overlaps here, name never does) ── */}
-          <div style={{ position: 'relative' }}>
-            <div style={{
-              height: '200px',
-              background: 'linear-gradient(135deg, var(--primary-bg) 0%, var(--bg-cream) 100%)',
-              borderRadius: 'var(--r-xl)',
-              overflow: 'hidden',
-              position: 'relative',
-            }}>
-              {coverImg && (
-                <Image
-                  src={coverImg}
-                  alt=""
-                  fill
-                  style={{ objectFit: 'cover', opacity: 0.45 }}
-                  sizes="(max-width: 768px) 100vw, 860px"
-                />
-              )}
-              {/* Gradient overlay for readability */}
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: 'linear-gradient(to bottom, transparent 40%, rgba(15,23,42,.55) 100%)',
-              }} />
-            </div>
-
-            {/* Large circular avatar — overlaps bottom of cover */}
-            <div style={{
-              position: 'absolute',
-              left: '24px',
-              bottom: '-40px',
-              width: '96px',
-              height: '96px',
-              borderRadius: '50%',
-              border: '4px solid var(--surface)',
-              overflow: 'hidden',
-              background: 'var(--primary-bg)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 16px rgba(15,23,42,.2)',
-              zIndex: 2,
-            }}>
-              {vendor.profilePhoto ? (
-                <Image
-                  src={vendor.profilePhoto}
-                  alt={vendor.businessName}
-                  width={96}
-                  height={96}
-                  style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                />
-              ) : (
-                <span style={{
-                  fontSize: '36px',
-                  fontWeight: 700,
-                  color: 'var(--primary)',
-                  fontFamily: 'var(--font-display)',
-                }}>
-                  {vendor.businessName?.charAt(0) || 'I'}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* ── NAME + META — always below the cover, never overlaid on it ── */}
+      {/* Cover */}
+      <div style={{ position: 'relative', height: '280px', overflow: 'hidden' }}>
+        {coverImg ? (
+          <Image src={coverImg} alt="" fill style={{ objectFit: 'cover' }} sizes="100vw" />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: '#0F172A' }} />
+        )}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to bottom, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.85) 100%)',
+        }} />
+        <div style={{
+          position: 'absolute', left: 0, right: 0, bottom: 0,
+          padding: '0 clamp(16px,4vw,36px) 24px',
+          maxWidth: '1140px', margin: '0 auto',
+          display: 'flex', alignItems: 'flex-end', gap: '18px', flexWrap: 'wrap',
+        }}>
           <div style={{
-            paddingLeft: '24px',
-            paddingRight: '24px',
-            marginTop: '52px',
-            marginBottom: '20px',
+            width: '80px', height: '80px', borderRadius: '50%',
+            border: '4px solid #FFFFFF', overflow: 'hidden',
+            background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0, boxShadow: '0 4px 16px rgba(15,23,42,0.2)',
           }}>
+            {vendor.profilePhoto ? (
+              <Image src={vendor.profilePhoto} alt={vendor.businessName} width={80} height={80} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+            ) : (
+              <span style={{ fontSize: '30px', fontWeight: 700, color: '#3B82F6', fontFamily: 'var(--v2-font-display)' }}>
+                {vendor.businessName?.charAt(0) || 'I'}
+              </span>
+            )}
+          </div>
+          <div style={{ paddingBottom: '4px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <h1 style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(22px, 3vw, 32px)',
-                fontWeight: 600,
-                color: 'var(--text)',
-                lineHeight: 1.2,
-                margin: 0,
-              }}>
-                {vendor.businessName}
-              </h1>
+                fontFamily: 'var(--v2-font-display)', fontSize: 'clamp(24px,3.5vw,32px)',
+                fontWeight: 500, color: '#F8F7F4', margin: 0,
+              }}>{vendor.businessName}</h1>
               {vendor.isApproved && (
-                <div style={{
+                <span style={{
                   display: 'flex', alignItems: 'center', gap: '4px',
-                  background: 'var(--primary-bg)', color: 'var(--primary)',
-                  padding: '3px 8px', borderRadius: '20px',
-                  fontSize: '11px', fontWeight: 600, flexShrink: 0,
-                }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Verified
-                </div>
+                  background: 'rgba(59,130,246,0.2)', color: '#93C5FD',
+                  padding: '3px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: 600,
+                }}>✓ Verified</span>
               )}
             </div>
-
-            {/* Location + Rating */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '16px',
-              marginTop: '6px', flexWrap: 'wrap',
-            }}>
-              <span style={{ fontSize: '14px', color: 'var(--text-hint)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-                {location}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '6px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '13px', color: '#CBD5E1' }}>📍 {location}</span>
               {vendor.rating > 0 && (
-                <span style={{ fontSize: '14px', color: 'var(--text-hint)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ color: '#F59E0B', fontSize: '15px', lineHeight: 1 }}>★</span>
-                  <strong style={{ color: 'var(--text)', fontWeight: 600 }}>
-                    {Number(vendor.rating).toFixed(1)}
-                  </strong>
-                  {vendor.reviewCount > 0 && (
-                    <span>({vendor.reviewCount} review{vendor.reviewCount !== 1 ? 's' : ''})</span>
-                  )}
+                <span style={{ fontSize: '13px', color: '#CBD5E1' }}>
+                  <span style={{ color: '#3B82F6' }}>★</span> {Number(vendor.rating).toFixed(1)}
+                  {vendor.reviewCount > 0 && ` (${vendor.reviewCount} review${vendor.reviewCount !== 1 ? 's' : ''})`}
                 </span>
               )}
             </div>
-
-            {/* Stats row — Instagram-style */}
-            <div style={{ display: 'flex', gap: 'clamp(14px, 4vw, 28px)', marginTop: '14px' }}>
-              {[
-                { label: 'Projects', value: projects.length || 0 },
-                { label: 'Reviews',  value: vendor.reviewCount || 0 },
-                { label: 'Rating',   value: vendor.rating > 0 ? `${Number(vendor.rating).toFixed(1)}★` : '—' },
-              ].map(stat => (
-                <div key={stat.label} style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 'clamp(14px, 4vw, 18px)', fontWeight: 700, color: 'var(--text)', lineHeight: 1 }}>
-                    {stat.value}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-hint)', marginTop: '3px', letterSpacing: '.04em' }}>
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Specializations */}
-          {specs.length > 0 && (
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', paddingLeft: '24px', marginBottom: '20px' }}>
-              {specs.map(s => (
-                <span key={s} className="spec-pill">{s}</span>
-              ))}
-            </div>
-          )}
-
-          {/* About */}
-          {vendor.description && (
-            <div style={{ paddingLeft: '24px', marginBottom: '28px' }}>
-              <span style={LABEL}>ABOUT</span>
-              <p style={{ fontSize: '15px', color: 'var(--text-sub)', lineHeight: 1.75, margin: 0 }}>
-                {vendor.description}
-              </p>
-            </div>
-          )}
-
-          <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0 0 28px' }} />
-
-          {/* Before/After slider */}
-          {projects.length >= 1 && (() => {
-            // Prefer a project where the vendor explicitly set before/after images
-            const projectWithBA = projects.find(p => p.beforeImage && p.afterImage);
-
-            // Fallback: first project with at least 2 images
-            const fallbackProject = projects.find(p => p.images?.length >= 2);
-
-            const beforeImg = projectWithBA?.beforeImage || fallbackProject?.images?.[0] || null;
-            const afterImg  = projectWithBA?.afterImage  || fallbackProject?.images?.[1] || null;
-
-            if (!beforeImg || !afterImg) return null;
-
-            return (
-              <div style={{ marginBottom: 32 }}>
-                <span style={LABEL}>BEFORE &amp; AFTER</span>
-                <BeforeAfterSlider before={beforeImg} after={afterImg} />
-              </div>
-            );
-          })()}
-
-          {/* Portfolio */}
-          <div>
-            <span style={LABEL}>PORTFOLIO ({projects.length} projects)</span>
-            <ProjectsSection projects={projects} />
-          </div>
-        </div>
-
-        {/* ── RIGHT COLUMN — sticky enquiry card ── */}
-        <div className="vendor-profile-sticky" style={{ position: 'sticky', top: 88 }}>
-          <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--r-xl)',
-            padding: 24,
-          }}>
-            <h2 style={{
-              fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 300,
-              color: 'var(--text)', margin: '0 0 6px',
-            }}>
-              Get a quote
-            </h2>
-            <p style={{ fontSize: 13, color: 'var(--text-sub)', margin: '0 0 20px', lineHeight: 1.6 }}>
-              Submit your requirements and connect with this designer.
-            </p>
-
-            <div style={{
-              background: 'var(--bg-parchment)',
-              borderRadius: 'var(--r-md)',
-              padding: '12px 14px', marginBottom: 20,
-            }}>
-              {[
-                ['Location',        location],
-                ['Specializations', specs.length ? `${specs.length} area${specs.length !== 1 ? 's' : ''}` : 'General'],
-                ['Rating',          vendor.rating > 0 ? `${Number(vendor.rating).toFixed(1)} / 5` : 'New designer'],
-              ].map(([label, value]) => (
-                <div key={label} style={{
-                  display: 'flex', justifyContent: 'space-between',
-                  padding: '5px 0', fontSize: 12,
-                }}>
-                  <span style={{ color: 'var(--text-hint)' }}>{label}</span>
-                  <span style={{ color: 'var(--text)', fontWeight: 500 }}>{value}</span>
-                </div>
-              ))}
-            </div>
-
-            <Link href={`/enquiry?vendorId=${vendor._id}`} style={{ display: 'block' }}>
-              <Button variant="primary" size="lg" style={{ width: '100%' }}>
-                Submit enquiry →
-              </Button>
-            </Link>
-
-            <a
-              href={`https://wa.me/919876500000?text=${encodeURIComponent(
-                `Hi! I found ${vendor.businessName} on Intrafer and I'm interested in discussing my interior design project. Could we connect?`
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                width: '100%', padding: '11px', marginTop: '10px',
-                borderRadius: 'var(--r-md)', background: '#25D366', color: '#fff',
-                fontSize: '13px', fontWeight: 500, textDecoration: 'none',
-                transition: 'opacity 150ms', boxSizing: 'border-box',
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.553 4.1 1.522 5.82L.057 23.882l6.22-1.634A11.938 11.938 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.799 9.799 0 01-5.012-1.375l-.36-.214-3.732.979.996-3.638-.234-.374A9.782 9.782 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/>
-              </svg>
-              Chat on WhatsApp
-            </a>
-
-            <p style={{
-              fontSize: 11, color: 'var(--text-hint)',
-              textAlign: 'center', margin: '12px 0 0',
-            }}>
-              Free to enquire · No commitment · Verified designer
-            </p>
           </div>
         </div>
       </div>
 
-      {/* ── SIMILAR DESIGNERS ── */}
+      {/* Two-column layout */}
+      <div style={{
+        maxWidth: '1140px', margin: '0 auto', padding: '40px clamp(16px,4vw,36px) 64px',
+        display: 'flex', gap: '40px', alignItems: 'flex-start', flexWrap: 'wrap',
+      }}>
+        {/* Left */}
+        <div style={{ flex: '1 1 620px', minWidth: 0 }}>
+          <RevealOnScroll direction="up">
+            <div style={{ display: 'flex', gap: 'clamp(16px,4vw,32px)', marginBottom: '32px' }}>
+              {[
+                { label: 'Projects', value: projects.length || 0 },
+                { label: 'Reviews', value: vendor.reviewCount || 0 },
+                { label: 'Rating', value: vendor.rating > 0 ? `${Number(vendor.rating).toFixed(1)}★` : '—' },
+              ].map(stat => (
+                <div key={stat.label} style={{
+                  flex: '1 1 120px', background: '#F8F7F4', border: '1px solid #E2E8F0',
+                  borderRadius: '12px', padding: '16px', textAlign: 'center',
+                }}>
+                  <div style={{ fontFamily: 'var(--v2-font-display)', fontSize: '22px', fontWeight: 500, color: '#0F172A' }}>{stat.value}</div>
+                  <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px' }}>{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </RevealOnScroll>
+
+          {specs.length > 0 && (
+            <RevealOnScroll direction="up">
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '32px' }}>
+                {specs.map(s => (
+                  <span key={s} style={{
+                    fontSize: '12px', fontWeight: 500, color: '#3B82F6',
+                    background: 'rgba(59,130,246,0.08)', padding: '6px 14px', borderRadius: '20px',
+                  }}>{s}</span>
+                ))}
+              </div>
+            </RevealOnScroll>
+          )}
+
+          {vendor.description && (
+            <RevealOnScroll direction="up">
+              <div style={{ marginBottom: '32px' }}>
+                <span style={EYEBROW}>About</span>
+                <p style={{ fontSize: '15px', color: '#334155', lineHeight: 1.75, margin: 0 }}>{vendor.description}</p>
+              </div>
+            </RevealOnScroll>
+          )}
+
+          {beforeImg && afterImg && (
+            <RevealOnScroll direction="up">
+              <div style={{ marginBottom: '32px' }}>
+                <span style={EYEBROW}>Before &amp; after</span>
+                <BeforeAfterSlider before={beforeImg} after={afterImg} />
+              </div>
+            </RevealOnScroll>
+          )}
+
+          <RevealOnScroll direction="up">
+            <div style={{ marginBottom: '32px' }}>
+              <span style={EYEBROW}>Portfolio ({projects.length} project{projects.length !== 1 ? 's' : ''})</span>
+              {projects.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                  {projects.map(p => (
+                    <Link key={p._id} href={`/projects/${p._id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                      <div style={{
+                        position: 'relative', aspectRatio: '4/3', borderRadius: '12px',
+                        overflow: 'hidden', background: '#F1F5F9',
+                      }}
+                      className="v2-portfolio-tile"
+                      >
+                        {p.images?.[0] && (
+                          <Image src={p.images[0]} alt={p.title || ''} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 33vw, 20vw" />
+                        )}
+                        <div className="v2-portfolio-overlay" style={{
+                          position: 'absolute', inset: 0,
+                          background: 'linear-gradient(transparent 50%, rgba(15,23,42,0.75))',
+                          display: 'flex', alignItems: 'flex-end', padding: '10px',
+                          opacity: 0, transition: 'opacity 200ms',
+                        }}>
+                          <span style={{ fontSize: '12px', fontWeight: 500, color: '#F8F7F4' }}>{p.title}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: '13px', color: '#94A3B8', fontStyle: 'italic' }}>No portfolio projects yet.</p>
+              )}
+            </div>
+          </RevealOnScroll>
+
+          <RevealOnScroll direction="up">
+            <div>
+              <span style={EYEBROW}>Reviews</span>
+              {reviews.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {reviews.map((r, i) => (
+                    <div key={r._id || i} style={{ borderBottom: '1px solid #E2E8F0', paddingBottom: '20px' }}>
+                      <div style={{ display: 'flex', gap: '2px', marginBottom: '8px' }}>
+                        {Array.from({ length: 5 }).map((_, s) => (
+                          <span key={s} style={{ color: s < (r.rating || 0) ? '#3B82F6' : '#E2E8F0', fontSize: '13px' }}>★</span>
+                        ))}
+                      </div>
+                      <p style={{ fontSize: '14px', color: '#334155', lineHeight: 1.7, margin: '0 0 8px' }}>{r.text || r.comment}</p>
+                      <span style={{ fontSize: '12px', color: '#64748B' }}>
+                        {r.author || r.name || 'Verified homeowner'}{r.createdAt ? ` · ${formatDate(r.createdAt)}` : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: '13px', color: '#94A3B8', fontStyle: 'italic' }}>No reviews yet — be the first to work with this designer.</p>
+              )}
+            </div>
+          </RevealOnScroll>
+        </div>
+
+        {/* Right — sticky enquiry card */}
+        <div style={{ flex: '1 1 300px', maxWidth: '320px', position: 'sticky', top: '80px' }}>
+          <EnquiryCard vendor={vendor} location={location} specs={specs} />
+        </div>
+      </div>
+
+      {/* Similar designers */}
       {similar.length > 0 && (
-        <div style={{ marginTop: 64, borderTop: '1px solid var(--border)', paddingTop: 48 }}>
-          <span style={{ ...LABEL, marginBottom: 6 }}>SIMILAR DESIGNERS</span>
+        <div style={{
+          maxWidth: '1140px', margin: '0 auto', padding: '0 clamp(16px,4vw,36px) 64px',
+          borderTop: '1px solid #E2E8F0', paddingTop: '48px',
+        }}>
+          <span style={EYEBROW}>Similar designers</span>
           <h2 style={{
-            fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 300,
-            color: 'var(--text)', margin: '0 0 28px', letterSpacing: '-.015em',
-          }}>
-            Similar designers you might like
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 20 }}>
-            {similar.map((v) => <VendorCard key={v._id} vendor={v} />)}
+            fontFamily: 'var(--v2-font-display)', fontSize: '24px', fontWeight: 500,
+            color: '#0F172A', margin: '0 0 24px',
+          }}>Similar designers you might like</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))', gap: '20px' }}>
+            {similar.map(v => <VendorCardV2 key={v._id} vendor={v} />)}
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

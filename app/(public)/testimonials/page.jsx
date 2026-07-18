@@ -1,9 +1,19 @@
+import Image from 'next/image';
 import Link from 'next/link';
+import RevealOnScroll from '@/components/v2/ui/RevealOnScroll';
+import V2Button from '@/components/v2/ui/Button';
 import TestimonialsGrid from './TestimonialsGrid';
 
 export const metadata = {
-  title: 'Testimonials | What Homeowners Say | Intrafer',
-  description: 'Read verified reviews from homeowners who transformed their spaces with Intrafer designers.',
+  title: 'Homeowner Reviews | Intrafer',
+  description: 'Read real reviews from homeowners who found their interior designer through Intrafer.',
+  openGraph: {
+    title: 'Homeowner Reviews | Intrafer',
+    description: 'Read real reviews from homeowners who found their interior designer through Intrafer.',
+    url: 'https://intrafer.in/testimonials',
+    siteName: 'Intrafer',
+    type: 'website',
+  },
 };
 
 const TESTIMONIALS = [
@@ -21,27 +31,98 @@ const TESTIMONIALS = [
   { name:'Pooja Singh', city:'Bangalore', project:'Penthouse Interior', designer:'Luxe Spaces', rating:4, text:'Working with Luxe Spaces was an experience in itself. The Italian furniture sourcing took time but the end result — a penthouse that looks straight out of Architectural Digest.', avatar:'/images/testimonials/r6.jpg', completedMonth:'January 2026', category:'Full Home' },
 ];
 
+const FEATURED = TESTIMONIALS.slice(0, 3);
+const REST = TESTIMONIALS.slice(3);
+
 export default function TestimonialsPage() {
   return (
-    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: 'clamp(80px,10vw,108px) clamp(16px,4vw,40px) 80px' }}>
-      <p className="caps-label-primary" style={{ marginBottom: '10px' }}>VERIFIED REVIEWS</p>
-      <h1 className="section-heading" style={{ marginBottom: '8px' }}>What homeowners say</h1>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '36px', flexWrap: 'wrap' }}>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '48px', color: 'var(--primary)', lineHeight: 1 }}>4.9★</span>
-        <div>
-          <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)' }}>134 verified reviews</p>
-          <div style={{ fontSize: '20px', color: 'var(--primary)', letterSpacing: '3px' }}>★★★★★</div>
+    <div style={{ fontFamily: 'var(--v2-font-ui)' }}>
+      {/* Hero */}
+      <section style={{ background: '#0F172A', padding: 'clamp(64px,9vw,96px) clamp(16px,4vw,36px) clamp(48px,6vw,64px)' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+          <RevealOnScroll direction="up">
+            <p className="v2-eyebrow" style={{ marginBottom: '16px' }}>Verified reviews</p>
+            <h1 className="v2-h1" style={{ color: '#F8F7F4', marginBottom: '16px' }}>
+              What homeowners say about Intrafer
+            </h1>
+            <p style={{ fontSize: '16px', color: '#94A3B8', lineHeight: 1.7 }}>
+              Real reviews from verified completed projects. We never delete honest feedback.
+            </p>
+          </RevealOnScroll>
         </div>
-      </div>
+      </section>
 
-      <TestimonialsGrid testimonials={TESTIMONIALS} />
+      {/* Featured */}
+      <section style={{ background: '#F8F7F4', padding: 'clamp(48px,7vw,80px) clamp(16px,4vw,36px)' }}>
+        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
+          <p className="v2-eyebrow" style={{ marginBottom: '12px' }}>Featured</p>
+          <h2 className="v2-h3" style={{ color: '#0F172A', marginBottom: '28px' }}>Stories from real homeowners</h2>
 
-      <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <Link href="/vendors" style={{ display: 'inline-block', background: 'var(--primary)', color: '#fff', padding: '13px 32px', borderRadius: 'var(--r-md)', fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}>
-          Find your designer →
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }} className="grid-mobile-1">
+            {FEATURED.map((t, i) => (
+              <RevealOnScroll key={t.name} direction="up" delay={i * 100}>
+                <div className="v2-card" style={{ padding: '28px', height: '100%' }}>
+                  <span style={{ color: '#3B82F6', fontSize: '16px', letterSpacing: '2px' }}>
+                    {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
+                  </span>
+                  <p style={{
+                    fontFamily: 'var(--v2-font-display)', fontStyle: 'italic',
+                    fontSize: '18px', color: '#0F172A', lineHeight: 1.6, margin: '16px 0 20px',
+                  }}>
+                    &ldquo;{t.text}&rdquo;
+                  </p>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
+                    <div style={{ position: 'relative', width: '44px', height: '44px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: '#DBEAFE' }}>
+                      <Image src={t.avatar} alt={t.name} fill style={{ objectFit: 'cover' }} sizes="44px" />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', margin: 0 }}>{t.name}</p>
+                      <p style={{ fontSize: '12px', color: '#94A3B8', margin: 0 }}>{t.city} · {t.project}</p>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '11px', background: 'rgba(59,130,246,0.08)', color: '#3B82F6', padding: '3px 8px', borderRadius: '20px', fontWeight: 500 }}>
+                    by {t.designer}
+                  </span>
+                </div>
+              </RevealOnScroll>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Grid */}
+      <section style={{ background: '#F1F5F9', padding: 'clamp(48px,7vw,72px) clamp(16px,4vw,36px)' }}>
+        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
+          <p className="v2-eyebrow" style={{ marginBottom: '12px' }}>More reviews</p>
+          <h2 className="v2-h3" style={{ color: '#0F172A', marginBottom: '28px' }}>From every corner of India</h2>
+          <TestimonialsGrid testimonials={REST} />
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section style={{ background: '#0F172A', padding: 'clamp(48px,7vw,72px) clamp(16px,4vw,36px)' }}>
+        <div style={{ maxWidth: '1140px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }} className="stats-grid-3">
+          {[
+            { value: '4.9★', label: 'Average rating' },
+            { value: '2,400+', label: 'Reviews' },
+            { value: '100%', label: 'Verified' },
+          ].map((s, i) => (
+            <RevealOnScroll key={s.label} direction="up" delay={i * 100}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--v2-font-display)', fontSize: 'clamp(28px,3.5vw,36px)', fontWeight: 500, color: '#F8F7F4', marginBottom: '6px' }}>{s.value}</div>
+                <div style={{ fontSize: '13px', color: '#94A3B8' }}>{s.label}</div>
+              </div>
+            </RevealOnScroll>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{ background: '#F8F7F4', padding: 'clamp(48px,7vw,64px) clamp(16px,4vw,36px)', textAlign: 'center' }}>
+        <Link href="/vendors">
+          <V2Button variant="primary" size="lg">Find your designer →</V2Button>
         </Link>
-      </div>
+      </section>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { getSessionId, shouldShowPopup, markPopupFilled, markPopupDismissed, markPopupNotInterested, hasFilledPopup, recordFirstVisit, getSecondsSinceFirstVisit } from '@/lib/session';
 import CitySelect from './CitySelect';
 
@@ -139,102 +140,104 @@ export default function LeadCapturePopup() {
   if (isExcluded || !visible) return null;
 
   return (
-    <>
-      {/* ── SINGLE WRAPPER handles both backdrop + centering ── */}
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 200,
+        background: 'rgba(15,23,42,.7)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: isMobile ? '0' : '16px',
+        boxSizing: 'border-box',
+        fontFamily: 'var(--v2-font-ui)',
+      }}
+      onClick={handleDismiss}
+    >
       <div
+        onClick={e => e.stopPropagation()}
         style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 200,
-          background: 'rgba(15,23,42,.65)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: isMobile ? '0' : '16px',
-          boxSizing: 'border-box',
+          width: '100%',
+          maxWidth: isMobile ? '100%' : '480px',
+          maxHeight: isMobile ? '92vh' : 'calc(100vh - 40px)',
+          background: '#FFFFFF',
+          borderRadius: isMobile ? '20px 20px 0 0' : '20px',
+          overflow: 'hidden',
+          overflowY: 'auto',
+          boxShadow: '0 20px 60px rgba(15,23,42,.35)',
+          animation: isMobile
+            ? 'v2SlideUp 300ms cubic-bezier(.34,1.1,.64,1) forwards'
+            : 'v2PopIn 280ms cubic-bezier(.34,1.2,.64,1) forwards',
+          flexShrink: 0,
+          ...(isMobile && {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            paddingBottom: 'env(safe-area-inset-bottom)',
+          }),
         }}
-        onClick={handleDismiss}
       >
-        {/* ── MODAL CARD ── */}
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{
-            width: '100%',
-            maxWidth: isMobile ? '100%' : '460px',
-            maxHeight: isMobile ? '92vh' : 'calc(100vh - 40px)',
-            background: 'var(--surface)',
-            borderRadius: isMobile ? '24px 24px 0 0' : '24px',
-            overflow: 'hidden',
-            overflowY: 'auto',
-            boxShadow: '0 20px 60px rgba(15,23,42,.3)',
-            animation: isMobile
-              ? 'slideUp 300ms cubic-bezier(.34,1.1,.64,1) forwards'
-              : 'popIn 280ms cubic-bezier(.34,1.2,.64,1) forwards',
+        {isMobile && (
+          <div style={{
+            width: '36px', height: '4px',
+            background: 'rgba(255,255,255,.3)',
+            borderRadius: '2px',
+            margin: '12px auto -8px',
             flexShrink: 0,
-            /* Mobile: stick to bottom */
-            ...(isMobile && {
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              paddingBottom: 'env(safe-area-inset-bottom)',
-            }),
-          }}
-        >
-          {/* Mobile handle bar */}
-          {isMobile && (
-            <div style={{
-              width: '36px', height: '4px',
-              background: 'var(--border-emp)',
-              borderRadius: '2px',
-              margin: '12px auto 4px',
-              flexShrink: 0,
-            }} />
-          )}
+          }} />
+        )}
 
-          <PopupContent
-            step={step}
-            form={form}
-            setForm={setForm}
-            errors={errors}
-            loading={loading}
-            onSubmit={handleSubmit}
-            onDismiss={handleDismiss}
-            onNotInterested={handleNotInterested}
-            isMobile={isMobile}
-          />
-        </div>
+        <PopupContent
+          step={step}
+          form={form}
+          setForm={setForm}
+          errors={errors}
+          loading={loading}
+          onSubmit={handleSubmit}
+          onDismiss={handleDismiss}
+          onNotInterested={handleNotInterested}
+          isMobile={isMobile}
+        />
       </div>
-    </>
+
+      <style>{`
+        @keyframes v2PopIn   { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+        @keyframes v2SlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes v2ScaleIn { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: scale(1); } }
+        @keyframes v2Spin    { to { transform: rotate(360deg); } }
+      `}</style>
+    </div>
   );
 }
 
 function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismiss, onNotInterested, isMobile }) {
   if (step === 2) {
     return (
-      <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+      <div style={{ padding: '56px 28px', textAlign: 'center' }}>
         <div style={{
           width: '72px', height: '72px', borderRadius: '50%',
-          background: 'var(--success-bg)', border: '2px solid var(--success)',
+          background: '#DCFCE7', border: '2px solid #16A34A',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 20px',
-          animation: 'scaleIn 400ms cubic-bezier(.34,1.56,.64,1) forwards',
+          animation: 'v2ScaleIn 400ms cubic-bezier(.34,1.56,.64,1) forwards',
         }}>
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-            stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round">
+            stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
         <div style={{
-          fontFamily: 'var(--font-display)', fontSize: '26px',
-          fontWeight: 400, color: 'var(--text)', marginBottom: '8px',
+          fontFamily: 'var(--v2-font-display)', fontSize: '26px',
+          fontWeight: 500, color: '#0F172A', marginBottom: '8px',
         }}>
-          Thank you, {form.name.split(' ')[0]}!
+          We'll be in touch, {form.name.split(' ')[0]}!
         </div>
-        <div style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.6 }}>
-          Our team will connect you with the best interior designers in {form.city}.
+        <div style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.65 }}>
+          A designer in {form.city} will reach out within 48 hours.
         </div>
       </div>
     );
@@ -244,64 +247,69 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
     <>
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(135deg, #0F172A 0%, #1E3A5F 60%, #1D4ED8 100%)',
+        background: '#0F172A',
         padding: isMobile ? '24px 20px 20px' : 'clamp(20px, 4vh, 32px) 28px clamp(16px, 3vh, 28px)',
         position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{
+        <div aria-hidden style={{
           position: 'absolute', top: '-30px', right: '-30px',
-          width: '120px', height: '120px', borderRadius: '50%',
-          background: 'rgba(96,165,250,.15)',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '-20px', left: '40px',
-          width: '80px', height: '80px', borderRadius: '50%',
-          background: 'rgba(96,165,250,.1)',
+          width: '140px', height: '140px', borderRadius: '50%',
+          background: 'radial-gradient(closest-side, rgba(59,130,246,0.25), transparent)',
         }} />
 
-        <button onClick={onDismiss} style={{
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+          <div style={{
+            width: '26px', height: '26px', borderRadius: '7px',
+            background: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+          }}>
+            <Image src="/images/logo/logo.png" alt="Intrafer" width={20} height={20} style={{ objectFit: 'contain' }} />
+          </div>
+          <span style={{ fontFamily: 'var(--v2-font-display)', fontSize: '14px', fontWeight: 500, color: '#F8F7F4' }}>Intrafer</span>
+        </div>
+
+        <button onClick={onDismiss} aria-label="Close" style={{
           position: 'absolute', top: '16px', right: '16px',
           width: '32px', height: '32px', borderRadius: '50%',
-          background: 'rgba(255,255,255,.15)', border: 'none',
+          background: 'rgba(255,255,255,.1)', border: 'none',
           color: 'rgba(255,255,255,.8)', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '16px',
         }}>✕</button>
 
         <div style={{
-          width: '52px', height: '52px', borderRadius: '16px',
-          background: 'rgba(255,255,255,.15)',
+          width: '52px', height: '52px', borderRadius: '14px',
+          background: 'rgba(59,130,246,.15)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           marginBottom: '16px',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,.2)',
+          border: '1px solid rgba(59,130,246,.3)',
         }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-            stroke="white" strokeWidth="1.8" strokeLinecap="round">
+            stroke="#3B82F6" strokeWidth="1.8" strokeLinecap="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
             <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
         </div>
 
         <div style={{
-          fontFamily: 'var(--font-display)', fontSize: '26px',
-          fontWeight: 400, color: '#fff', lineHeight: 1.2, marginBottom: '8px',
+          fontFamily: 'var(--v2-font-display)', fontSize: '26px',
+          fontWeight: 500, color: '#F8F7F4', lineHeight: 1.25, marginBottom: '8px',
         }}>
-          Find your perfect<br />interior designer
+          Find your perfect interior designer
         </div>
-        <div style={{ fontSize: '14px', color: 'rgba(255,255,255,.7)', lineHeight: 1.5 }}>
-          Tell us about yourself and we&apos;ll match you with verified designers in your city. Free.
+        <div style={{ fontSize: '14px', color: '#94A3B8', lineHeight: 1.55 }}>
+          Tell us about yourself and we'll match you with verified designers in your city. Free.
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
-          {['500+ Verified designers', 'Free to enquire', '48h response'].map(badge => (
+        <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
+          {['500+ designers', 'Free', '48h response'].map(badge => (
             <div key={badge} style={{
-              fontSize: '11px', color: 'rgba(255,255,255,.85)',
+              fontSize: '11px', color: '#CBD5E1',
               display: 'flex', alignItems: 'center', gap: '4px',
-              background: 'rgba(255,255,255,.1)', padding: '4px 10px',
-              borderRadius: '20px', border: '1px solid rgba(255,255,255,.15)',
+              background: 'rgba(255,255,255,.06)', padding: '4px 10px',
+              borderRadius: '20px', border: '1px solid rgba(255,255,255,.1)',
             }}>
-              <span style={{ color: '#86EFAC' }}>✓</span> {badge}
+              <span style={{ color: '#3B82F6' }}>✓</span> {badge}
             </div>
           ))}
         </div>
@@ -318,7 +326,7 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
         </Field>
 
         <Field label="Your name" error={errors.name}>
-          <InputWithIcon icon={<PersonIcon />} error={errors.name}>
+          <InputWithIcon icon={<PersonIcon />}>
             <input
               type="text"
               value={form.name}
@@ -330,7 +338,7 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
         </Field>
 
         <Field label="Mobile or email" error={errors.contact} last>
-          <InputWithIcon icon={<PhoneIcon />} error={errors.contact}>
+          <InputWithIcon icon={<PhoneIcon />}>
             <input
               type="text"
               value={form.contact}
@@ -347,14 +355,13 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
           disabled={loading}
           style={{
             width: '100%', height: '52px',
-            background: loading
-              ? 'var(--border)'
-              : 'linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%)',
+            background: loading ? '#94A3B8' : '#3B82F6',
             color: '#fff', border: 'none',
-            borderRadius: '14px', fontSize: '16px', fontWeight: 600,
+            borderRadius: '12px', fontSize: '15px', fontWeight: 600,
+            fontFamily: 'var(--v2-font-ui)',
             cursor: loading ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            boxShadow: loading ? 'none' : '0 4px 16px rgba(59,130,246,.4)',
+            transition: 'background 150ms',
           }}
         >
           {loading ? (
@@ -362,33 +369,20 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
               <div style={{
                 width: '18px', height: '18px', borderRadius: '50%',
                 border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff',
-                animation: 'spin 600ms linear infinite',
+                animation: 'v2Spin 600ms linear infinite',
               }} />
               Connecting you...
             </>
           ) : (
-            <>
-              Get matched with designers
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2">
-                <line x1="5" y1="12" x2="19" y2="12"/>
-                <polyline points="12 5 19 12 12 19"/>
-              </svg>
-            </>
+            <>Get matched with designers →</>
           )}
         </button>
 
         <div style={{
           textAlign: 'center', marginTop: '12px',
-          fontSize: '11px', color: 'var(--text-hint)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+          fontSize: '11px', color: '#94A3B8',
         }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0110 0v4"/>
-          </svg>
-          100% free · No spam · Your data is private
+          🔒 100% free · No spam · Your data is private
         </div>
 
         <div style={{
@@ -401,9 +395,9 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
           ].map(({ label, onClick }) => (
             <button key={label} onClick={onClick} style={{
               background: 'none', border: 'none',
-              fontSize: '12px', color: 'var(--text-hint)',
+              fontSize: '12px', color: '#94A3B8',
               cursor: 'pointer', padding: '4px 8px',
-              borderRadius: '6px',
+              borderRadius: '6px', fontFamily: 'var(--v2-font-ui)',
               textDecoration: 'underline',
               textDecorationStyle: 'dotted',
               textUnderlineOffset: '3px',
@@ -415,27 +409,26 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
   );
 }
 
-// ── Tiny sub-components ────────────────────────────────────
 function Field({ label, error, children, last }) {
   return (
     <div style={{ marginBottom: last ? 'clamp(14px, 3vh, 20px)' : 'clamp(8px, 2vh, 14px)' }}>
       <label style={{
-        display: 'block', fontSize: '12px', fontWeight: 600,
-        color: 'var(--text-hint)', letterSpacing: '.05em',
+        display: 'block', fontSize: '11px', fontWeight: 600,
+        color: '#64748B', letterSpacing: '.08em',
         textTransform: 'uppercase', marginBottom: '6px',
       }}>{label}</label>
       {children}
-      {error && <div style={{ fontSize: '11px', color: 'var(--danger)', marginTop: '4px' }}>{error}</div>}
+      {error && <div style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px' }}>{error}</div>}
     </div>
   );
 }
 
-function InputWithIcon({ icon, error, children }) {
+function InputWithIcon({ icon, children }) {
   return (
     <div style={{ position: 'relative' }}>
       <div style={{
         position: 'absolute', left: '14px', top: '50%',
-        transform: 'translateY(-50%)', color: 'var(--text-hint)', pointerEvents: 'none',
+        transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none',
       }}>{icon}</div>
       {children}
     </div>
@@ -444,10 +437,12 @@ function InputWithIcon({ icon, error, children }) {
 
 const inputStyle = (error) => ({
   width: '100%', height: '48px', padding: '0 14px 0 42px',
-  background: 'var(--bg-parchment)',
-  border: `1.5px solid ${error ? 'var(--danger)' : 'var(--border)'}`,
-  borderRadius: '12px', fontSize: '15px', color: 'var(--text)',
+  background: '#FFFFFF',
+  border: `1.5px solid ${error ? '#DC2626' : '#CBD5E1'}`,
+  borderRadius: '10px', fontSize: '14px', color: '#0F172A',
+  fontFamily: 'var(--v2-font-ui)',
   outline: 'none',
+  boxSizing: 'border-box',
 });
 
 function PersonIcon() {

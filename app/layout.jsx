@@ -1,8 +1,26 @@
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
+import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import ThemeProvider from '../context/ThemeContext';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import LeadCapturePopup from '../components/ui/LeadCapturePopup';
+
+// V2 fonts — variable names are namespaced (v2-*) so they don't collide with
+// the V1 --font-display/--font-ui custom properties already set in globals.css.
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--v2-font-display-raw',
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--v2-font-ui-raw',
+  weight: ['300', '400', '500', '600'],
+  display: 'swap',
+});
 
 export const metadata = {
   title: {
@@ -19,7 +37,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${playfair.variable} ${jakarta.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){

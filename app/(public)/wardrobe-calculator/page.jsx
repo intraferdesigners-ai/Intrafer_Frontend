@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import RevealOnScroll from '@/components/v2/ui/RevealOnScroll';
 
 function fmtINR(n) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
@@ -31,7 +32,7 @@ const CONFIG = {
 function PillGroup({ label, options, value, onChange }) {
   return (
     <div style={{ marginBottom: '24px' }}>
-      <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-mid)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '10px' }}>{label}</p>
+      <p style={{ fontSize: '12px', fontWeight: 600, color: '#64748B', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '10px' }}>{label}</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
         {options.map((opt) => (
           <button
@@ -40,9 +41,9 @@ function PillGroup({ label, options, value, onChange }) {
             style={{
               padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 500,
               cursor: 'pointer',
-              border: value === opt ? '2px solid var(--primary)' : '1px solid var(--border)',
-              background: value === opt ? 'var(--primary-bg)' : 'var(--surface)',
-              color: value === opt ? 'var(--primary)' : 'var(--text-sub)',
+              border: value === opt ? '2px solid #3B82F6' : '1px solid #E2E8F0',
+              background: value === opt ? 'rgba(59,130,246,0.08)' : '#FFFFFF',
+              color: value === opt ? '#3B82F6' : '#334155',
             }}
           >
             {opt}
@@ -54,6 +55,7 @@ function PillGroup({ label, options, value, onChange }) {
 }
 
 export default function WardrobeCalculatorPage() {
+  useEffect(() => { document.title = 'Wardrobe Cost Estimator | Intrafer'; }, []);
   const [type, setType] = useState('Sliding door');
   const [width, setWidth] = useState('6 ft');
   const [material, setMaterial] = useState('BWP Plywood');
@@ -77,12 +79,25 @@ export default function WardrobeCalculatorPage() {
     accessories.reduce((sum, a) => sum + (CONFIG.accessories[a] || 0), 0);
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '108px 40px 80px' }}>
-      <p className="caps-label-primary" style={{ marginBottom: '10px' }}>WARDROBE COST CALCULATOR</p>
-      <h1 className="section-heading" style={{ marginBottom: '8px' }}>Custom wardrobe cost estimator</h1>
-      <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '48px' }}>
-        Get an instant estimate for your custom wardrobe. Adjust options to see live cost updates.
-      </p>
+    <div style={{ fontFamily: 'var(--v2-font-ui)' }}>
+      {/* Hero */}
+      <section style={{ background: '#0F172A', padding: 'clamp(56px,8vw,88px) clamp(16px,4vw,36px) clamp(40px,6vw,56px)' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
+          <RevealOnScroll direction="up">
+            <p className="v2-eyebrow" style={{ marginBottom: '16px' }}>Budget planning</p>
+            <h1 className="v2-h1" style={{ color: '#F8F7F4', fontSize: 'clamp(30px,4.5vw,44px)', marginBottom: '14px' }}>
+              Wardrobe cost estimator
+            </h1>
+            <p style={{ fontSize: '15px', color: '#94A3B8', lineHeight: 1.7 }}>
+              Estimate the cost of your modular wardrobe based on size, material, and finish.
+            </p>
+          </RevealOnScroll>
+        </div>
+      </section>
+
+      {/* Calculator */}
+      <section style={{ background: '#F8F7F4', padding: 'clamp(48px,7vw,64px) clamp(16px,4vw,36px)' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '40px', alignItems: 'start' }} className="guide-grid">
         {/* Left — Options */}
@@ -95,7 +110,7 @@ export default function WardrobeCalculatorPage() {
 
           {/* Accessories (multi-select) */}
           <div style={{ marginBottom: '24px' }}>
-            <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-mid)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '10px' }}>Add-on accessories</p>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: '#64748B', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '10px' }}>Add-on accessories</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {Object.entries(CONFIG.accessories).map(([acc, price]) => (
                 <button
@@ -104,9 +119,9 @@ export default function WardrobeCalculatorPage() {
                   style={{
                     padding: '7px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
                     cursor: 'pointer',
-                    border: accessories.includes(acc) ? '2px solid var(--primary)' : '1px solid var(--border)',
-                    background: accessories.includes(acc) ? 'var(--primary-bg)' : 'var(--surface)',
-                    color: accessories.includes(acc) ? 'var(--primary)' : 'var(--text-sub)',
+                    border: accessories.includes(acc) ? '2px solid #3B82F6' : '1px solid #E2E8F0',
+                    background: accessories.includes(acc) ? 'rgba(59,130,246,0.08)' : '#FFFFFF',
+                    color: accessories.includes(acc) ? '#3B82F6' : '#334155',
                   }}
                 >
                   {acc} <span style={{ fontSize: '11px', opacity: 0.7 }}>+{fmtINR(price)}</span>
@@ -118,13 +133,13 @@ export default function WardrobeCalculatorPage() {
 
         {/* Right — Result */}
         <div className="wardrobe-result" style={{ position: 'sticky', top: '100px' }}>
-          <div style={{ background: 'var(--surface)', border: '2px solid var(--primary)', borderRadius: '16px', padding: '28px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.1em', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '8px' }}>YOUR ESTIMATE</p>
+          <div style={{ background: '#FFFFFF', border: '2px solid #3B82F6', borderRadius: '16px', padding: '28px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.1em', color: '#3B82F6', textTransform: 'uppercase', marginBottom: '8px' }}>YOUR ESTIMATE</p>
 
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '36px', color: 'var(--text)', lineHeight: 1, marginBottom: '4px' }}>
+            <div style={{ fontFamily: 'var(--v2-font-display)', fontSize: '36px', color: '#0F172A', lineHeight: 1, marginBottom: '4px' }}>
               {fmtINR(cost)}
             </div>
-            <p style={{ fontSize: '12px', color: 'var(--text-hint)', marginBottom: '20px' }}>Estimate ± 15%</p>
+            <p style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '20px' }}>Estimate ± 15%</p>
 
             {/* Breakdown */}
             <div style={{ fontSize: '12px', marginBottom: '20px' }}>
@@ -137,7 +152,7 @@ export default function WardrobeCalculatorPage() {
                 [interior, CONFIG.interiors[interior]],
                 ...accessories.map((a) => [a, CONFIG.accessories[a]]),
               ].filter(([, v]) => v > 0).map(([label, value]) => (
-                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid var(--border)', color: 'var(--text-sub)' }}>
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #E2E8F0', color: '#334155' }}>
                   <span>{label}</span>
                   <span>{fmtINR(value)}</span>
                 </div>
@@ -145,27 +160,44 @@ export default function WardrobeCalculatorPage() {
             </div>
 
             <Link href="/vendors?specialization=Wardrobe" style={{
-              display: 'block', textAlign: 'center', background: 'var(--primary)', color: '#fff',
-              padding: '12px', borderRadius: 'var(--r-md)', fontSize: '13px',
+              display: 'block', textAlign: 'center', background: '#3B82F6', color: '#fff',
+              padding: '12px', borderRadius: '10px', fontSize: '13px',
               fontWeight: 500, textDecoration: 'none', marginBottom: '8px',
             }}>
               Find wardrobe designers →
             </Link>
             <Link href="/enquiry" style={{
               display: 'block', textAlign: 'center',
-              border: '1px solid var(--border)', color: 'var(--text-sub)',
-              padding: '11px', borderRadius: 'var(--r-md)', fontSize: '13px',
+              border: '1px solid #E2E8F0', color: '#334155',
+              padding: '11px', borderRadius: '10px', fontSize: '13px',
               textDecoration: 'none',
             }}>
               Get free quote
             </Link>
           </div>
 
-          <p style={{ fontSize: '11px', color: 'var(--text-hint)', lineHeight: 1.6, marginTop: '12px', textAlign: 'center' }}>
+          <p style={{ fontSize: '11px', color: '#94A3B8', lineHeight: 1.6, marginTop: '12px', textAlign: 'center' }}>
             Estimates based on Bangalore market rates. Actual cost may vary based on site conditions and designer.
           </p>
         </div>
       </div>
+
+      </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{ background: '#0F172A', padding: 'clamp(56px,8vw,88px) clamp(16px,4vw,36px)', textAlign: 'center' }}>
+        <RevealOnScroll direction="up">
+          <h2 className="v2-h2" style={{ color: '#F8F7F4', marginBottom: '24px' }}>
+            Get accurate quotes from verified designers
+          </h2>
+          <Link href="/enquiry">
+            <button className="v2-btn-primary" style={{ height: '48px', padding: '0 32px', fontSize: '15px' }}>
+              Submit an enquiry →
+            </button>
+          </Link>
+        </RevealOnScroll>
+      </section>
     </div>
   );
 }

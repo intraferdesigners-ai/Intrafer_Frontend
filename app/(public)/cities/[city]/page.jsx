@@ -1,42 +1,37 @@
-import Image from 'next/image';
 import Link from 'next/link';
-import VendorCard from '../../../../components/vendor/VendorCard';
+import RevealOnScroll from '@/components/v2/ui/RevealOnScroll';
+import V2Button from '@/components/v2/ui/Button';
+import VendorCardV2 from '@/components/v2/vendors/VendorCard';
 
 const CITY_DATA = {
   bangalore: {
     name: 'Bangalore', state: 'Karnataka',
-    image: '/images/cities/bangalore.jpg',
-    description: 'Find the best interior designers in Bangalore. From modern apartments in Whitefield to luxury villas in Sarjapur, our verified designers cover every neighbourhood and style.',
+    description: 'Verified interior designers serving Bangalore. Browse portfolios, read reviews, get free quotes.',
     vendorCount: 8,
   },
   mumbai: {
     name: 'Mumbai', state: 'Maharashtra',
-    image: '/images/cities/mumbai.jpg',
-    description: 'Top-rated interior designers in Mumbai. Whether you need a compact sea-facing flat redesigned or a luxury Bandra home transformed, our Mumbai designers deliver.',
+    description: 'Verified interior designers serving Mumbai. Browse portfolios, read reviews, get free quotes.',
     vendorCount: 0,
   },
   delhi: {
     name: 'Delhi NCR', state: 'Delhi',
-    image: '/images/cities/delhi.jpg',
-    description: 'Discover interior designers in Delhi NCR. From South Delhi farmhouses to Gurgaon high-rises, find designers who know the city\'s unique aesthetic sensibility.',
+    description: 'Verified interior designers serving Delhi NCR. Browse portfolios, read reviews, get free quotes.',
     vendorCount: 0,
   },
   hyderabad: {
     name: 'Hyderabad', state: 'Telangana',
-    image: '/images/cities/bangalore.jpg',
-    description: 'Find interior designers in Hyderabad. HITEC City apartments, Jubilee Hills villas, and everything in between — our designers know Hyderabad intimately.',
+    description: 'Verified interior designers serving Hyderabad. Browse portfolios, read reviews, get free quotes.',
     vendorCount: 0,
   },
   chennai: {
     name: 'Chennai', state: 'Tamil Nadu',
-    image: '/images/cities/mumbai.jpg',
-    description: 'Interior designers in Chennai who blend Tamil craftsmanship with contemporary design. From Adyar to OMR, find designers who understand Chennai homes.',
+    description: 'Verified interior designers serving Chennai. Browse portfolios, read reviews, get free quotes.',
     vendorCount: 0,
   },
   pune: {
     name: 'Pune', state: 'Maharashtra',
-    image: '/images/cities/delhi.jpg',
-    description: 'Connect with Pune\'s best interior designers. Aundh, Koregaon Park, Hinjewadi — our designers bring style to every Pune neighbourhood.',
+    description: 'Verified interior designers serving Pune. Browse portfolios, read reviews, get free quotes.',
     vendorCount: 0,
   },
 };
@@ -84,9 +79,9 @@ export default async function CityPage({ params }) {
   const cityData = CITY_DATA[params.city];
   if (!cityData) {
     return (
-      <div style={{ padding: '120px 40px', textAlign: 'center' }}>
-        <h1>City not found</h1>
-        <Link href="/vendors">Browse all designers →</Link>
+      <div style={{ background: '#0F172A', minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '80px 24px', textAlign: 'center' }}>
+        <h1 style={{ fontFamily: 'var(--v2-font-display)', fontSize: '28px', color: '#F8F7F4', marginBottom: '16px' }}>City not found</h1>
+        <Link href="/vendors" style={{ color: '#3B82F6', fontSize: '14px', textDecoration: 'none' }}>Browse all designers →</Link>
       </div>
     );
   }
@@ -96,93 +91,76 @@ export default async function CityPage({ params }) {
   const coords = CITY_MAP_COORDS[params.city] || CITY_MAP_COORDS.bangalore;
   const mapSrc = `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d${Math.round(50000 / coords.zoom)}!2d${coords.lng}!3d${coords.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1234567890`;
 
-  return (
-    <div>
-      {/* Hero */}
-      <div style={{ position: 'relative', height: '400px', overflow: 'hidden' }}>
-        <Image src={cityData.image} alt={cityData.name} fill style={{ objectFit: 'cover' }} priority sizes="100vw" />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,.2), rgba(0,0,0,.65))' }} />
-        <div style={{ position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
-          <p style={{ fontSize: '11px', letterSpacing: '.14em', color: 'rgba(255,255,255,.7)', marginBottom: '8px' }}>INTERIOR DESIGNERS IN</p>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(40px,6vw,72px)', fontWeight: 400, color: '#fff', letterSpacing: '-.02em' }}>
-            {cityData.name}
-          </h1>
-          <p style={{ color: 'rgba(255,255,255,.7)', fontSize: '15px' }}>{cityData.state}</p>
-        </div>
-      </div>
+  const stat1 = vendors.length || cityData.vendorCount;
+  const stat2 = stats?.totalProjects || stats?.projectsCompleted || 0;
+  const stat3 = stats ? `${stats.avgRating}★` : '4.9★';
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '64px clamp(16px,4vw,40px) 80px' }}>
-        {/* Stats strip */}
-        <div className="city-stats-grid" style={{ marginBottom: '48px' }}>
+  return (
+    <div style={{ fontFamily: 'var(--v2-font-ui)' }}>
+      {/* Hero */}
+      <section style={{ background: '#0F172A', padding: 'clamp(64px,9vw,96px) clamp(16px,4vw,36px) clamp(48px,6vw,64px)' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+          <RevealOnScroll direction="up">
+            <p className="v2-eyebrow" style={{ marginBottom: '16px' }}>Interior designers in</p>
+            <h1 className="v2-h1" style={{ color: '#F8F7F4', marginBottom: '16px' }}>{cityData.name}</h1>
+            <p style={{ fontSize: '16px', color: '#94A3B8', lineHeight: 1.7 }}>
+              Verified interior designers serving {cityData.name}. Browse portfolios, read reviews, get free quotes.
+            </p>
+          </RevealOnScroll>
+        </div>
+      </section>
+
+      {/* Stats bar */}
+      <section style={{ background: '#F1F5F9', borderBottom: '1px solid #E2E8F0' }}>
+        <div className="stats-strip" style={{ maxWidth: '1140px', margin: '0 auto' }}>
           {[
-            { label: 'Designers', value: vendors.length || cityData.vendorCount },
-            { label: 'Avg rating', value: stats ? `${stats.avgRating}★` : '4.9★' },
-            { label: 'Response', value: '48h' },
+            { label: 'Designers', value: stat1 },
+            { label: 'Projects completed', value: stat2 },
+            { label: 'Avg rating', value: stat3 },
           ].map((s) => (
-            <div key={s.label} style={{ background: 'var(--surface)', padding: 'clamp(14px,3vw,20px)', textAlign: 'center' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--primary)' }}>{s.value}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-hint)', letterSpacing: '.08em', marginTop: '4px' }}>{s.label.toUpperCase()}</div>
+            <div key={s.label} style={{ padding: 'clamp(20px,3vw,28px) 16px', textAlign: 'center' }}>
+              <div style={{ fontFamily: 'var(--v2-font-display)', fontSize: '30px', color: '#0F172A', fontWeight: 500 }}>{s.value}</div>
+              <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{s.label}</div>
             </div>
           ))}
         </div>
+      </section>
 
-        <p style={{ fontSize: '16px', color: 'var(--text-mid)', lineHeight: 1.8, maxWidth: '680px', marginBottom: '64px' }}>
-          {cityData.description}
-        </p>
+      {/* Designers grid */}
+      <section style={{ background: '#F8F7F4', padding: 'clamp(48px,7vw,72px) clamp(16px,4vw,36px)' }}>
+        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
+          <p className="v2-eyebrow" style={{ marginBottom: '12px' }}>Verified designers</p>
+          <h2 className="v2-h3" style={{ color: '#0F172A', marginBottom: '28px' }}>Designers in {cityData.name}</h2>
 
-        {/* Vendors */}
-        <p className="caps-label-primary" style={{ marginBottom: '10px' }}>VERIFIED DESIGNERS</p>
-        <h2 className="section-heading" style={{ marginBottom: '32px' }}>Interior designers in {cityData.name}</h2>
-
-        {vendors.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px,1fr))', gap: '20px', marginBottom: '48px' }}>
-            {vendors.map((v) => <VendorCard key={v._id} vendor={v} />)}
-          </div>
-        ) : (
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '48px', textAlign: 'center', marginBottom: '48px' }}>
-            <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '16px' }}>
-              We are onboarding designers in {cityData.name}. Meanwhile, browse our Bangalore designers.
-            </p>
-            <Link href="/vendors" style={{ color: 'var(--primary)', fontWeight: 500, fontSize: '14px', textDecoration: 'none' }}>Browse all designers →</Link>
-          </div>
-        )}
-
-        {/* Cost calc strip */}
-        <div style={{
-          background: 'var(--primary-bg)', border: '1px solid var(--primary-light)',
-          borderRadius: '16px', padding: '32px', marginBottom: '48px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px',
-        }}>
-          <div>
-            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', marginBottom: '4px' }}>
-              What will interior design cost in {cityData.name}?
-            </p>
-            <p style={{ fontSize: '13px', color: 'var(--text-mid)' }}>Get a personalised estimate in under 60 seconds.</p>
-          </div>
-          <Link href="/cost-calculator" style={{
-            background: 'var(--primary)', color: '#fff', padding: '11px 24px',
-            borderRadius: 'var(--r-md)', fontSize: '13px', fontWeight: 500, textDecoration: 'none', flexShrink: 0,
-          }}>
-            Calculate cost →
-          </Link>
+          {vendors.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px,1fr))', gap: '20px' }}>
+              {vendors.map((v, i) => (
+                <RevealOnScroll key={v._id} direction="up" delay={(i % 4) * 100}>
+                  <VendorCardV2 vendor={v} />
+                </RevealOnScroll>
+              ))}
+            </div>
+          ) : (
+            <div className="v2-card" style={{ padding: '48px', textAlign: 'center' }}>
+              <p style={{ fontSize: '15px', color: '#64748B', marginBottom: '16px' }}>
+                We are onboarding designers in {cityData.name}. Meanwhile, browse our Bangalore designers.
+              </p>
+              <Link href="/vendors" style={{ color: '#3B82F6', fontWeight: 500, fontSize: '14px', textDecoration: 'none' }}>Browse all designers →</Link>
+            </div>
+          )}
         </div>
+      </section>
 
-        {/* Map — designers in this city */}
-        <section style={{ marginTop: '60px' }}>
-          <div className="caps-label-primary" style={{ marginBottom: '8px' }}>
-            DESIGNERS IN {cityData.name.toUpperCase()}
-          </div>
-          <h2 style={{
-            fontFamily: 'var(--font-display)', fontSize: '26px',
-            fontWeight: 400, color: 'var(--text)', marginBottom: '20px',
-          }}>
-            Find verified designers near you
+      {/* Map section */}
+      <section style={{ background: '#F1F5F9', padding: 'clamp(48px,7vw,72px) clamp(16px,4vw,36px)' }}>
+        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
+          <p className="v2-eyebrow" style={{ marginBottom: '12px' }}>Coverage area</p>
+          <h2 className="v2-h3" style={{ color: '#0F172A', marginBottom: '20px' }}>
+            Serving {cityData.name} and surrounding areas
           </h2>
           <div className="map-embed" style={{
-            width: '100%',
-            borderRadius: 'var(--r-xl)', overflow: 'hidden',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-md)',
+            width: '100%', borderRadius: '14px', overflow: 'hidden',
+            border: '1px solid #E2E8F0', boxShadow: '0 4px 16px rgba(15,23,42,0.08)',
           }}>
             <iframe
               src={mapSrc}
@@ -193,29 +171,23 @@ export default async function CityPage({ params }) {
               title={`Interior designers in ${cityData.name}`}
             />
           </div>
-          <p style={{
-            fontSize: '12px', color: 'var(--text-hint)',
-            marginTop: '10px', textAlign: 'center',
-          }}>
-            Map shows approximate area. Designer locations vary within the city.
-          </p>
-        </section>
-
-        {/* CTA */}
-        <div className="cta-always-dark" style={{ borderRadius: 'var(--r-xl)', padding: '60px 40px', textAlign: 'center' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '36px', color: '#FAFAF8', fontWeight: 400, marginBottom: '12px' }}>
-            Ready to transform your {cityData.name} home?
-          </h2>
-          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,.5)', marginBottom: '24px' }}>Free to browse. Free to enquire. No commitment.</p>
-          <Link href="/enquiry" style={{
-            display: 'inline-block', background: 'var(--primary)', color: '#fff',
-            padding: '13px 32px', borderRadius: 'var(--r-md)', fontSize: '14px',
-            fontWeight: 500, textDecoration: 'none',
-          }}>
-            Submit an enquiry
-          </Link>
         </div>
-      </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{ background: '#0F172A', padding: 'clamp(56px,8vw,88px) clamp(16px,4vw,36px)', textAlign: 'center' }}>
+        <RevealOnScroll direction="up">
+          <h2 className="v2-h2" style={{ color: '#F8F7F4', marginBottom: '12px' }}>
+            Looking for a designer in {cityData.name}?
+          </h2>
+          <p style={{ fontSize: '15px', color: '#94A3B8', marginBottom: '28px' }}>
+            Free to browse. Free to enquire. No commitment.
+          </p>
+          <Link href={`/enquiry?city=${encodeURIComponent(cityData.name)}`}>
+            <V2Button variant="primary" size="lg">Submit an enquiry →</V2Button>
+          </Link>
+        </RevealOnScroll>
+      </section>
     </div>
   );
 }

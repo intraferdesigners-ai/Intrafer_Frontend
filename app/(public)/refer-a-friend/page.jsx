@@ -21,6 +21,7 @@ export default function ReferAFriendPage() {
   const [termsOpen, setTermsOpen] = useState(false);
 
   useEffect(() => {
+    document.title = 'Refer a Friend | Intrafer';
     setAuthed(isAuthenticated());
     setCode(randomCode());
   }, []);
