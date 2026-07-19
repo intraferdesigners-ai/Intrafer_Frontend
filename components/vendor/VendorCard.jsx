@@ -3,11 +3,37 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Building2, ShieldCheck, Heart } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { MapPin, Building2, ShieldCheck, Heart, Scale } from 'lucide-react';
 import QuickEnquiryModal from './QuickEnquiryModal';
 import VendorTooltip from './VendorTooltip';
 import { getPriceRange } from '@/lib/utils';
 import { trackVendorInterest } from '@/lib/trackInterest';
+import { isAuthenticated } from '@/lib/auth';
+import api from '@/lib/api';
+import { useCompare } from '@/context/CompareContext';
+
+// Shared across every VendorCard instance on a page so the logged-in user's
+// saved-vendor list is fetched once per page load, not once per card.
+let savedIdsCache = null;
+let savedIdsPromise = null;
+
+function fetchSavedVendorIds() {
+  if (savedIdsCache) return Promise.resolve(savedIdsCache);
+  if (!savedIdsPromise) {
+    savedIdsPromise = api.get('/auth/saved-vendors')
+      .then(({ data }) => {
+        const ids = new Set((data.data?.vendors || []).map((v) => v._id));
+        savedIdsCache = ids;
+        return ids;
+      })
+      .catch(() => {
+        savedIdsPromise = null;
+        return new Set();
+      });
+  }
+  return savedIdsPromise;
+}
 
 export default function VendorCard({ vendor }) {
   const specs   = vendor.specializations || [];
@@ -21,7 +47,14 @@ export default function VendorCard({ vendor }) {
   const [isTouch,        setIsTouch]        = useState(false);
   const tooltipTimeout = useRef(null);
 
+  const { isSelected, addToCompare, removeFromCompare } = useCompare();
+  const compared = isSelected(vendor._id);
+
   useEffect(() => {
+    if (isAuthenticated()) {
+      fetchSavedVendorIds().then((ids) => setSaved(ids.has(vendor._id)));
+      return;
+    }
     try {
       const list = JSON.parse(localStorage.getItem('intrafer_saved') || '[]');
       setSaved(list.includes(vendor._id));
@@ -32,9 +65,27 @@ export default function VendorCard({ vendor }) {
     setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
   }, []);
 
-  const toggleSave = (e) => {
+  const toggleSave = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (isAuthenticated()) {
+      const next = !saved;
+      setSaved(next); // optimistic
+      try {
+        if (next) {
+          await api.post(`/auth/saved-vendors/${vendor._id}`);
+          savedIdsCache?.add(vendor._id);
+        } else {
+          await api.delete(`/auth/saved-vendors/${vendor._id}`);
+          savedIdsCache?.delete(vendor._id);
+        }
+      } catch {
+        setSaved(!next); // revert on failure
+      }
+      return;
+    }
+
     try {
       const list    = JSON.parse(localStorage.getItem('intrafer_saved') || '[]');
       const updated = list.includes(vendor._id)
@@ -43,6 +94,20 @@ export default function VendorCard({ vendor }) {
       localStorage.setItem('intrafer_saved', JSON.stringify(updated));
       setSaved(!saved);
     } catch {}
+  };
+
+  const toggleCompare = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (compared) {
+      removeFromCompare(vendor._id);
+      return;
+    }
+    const added = addToCompare(vendor._id);
+    if (!added) {
+      toast.error('You can compare up to 4 designers at a time');
+    }
   };
 
   const handleQuickEnquiry = (e) => {
@@ -135,6 +200,24 @@ export default function VendorCard({ vendor }) {
                   fill={saved ? '#E24B4A' : 'none'}
                   color={saved ? '#E24B4A' : '#666'}
                 />
+              </button>
+
+              {/* Compare toggle — pill shape, visually distinct from the round save button */}
+              <button
+                onClick={toggleCompare}
+                style={{
+                  position: 'absolute', top: '48px', right: '10px',
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  padding: '5px 9px', borderRadius: '20px',
+                  background: compared ? 'var(--primary)' : 'rgba(255,255,255,.9)',
+                  color: compared ? '#fff' : '#444',
+                  border: 'none', fontSize: '10px', fontWeight: 600,
+                  cursor: 'pointer', zIndex: 2, letterSpacing: '.02em',
+                }}
+                aria-label={compared ? 'Remove from compare' : 'Add to compare'}
+              >
+                <Scale size={12} />
+                {compared ? 'Comparing' : 'Compare'}
               </button>
             </div>
 

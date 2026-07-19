@@ -4,6 +4,7 @@ import { Building2 } from 'lucide-react';
 import VendorCard from '../../../components/vendor/VendorCard';
 import VendorSearch from '../../../components/vendor/VendorSearch';
 import VendorBHKFilter from '../../../components/vendor/VendorBHKFilter';
+import CompareBar from '../../../components/vendor/CompareBar';
 
 export const metadata = { title: 'Find Interior Designers | Intrafer' };
 
@@ -92,6 +93,8 @@ export default async function VendorsPage({ searchParams }) {
           <Link href="/vendors" style={{ fontSize: 13, color: 'var(--primary)', textDecoration: 'none' }}>Clear filters →</Link>
         </div>
       )}
+
+      <CompareBar />
     </main>
   );
 }

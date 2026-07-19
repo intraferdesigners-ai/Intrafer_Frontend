@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Mail, Phone, MapPin, MessageCircle, User, CheckCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import api from '@/lib/api';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
@@ -26,9 +28,13 @@ export default function ContactPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
+    try {
+      await api.post('/public/support-tickets', { name, email, phone, subject, message });
+      setSuccess(true);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send message. Please try again.');
+    }
     setLoading(false);
-    setSuccess(true);
   };
 
   const labelStyle = {

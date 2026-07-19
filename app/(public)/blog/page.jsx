@@ -1,11 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { BLOG_POSTS } from '@/lib/blog-data';
+import api from '@/lib/api';
 
 const CATEGORIES = ['All', 'Kitchen', 'Living Room', 'Bedroom', 'Bathroom', 'Guide'];
+const FALLBACK_COVER = '/images/blog/modular-kitchen.jpg';
+
+function formatPublishedDate(dateString) {
+  return new Date(dateString).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+}
+
+function normalizePost(post) {
+  return {
+    ...post,
+    image: post.coverImage || FALLBACK_COVER,
+    date: formatPublishedDate(post.publishedAt),
+  };
+}
 
 function CategoryPill({ label, active, onClick }) {
   return (
@@ -25,10 +38,22 @@ function CategoryPill({ label, active, onClick }) {
 
 export default function BlogPage() {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [posts,          setPosts]          = useState([]);
+  const [loading,        setLoading]        = useState(true);
+
+  useEffect(() => {
+    api.get('/public/blog')
+      .then(({ data }) => {
+        const list = data.data?.posts || [];
+        setPosts(list.map(normalizePost));
+      })
+      .catch(() => setPosts([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = activeCategory === 'All'
-    ? BLOG_POSTS
-    : BLOG_POSTS.filter((p) => p.category === activeCategory);
+    ? posts
+    : posts.filter((p) => p.category === activeCategory);
 
   const [featured, ...rest] = filtered;
 
@@ -49,7 +74,11 @@ export default function BlogPage() {
         ))}
       </div>
 
-      {!featured && (
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-hint)' }}>Loading articles…</div>
+      )}
+
+      {!loading && !featured && (
         <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-hint)' }}>No posts in this category yet.</div>
       )}
 

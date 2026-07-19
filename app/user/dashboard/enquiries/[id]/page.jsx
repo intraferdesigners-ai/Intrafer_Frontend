@@ -11,6 +11,7 @@ import api from '../../../../../lib/api';
 import Badge from '../../../../../components/ui/Badge';
 import Spinner from '../../../../../components/ui/Spinner';
 import ReviewModal from '../../../../../components/user/ReviewModal';
+import MessageThread from '../../../../../components/shared/MessageThread';
 import { formatDate } from '../../../../../lib/utils';
 
 const LABEL = {
@@ -267,6 +268,19 @@ export default function EnquiryDetailPage() {
                   </p>
                 )}
               </div>
+
+              {/* Messages */}
+              {contactRevealed && (
+                <>
+                  <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: '0 0 24px' }} />
+                  <div style={{ marginBottom: 28 }}>
+                    <span style={LABEL}>Messages</span>
+                    <div style={{ marginTop: 8 }}>
+                      <MessageThread leadId={lead._id} />
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Review section (won only) */}
               {lead.status === 'won' && (

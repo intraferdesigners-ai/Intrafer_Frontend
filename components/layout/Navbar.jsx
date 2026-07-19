@@ -1,118 +1,28 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
-import { ChevronDown, X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { X } from 'lucide-react';
 import ThemeToggle from '../ui/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
 import Button from '../ui/Button';
 
-const MEGA_MENUS = {
-  'Find designers': {
-    href: '/vendors',
-    cols: [
-      {
-        heading: 'BY LOCATION',
-        links: [
-          { label: 'Bangalore', href: '/cities/bangalore' },
-          { label: 'Mumbai',    href: '/cities/mumbai'    },
-          { label: 'Delhi NCR', href: '/cities/delhi'     },
-          { label: 'Hyderabad', href: '/cities/hyderabad' },
-        ],
-      },
-      {
-        heading: 'BY STYLE',
-        links: [
-          { label: 'Modern',      href: '/design-styles/modern'      },
-          { label: 'Scandinavian',href: '/design-styles/scandinavian'},
-          { label: 'Luxury',      href: '/design-styles/luxury'      },
-          { label: 'Minimalist',  href: '/design-styles/minimalist'  },
-        ],
-      },
-    ],
-    footer: { label: 'View all designers →', href: '/vendors' },
-  },
-  'Design ideas': {
-    href: '/gallery',
-    cols: [
-      {
-        heading: 'BY ROOM',
-        links: [
-          { label: 'Kitchen',     href: '/gallery?room=Kitchen'      },
-          { label: 'Living Room', href: '/gallery?room=Living+Room'  },
-          { label: 'Bedroom',     href: '/gallery?room=Bedroom'      },
-          { label: 'Bathroom',    href: '/gallery?room=Bathroom'     },
-          { label: 'Office',      href: '/gallery?room=Office'       },
-        ],
-      },
-      {
-        heading: 'BY STYLE',
-        links: [
-          { label: 'Modern',       href: '/design-styles/modern'       },
-          { label: 'Bohemian',     href: '/design-styles/bohemian'     },
-          { label: 'Industrial',   href: '/design-styles/industrial'   },
-          { label: 'Contemporary', href: '/design-styles/contemporary' },
-        ],
-      },
-    ],
-    footer: { label: 'Browse full gallery →', href: '/gallery' },
-  },
-  'Calculators': {
-    href: '/cost-calculator',
-    cols: [
-      {
-        heading: 'TOOLS',
-        links: [
-          { label: 'Home interior calculator', href: '/cost-calculator'       },
-          { label: 'Wardrobe calculator',       href: '/wardrobe-calculator'   },
-          { label: 'EMI estimator',             href: '/cost-calculator#emi'  },
-          { label: 'Packages & pricing',        href: '/packages'             },
-        ],
-      },
-    ],
-    footer: null,
-  },
-  'Resources': {
-    href: '/blog',
-    cols: [
-      {
-        heading: 'LEARN',
-        links: [
-          { label: 'Design guides',   href: '/guides'          },
-          { label: 'Blog & articles', href: '/blog'            },
-          { label: 'Recent projects', href: '/recent-projects' },
-          { label: 'Testimonials',    href: '/testimonials'    },
-          { label: 'FAQs',            href: '/faq'             },
-        ],
-      },
-    ],
-    footer: null,
-  },
-};
-
-const NAV_KEYS = Object.keys(MEGA_MENUS);
+const NAV_LINKS = [
+  { label: 'Find Designers',  href: '/vendors'         },
+  { label: 'How It Works',    href: '/how-it-works'    },
+  { label: 'Design Ideas',    href: '/gallery'         },
+  { label: 'Cost Calculator', href: '/cost-calculator' },
+];
 
 const DRAWER_SECTIONS = [
   {
-    heading: 'Find designers',
+    heading: 'Menu',
     links: [
-      { href: '/vendors',              label: 'All designers'   },
-      { href: '/cities/bangalore',     label: 'Bangalore'       },
-      { href: '/cities/mumbai',        label: 'Mumbai'          },
-      { href: '/cities/delhi',         label: 'Delhi NCR'       },
-      { href: '/gallery',              label: 'Design gallery'  },
-      { href: '/design-styles',        label: 'Design styles'   },
-    ],
-  },
-  {
-    heading: 'Tools & resources',
-    links: [
-      { href: '/cost-calculator',   label: 'Cost calculator'      },
-      { href: '/wardrobe-calculator',label: 'Wardrobe calculator' },
-      { href: '/blog',              label: 'Blog'                  },
-      { href: '/guides',            label: 'Design guides'        },
-      { href: '/faq',               label: 'FAQ'                  },
+      { href: '/vendors',         label: 'Find Designers'  },
+      { href: '/how-it-works',    label: 'How It Works'    },
+      { href: '/gallery',         label: 'Design Ideas'    },
+      { href: '/cost-calculator', label: 'Cost Calculator' },
     ],
   },
 ];
@@ -120,25 +30,13 @@ const DRAWER_SECTIONS = [
 export default function Navbar() {
   const [scrolled,    setScrolled]    = useState(false);
   const [drawerOpen,  setDrawerOpen]  = useState(false);
-  const [openMenu,    setOpenMenu]    = useState(null);
-  const navRef    = useRef(null);
-  const closeTimer = useRef(null);
   const pathname  = usePathname();
-  const router    = useRouter();
   const { theme } = useTheme();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (navRef.current && !navRef.current.contains(e.target)) setOpenMenu(null);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   /* Close drawer on route change */
@@ -150,15 +48,9 @@ export default function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [drawerOpen]);
 
-  const openDropdown  = useCallback((key) => { clearTimeout(closeTimer.current); setOpenMenu(key); }, []);
-  const closeDropdown = useCallback(() => {
-    closeTimer.current = setTimeout(() => setOpenMenu(null), 150);
-  }, []);
-
   return (
     <>
       <nav
-        ref={navRef}
         className={`navbar-surface${scrolled ? ' scrolled' : ''}`}
         style={{
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
@@ -192,68 +84,20 @@ export default function Navbar() {
 
           {/* Desktop nav links */}
           <div className="nav-desktop-links hide-mobile" style={{ gap: '4px', alignItems: 'center' }}>
-            {NAV_KEYS.map((key) => {
-              const menu = MEGA_MENUS[key];
-              const isActive = pathname.startsWith(menu.href);
+            {NAV_LINKS.map((link) => {
+              const isActive = pathname.startsWith(link.href);
               return (
-                <div key={key} style={{ position: 'relative' }}
-                  onMouseEnter={() => openDropdown(key)} onMouseLeave={closeDropdown}>
-                  <button
-                    onClick={() => router.push(menu.href)}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: '13px', padding: '6px 12px',
-                      color: isActive ? 'var(--primary)' : 'var(--text-mid)',
-                      fontWeight: isActive ? 500 : 400,
-                      letterSpacing: '.01em', display: 'flex', alignItems: 'center', gap: '3px',
-                      borderRadius: 'var(--r-sm)', transition: 'color 150ms',
-                    }}
-                  >
-                    {key}
-                    <ChevronDown size={12} style={{ transition: 'transform 150ms',
-                      transform: openMenu === key ? 'rotate(180deg)' : 'none' }} />
-                  </button>
-
-                  {openMenu === key && (
-                    <div onMouseEnter={() => openDropdown(key)} onMouseLeave={closeDropdown}
-                      style={{
-                        position: 'absolute', top: 'calc(100% + 8px)', left: '-16px',
-                        background: 'var(--surface)', border: '1px solid var(--border)',
-                        borderRadius: '16px', padding: '20px', boxShadow: 'var(--shadow-lg)',
-                        minWidth: menu.cols.length > 1 ? '380px' : '220px', zIndex: 100,
-                      }}
-                    >
-                      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${menu.cols.length}, 1fr)`, gap: '24px' }}>
-                        {menu.cols.map((col) => (
-                          <div key={col.heading}>
-                            <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.12em',
-                              color: 'var(--text-hint)', textTransform: 'uppercase', marginBottom: '12px' }}>
-                              {col.heading}
-                            </p>
-                            {col.links.map((link) => (
-                              <Link key={link.href} href={link.href} onClick={() => setOpenMenu(null)}
-                                style={{ display: 'block', fontSize: '13px', color: 'var(--text-sub)',
-                                  padding: '6px 0', textDecoration: 'none', transition: 'color 120ms' }}
-                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-sub)'}
-                              >
-                                {link.label}
-                              </Link>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                      {menu.footer && (
-                        <Link href={menu.footer.href} onClick={() => setOpenMenu(null)}
-                          style={{ display: 'block', marginTop: '16px', paddingTop: '14px',
-                            borderTop: '1px solid var(--border)', fontSize: '13px',
-                            color: 'var(--primary)', fontWeight: 500, textDecoration: 'none' }}>
-                          {menu.footer.label}
-                        </Link>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <Link key={link.href} href={link.href}
+                  style={{
+                    fontSize: '13px', padding: '6px 12px',
+                    color: isActive ? 'var(--primary)' : 'var(--text-mid)',
+                    fontWeight: isActive ? 500 : 400,
+                    letterSpacing: '.01em', borderRadius: 'var(--r-sm)',
+                    transition: 'color 150ms', textDecoration: 'none',
+                  }}
+                >
+                  {link.label}
+                </Link>
               );
             })}
           </div>

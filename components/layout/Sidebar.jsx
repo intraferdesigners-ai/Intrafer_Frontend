@@ -1,24 +1,45 @@
 'use client';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
-  User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings,
+  User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Heart, Calendar, Newspaper, Tag, LifeBuoy, Mail, Shield,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { clearAuthTokens } from '../../lib/auth';
 import { useTheme } from '../../context/ThemeContext';
+import NotificationBell from '../notification/NotificationBell';
+
+// Maps each permission-gated admin nav item to the permission key that
+// unlocks it on the backend (see Intrafer_Backend/src/routes/admin.routes.js).
+// Items with no entry here (Dashboard, Visitors, Profile) are always visible
+// to any admin — "Team" is handled separately below since it's gated on
+// isSuperAdmin rather than a permission key.
+const ADMIN_NAV_PERMISSIONS = {
+  '/admin/dashboard/vendors':         'manage_vendors',
+  '/admin/dashboard/leads':           'manage_leads',
+  '/admin/dashboard/users':           'manage_users',
+  '/admin/dashboard/analytics':       'view_analytics',
+  '/admin/dashboard/blog':            'manage_blog',
+  '/admin/dashboard/coupons':         'manage_coupons',
+  '/admin/dashboard/support':         'manage_support',
+  '/admin/dashboard/email-templates': 'manage_email_templates',
+  '/admin/dashboard/settings':        'manage_settings',
+};
 
 const NAV = {
   user: [
-    { label: 'Dashboard',    href: '/user/dashboard',                icon: LayoutDashboard },
-    { label: 'My enquiries', href: '/user/dashboard/enquiries',      icon: FileText        },
-    { label: 'Profile',      href: '/user/dashboard/profile',        icon: User            },
+    { label: 'Dashboard',       href: '/user/dashboard',                icon: LayoutDashboard },
+    { label: 'My enquiries',    href: '/user/dashboard/enquiries',      icon: FileText        },
+    { label: 'Saved Designers', href: '/user/dashboard/saved',          icon: Heart           },
+    { label: 'Profile',         href: '/user/dashboard/profile',        icon: User            },
   ],
   vendor: [
     { label: 'Dashboard',    href: '/vendor/dashboard',              icon: LayoutDashboard },
     { label: 'Leads',        href: '/vendor/dashboard/leads',        icon: FileText        },
+    { label: 'Appointments', href: '/vendor/dashboard/appointments', icon: Calendar        },
     { label: 'Portfolio',    href: '/vendor/dashboard/projects',     icon: Building2       },
     { label: 'Subscription', href: '/vendor/dashboard/subscription', icon: Crown           },
     { label: 'Profile',      href: '/vendor/dashboard/profile',      icon: User            },
@@ -29,9 +50,14 @@ const NAV = {
     { label: 'Leads',        href: '/admin/dashboard/leads',         icon: FileText        },
     { label: 'Users',        href: '/admin/dashboard/users',         icon: Users           },
     { label: 'Analytics',    href: '/admin/dashboard/analytics',     icon: BarChart3       },
+    { label: 'Blog',         href: '/admin/dashboard/blog',          icon: Newspaper       },
+    { label: 'Coupons',      href: '/admin/dashboard/coupons',       icon: Tag             },
+    { label: 'Support',      href: '/admin/dashboard/support',       icon: LifeBuoy        },
     { label: 'Visitors',     href: '/admin/dashboard/visitors',      icon: UserCheck       },
     { label: 'Profile',      href: '/admin/dashboard/profile',       icon: User            },
     { label: 'Settings',     href: '/admin/dashboard/settings',      icon: Settings        },
+    { label: 'Email Templates', href: '/admin/dashboard/email-templates', icon: Mail        },
+    { label: 'Team',         href: '/admin/dashboard/team',          icon: Shield          },
   ],
 };
 
@@ -42,7 +68,20 @@ export default function Sidebar({ onClose }) {
   const router                    = useRouter();
   const { user, role, clearAuth } = useAuthStore();
   const { theme, toggleTheme }    = useTheme();
-  const items                     = NAV[role] || [];
+
+  const items = useMemo(() => {
+    const base = NAV[role] || [];
+    if (role !== 'admin') return base;
+
+    return base.filter((item) => {
+      if (item.href === '/admin/dashboard/team') return user?.isSuperAdmin === true;
+      const requiredPermission = ADMIN_NAV_PERMISSIONS[item.href];
+      if (!requiredPermission) return true; // Dashboard, Visitors, Profile
+      if (!user) return true; // still hydrating from /auth/me — avoid a flash of missing items
+      if (user.isSuperAdmin) return true;
+      return user.adminPermissions?.includes(requiredPermission);
+    });
+  }, [role, user]);
 
   const handleLogout = () => {
     clearAuthTokens();
@@ -92,6 +131,7 @@ export default function Sidebar({ onClose }) {
             letterSpacing: '-0.03em',
           }}>Intrafer</span>
         </Link>
+        <NotificationBell />
         {onClose && (
           <button
             onClick={onClose}

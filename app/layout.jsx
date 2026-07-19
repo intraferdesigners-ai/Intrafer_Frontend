@@ -1,6 +1,7 @@
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import ThemeProvider from '../context/ThemeContext';
+import CompareProvider from '../context/CompareContext';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import LeadCapturePopup from '../components/ui/LeadCapturePopup';
 
@@ -32,25 +33,27 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ThemeProvider>
-          <ErrorBoundary>
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background:   'var(--surface)',
-                  color:        'var(--text)',
-                  border:       '1px solid var(--border)',
-                  fontFamily:   'Inter, sans-serif',
-                  fontSize:     '13px',
-                  boxShadow:    'var(--shadow-md)',
-                  borderRadius: 'var(--r-md)',
-                },
-              }}
-            />
-            {children}
-            <LeadCapturePopup />
-          </ErrorBoundary>
+          <CompareProvider>
+            <ErrorBoundary>
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background:   'var(--surface)',
+                    color:        'var(--text)',
+                    border:       '1px solid var(--border)',
+                    fontFamily:   'Inter, sans-serif',
+                    fontSize:     '13px',
+                    boxShadow:    'var(--shadow-md)',
+                    borderRadius: 'var(--r-md)',
+                  },
+                }}
+              />
+              {children}
+              <LeadCapturePopup />
+            </ErrorBoundary>
+          </CompareProvider>
         </ThemeProvider>
       </body>
     </html>

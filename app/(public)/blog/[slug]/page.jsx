@@ -1,23 +1,52 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { BLOG_POSTS } from '@/lib/blog-data';
 import { notFound } from 'next/navigation';
 
-export async function generateStaticParams() {
-  return BLOG_POSTS.map((p) => ({ slug: p.slug }));
+const FALLBACK_COVER = '/images/blog/modular-kitchen.jpg';
+
+function formatPublishedDate(dateString) {
+  return new Date(dateString).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+}
+
+function normalizePost(post) {
+  return {
+    ...post,
+    image: post.coverImage || FALLBACK_COVER,
+    date: formatPublishedDate(post.publishedAt),
+  };
+}
+
+async function fetchPostBySlug(slug) {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/blog/${slug}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data?.post || null;
+  } catch { return null; }
+}
+
+async function fetchAllPosts() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/blog`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data?.posts || [];
+  } catch { return []; }
 }
 
 export async function generateMetadata({ params }) {
-  const post = BLOG_POSTS.find((p) => p.slug === params.slug);
+  const post = await fetchPostBySlug(params.slug);
   if (!post) return {};
   return { title: post.title, description: post.excerpt };
 }
 
-export default function BlogPostPage({ params }) {
-  const post = BLOG_POSTS.find((p) => p.slug === params.slug);
-  if (!post) notFound();
+export default async function BlogPostPage({ params }) {
+  const rawPost = await fetchPostBySlug(params.slug);
+  if (!rawPost) notFound();
+  const post = normalizePost(rawPost);
 
-  const related = BLOG_POSTS.filter((p) => p.slug !== post.slug).slice(0, 2);
+  const allPosts = await fetchAllPosts();
+  const related = allPosts.filter((p) => p.slug !== post.slug).slice(0, 2).map(normalizePost);
 
   return (
     <div style={{ maxWidth: '820px', margin: '0 auto', padding: '108px 32px 80px' }}>

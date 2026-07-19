@@ -14,6 +14,8 @@ function VerifyContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const userId       = searchParams.get('userId');
+  const isConsultation = searchParams.get('type') === 'consultation';
+  const draftKey     = isConsultation ? 'intrafer_consultation_draft' : 'intrafer_enquiry_draft';
   const { setAuth }  = useAuthStore();
 
   const [otp,           setOtp]           = useState(['', '', '', '', '', '']);
@@ -27,7 +29,7 @@ function VerifyContent() {
   const timerRef  = useRef(null);
 
   useEffect(() => {
-    if (!userId || !sessionStorage.getItem('intrafer_enquiry_draft')) {
+    if (!userId || !sessionStorage.getItem(draftKey)) {
       router.push('/enquiry');
     }
   }, []);
@@ -84,7 +86,7 @@ function VerifyContent() {
       setAuthTokens(accessToken, user.role);
       setAuth(user, accessToken);
 
-      const raw   = sessionStorage.getItem('intrafer_enquiry_draft');
+      const raw   = sessionStorage.getItem(draftKey);
       const draft = JSON.parse(raw || '{}');
 
       const leadRes = await api.post('/leads', {
@@ -93,10 +95,11 @@ function VerifyContent() {
         budget:       draft.budget,
         city:         draft.city,
         requirements: draft.requirements,
+        ...(isConsultation ? { isConsultation: true, preferredDate: draft.preferredDate } : {}),
       });
 
       const lead = leadRes.data?.data?.lead;
-      sessionStorage.removeItem('intrafer_enquiry_draft');
+      sessionStorage.removeItem(draftKey);
       router.push(
         `/enquiry/success?enquiryId=${lead?._id || ''}&vendorId=${draft.vendorId || ''}`
       );
@@ -110,7 +113,7 @@ function VerifyContent() {
     setResendLoading(true);
     setError('');
     try {
-      const raw   = sessionStorage.getItem('intrafer_enquiry_draft');
+      const raw   = sessionStorage.getItem(draftKey);
       const draft = JSON.parse(raw || '{}');
       await api.post('/auth/send-otp', { name: draft.name, email: draft.email, phone: draft.phone });
       setOtp(['', '', '', '', '', '']);

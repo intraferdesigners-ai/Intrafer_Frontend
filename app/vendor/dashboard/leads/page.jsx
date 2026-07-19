@@ -9,6 +9,13 @@ import Badge from '../../../../components/ui/Badge';
 import Spinner from '../../../../components/ui/Spinner';
 import { formatDate, formatRelativeTime } from '../../../../lib/utils';
 
+function formatDateTime(dateString) {
+  return new Date(dateString).toLocaleString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  });
+}
+
 const FILTER_TABS = [
   { key: 'all',            label: 'All'            },
   { key: 'new',            label: 'New'            },
@@ -24,6 +31,7 @@ export default function VendorLeadsPage() {
   const [loading,          setLoading]          = useState(true);
   const [filter,           setFilter]           = useState('all');
   const [acceptingId,      setAcceptingId]      = useState(null);
+  const [confirmingId,     setConfirmingId]     = useState(null);
   const [creditsRemaining, setCreditsRemaining] = useState(null);
 
   const fetchLeads = useCallback(() => {
@@ -63,6 +71,24 @@ export default function VendorLeadsPage() {
       toast.error(err.response?.data?.message || 'Failed to accept lead.');
     }
     setAcceptingId(null);
+  };
+
+  const handleConfirmAppointment = async (lead, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!lead.preferredDate) {
+      toast.error('No preferred date/time was requested for this lead.');
+      return;
+    }
+    setConfirmingId(lead._id);
+    try {
+      await api.put(`/leads/${lead._id}/confirm-appointment`, { dateTime: lead.preferredDate });
+      toast.success('Appointment confirmed.');
+      fetchLeads();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to confirm appointment.');
+    }
+    setConfirmingId(null);
   };
 
   const tabStyle = (key) => key === filter
@@ -154,6 +180,7 @@ export default function VendorLeadsPage() {
                     ENQ-{lead._id?.slice(-8).toUpperCase()}
                   </span>
                   <Badge status={lead.status} />
+                  {lead.isConsultation && <Badge variant="info">Consultation request</Badge>}
                 </div>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-hint)' }}>
                   {formatRelativeTime(lead.createdAt)}
@@ -187,6 +214,40 @@ export default function VendorLeadsPage() {
                 <p style={{ fontSize: 13, color: 'var(--color-text-sub)', marginTop: 8, marginBottom: 0 }}>
                   {lead.requirements.length > 80 ? lead.requirements.slice(0, 80) + '…' : lead.requirements}
                 </p>
+              )}
+
+              {/* Consultation appointment */}
+              {lead.isConsultation && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  marginTop: 10, padding: '10px 12px',
+                  background: 'var(--color-primary-bg)', borderRadius: 'var(--radius-md)',
+                }}>
+                  {lead.confirmedDateTime ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--color-primary)', fontWeight: 500 }}>
+                      <Calendar size={13} /> Appointment confirmed: {formatDateTime(lead.confirmedDateTime)}
+                    </span>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: 12, color: 'var(--color-text-sub)' }}>
+                        Requested: {lead.preferredDate ? formatDateTime(lead.preferredDate) : 'No preferred time given'}
+                      </span>
+                      <button
+                        onClick={(e) => handleConfirmAppointment(lead, e)}
+                        disabled={confirmingId === lead._id || !lead.preferredDate}
+                        style={{
+                          padding: '6px 14px', borderRadius: 'var(--radius-sm)',
+                          background: 'var(--color-primary)', color: '#fff',
+                          border: 'none', fontSize: 12, fontWeight: 500,
+                          cursor: lead.preferredDate ? 'pointer' : 'not-allowed',
+                          opacity: confirmingId === lead._id || !lead.preferredDate ? 0.6 : 1,
+                        }}
+                      >
+                        {confirmingId === lead._id ? '...' : 'Confirm appointment'}
+                      </button>
+                    </>
+                  )}
+                </div>
               )}
 
               {/* Bottom row */}

@@ -13,6 +13,7 @@ import Badge from '../../../../../components/ui/Badge';
 import Button from '../../../../../components/ui/Button';
 import Spinner from '../../../../../components/ui/Spinner';
 import useAuthStore from '../../../../../store/authStore';
+import MessageThread from '../../../../../components/shared/MessageThread';
 import { formatDate, LEAD_STATUS } from '../../../../../lib/utils';
 
 const LABEL = {
@@ -262,6 +263,16 @@ export default function VendorLeadDetailPage() {
                 </div>
               )}
             </div>
+
+            {/* Messages */}
+            {isContactRevealed && (
+              <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--color-border)' }}>
+                <span style={LABEL}>Messages</span>
+                <div style={{ marginTop: 8 }}>
+                  <MessageThread leadId={lead._id} />
+                </div>
+              </div>
+            )}
 
             {/* Private notes section */}
             <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--color-border)' }}>

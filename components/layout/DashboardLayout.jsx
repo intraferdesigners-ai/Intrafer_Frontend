@@ -7,6 +7,7 @@ import { isAuthenticated } from '../../lib/auth';
 import Sidebar from './Sidebar';
 import MobileTabBar from './MobileTabBar';
 import ErrorBoundary from '../ui/ErrorBoundary';
+import NotificationBell from '../notification/NotificationBell';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function DashboardLayout({ children }) {
@@ -73,6 +74,7 @@ export default function DashboardLayout({ children }) {
             </svg>
           </button>
           <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)', flex: 1 }}>Intrafer</span>
+          <NotificationBell />
           <button
             onClick={toggleTheme}
             className="mobile-menu-btn"

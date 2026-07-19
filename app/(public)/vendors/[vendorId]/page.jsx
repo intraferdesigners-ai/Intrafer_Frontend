@@ -7,6 +7,13 @@ import ProjectsSection from '../../../../components/vendor/ProjectsSection';
 import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
 import { getInitials, formatDate } from '../../../../lib/utils';
 import VendorProfileTracker from '../../../../components/vendor/VendorProfileTracker';
+import ConsultationModal from '../../../../components/vendor/ConsultationModal';
+
+const PRICE_UNIT_LABEL = {
+  flat: '',
+  per_sqft: ' / sq. ft.',
+  per_room: ' / room',
+};
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -268,6 +275,37 @@ export default async function VendorProfilePage({ params }) {
             </div>
           )}
 
+          {/* Services */}
+          {vendor.services?.length > 0 && (
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', marginBottom: '28px' }}>
+              <span style={LABEL}>SERVICES</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {vendor.services.map((service, i) => (
+                  <div key={i} style={{
+                    border: '1px solid var(--border)', borderRadius: 'var(--r-lg)',
+                    padding: '14px 16px',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                      <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)', margin: 0 }}>
+                        {service.name}
+                      </p>
+                      {service.startingPrice != null && (
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--primary)', whiteSpace: 'nowrap' }}>
+                          Starting at ₹{Number(service.startingPrice).toLocaleString('en-IN')}{PRICE_UNIT_LABEL[service.priceUnit] ?? ''}
+                        </span>
+                      )}
+                    </div>
+                    {service.description && (
+                      <p style={{ fontSize: '13px', color: 'var(--text-sub)', lineHeight: 1.6, margin: '6px 0 0' }}>
+                        {service.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0 0 28px' }} />
 
           {/* Before/After slider */}
@@ -341,6 +379,8 @@ export default async function VendorProfilePage({ params }) {
                 Submit enquiry →
               </Button>
             </Link>
+
+            <ConsultationModal vendor={vendor} />
 
             <a
               href={`https://wa.me/919876500000?text=${encodeURIComponent(

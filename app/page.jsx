@@ -23,6 +23,24 @@ export const metadata = {
   description: "India's most trusted interior designer marketplace. Browse verified portfolios, compare quotes, and connect with the perfect designer for your home.",
 };
 
+function formatPublishedDate(dateString) {
+  return new Date(dateString).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+}
+
+async function fetchFeaturedBlogPosts() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/blog`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const json = await res.json();
+    const posts = json.data?.posts || [];
+    return posts.slice(0, 3).map((p) => ({
+      ...p,
+      image: p.coverImage || '/images/blog/modular-kitchen.jpg',
+      date: formatPublishedDate(p.publishedAt),
+    }));
+  } catch { return []; }
+}
+
 async function fetchStats() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { cache: 'no-store' });
@@ -103,11 +121,14 @@ const STYLES_STRIP = [
   { slug:'contemporary', label:'Contemporary', image: IMAGES.styles.contemporary },
 ];
 
-const FEATURED_BLOG = BLOG_POSTS.slice(0, 3);
+const FEATURED_BLOG_FALLBACK = BLOG_POSTS.slice(0, 3);
 
 export default async function Home() {
-  const [apiVendors, statsData] = await Promise.all([fetchFeaturedVendors(), fetchStats()]);
+  const [apiVendors, statsData, apiBlogPosts] = await Promise.all([
+    fetchFeaturedVendors(), fetchStats(), fetchFeaturedBlogPosts(),
+  ]);
   const vendors = apiVendors.length > 0 ? apiVendors : FEATURED_FALLBACK;
+  const FEATURED_BLOG = apiBlogPosts.length > 0 ? apiBlogPosts : FEATURED_BLOG_FALLBACK;
 
   const trustStats = statsData
     ? [

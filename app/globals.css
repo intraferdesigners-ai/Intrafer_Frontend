@@ -5,11 +5,13 @@
 @tailwind utilities;
 
 :root {
+
   /* Backgrounds */
   --bg:            #F8FAFF;
   --bg-parchment:  #EFF4FF;
   --bg-cream:      #E2EAFF;
   --surface:       #FFFFFF;
+  
   --surface-warm:  #F5F8FF;
 
   /* Borders */

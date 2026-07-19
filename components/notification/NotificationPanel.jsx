@@ -3,17 +3,20 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import useNotificationStore from '../../store/notificationStore';
+import useAuthStore from '../../store/authStore';
 import { formatRelativeTime } from '../../lib/utils';
-import { Bell, X, FileText, CheckCircle, Crown, AlertCircle } from 'lucide-react';
+import { Bell, X, FileText, CheckCircle, Crown, AlertCircle, Calendar, MessageCircle } from 'lucide-react';
 import Spinner from '../ui/Spinner';
 
 const NOTIFICATION_CONFIG = {
-  lead_assigned:         { icon: FileText,    color: 'var(--info)',    bg: 'var(--info-bg)'    },
-  lead_accepted:         { icon: CheckCircle, color: 'var(--success)', bg: 'var(--success-bg)' },
-  payment_success:       { icon: Crown,       color: 'var(--primary)', bg: 'var(--primary-bg)' },
-  subscription_expiring: { icon: AlertCircle, color: 'var(--warning)', bg: 'var(--warning-bg)' },
-  vendor_approved:       { icon: CheckCircle, color: 'var(--success)', bg: 'var(--success-bg)' },
-  enquiry_created:       { icon: FileText,    color: 'var(--info)',    bg: 'var(--info-bg)'    },
+  lead_assigned:         { icon: FileText,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
+  lead_accepted:         { icon: CheckCircle,   color: 'var(--success)', bg: 'var(--success-bg)' },
+  payment_success:       { icon: Crown,         color: 'var(--primary)', bg: 'var(--primary-bg)' },
+  subscription_expiring: { icon: AlertCircle,   color: 'var(--warning)', bg: 'var(--warning-bg)' },
+  vendor_approved:       { icon: CheckCircle,   color: 'var(--success)', bg: 'var(--success-bg)' },
+  enquiry_created:       { icon: FileText,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
+  appointment_confirmed: { icon: Calendar,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
+  new_message:           { icon: MessageCircle, color: 'var(--primary)', bg: 'var(--primary-bg)' },
 };
 
 const DEFAULT_CONFIG = { icon: Bell, color: 'var(--text-hint)', bg: 'var(--bg-parchment)' };
@@ -41,6 +44,7 @@ export default function NotificationPanel({ isOpen, onClose }) {
     }
 
     const leadId = notification.metadata?.leadId;
+    const role = useAuthStore.getState().role;
     const deepLinks = {
       lead_assigned:         `/vendor/dashboard/leads/${leadId}`,
       lead_accepted:         `/vendor/dashboard/leads/${leadId}`,
@@ -48,6 +52,12 @@ export default function NotificationPanel({ isOpen, onClose }) {
       subscription_expiring: '/vendor/dashboard/subscription',
       vendor_approved:       '/vendor/dashboard/profile',
       enquiry_created:       `/user/dashboard/enquiries/${leadId}`,
+      // appointment_confirmed is only ever dispatched to the homeowner (see
+      // notification.service.js's APPOINTMENT_CONFIRMED handler), so the path
+      // is fixed — unlike new_message, which goes to whichever party didn't
+      // send it, so it has to follow the current viewer's role.
+      appointment_confirmed: `/user/dashboard/enquiries/${leadId}`,
+      new_message:           role === 'vendor' ? `/vendor/dashboard/leads/${leadId}` : `/user/dashboard/enquiries/${leadId}`,
     };
     const href = deepLinks[notification.type];
     if (href) window.location.href = href;
