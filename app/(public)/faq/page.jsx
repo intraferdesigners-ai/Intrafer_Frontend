@@ -7,7 +7,7 @@ export const FAQ_GROUPS = [
   {
     category: 'GENERAL',
     items: [
-      { q: 'What is Intrafer?', a: "Intrafer is India's first interior designer marketplace, connecting homeowners with verified, trusted interior designers across major cities. We make it easy to browse real portfolios, compare quotes, and find the perfect designer for your home." },
+      { q: 'What is Intrafer?', a: "Intrafer is an interior designer marketplace connecting homeowners with verified, trusted interior designers across major cities. Browse real portfolios, compare quotes, and find a designer suited to your home." },
       { q: 'Is it free to use as a homeowner?', a: 'Yes, completely free. Homeowners never pay to browse profiles, view portfolios, or submit enquiries. There are zero hidden charges for finding your designer.' },
       { q: 'How are designers verified?', a: 'Every designer on Intrafer is manually reviewed by our team. We verify their portfolio photos (no stock images), check references, and confirm business registration before listing them on the platform.' },
       { q: 'How quickly will I hear back?', a: 'Our designers commit to responding within 48 hours. In practice, most respond within a few hours. If a designer does not respond within 48 hours, we reassign your lead.' },
@@ -38,10 +38,10 @@ export const FAQ_GROUPS = [
     category: 'FOR DESIGNERS',
     items: [
       { q: 'How do I list my studio?', a: 'Register on Intrafer, complete your profile with portfolio photos and service details, and submit for verification. Our team reviews within 2–3 business days.' },
-      { q: 'What are the subscription plans?', a: 'We offer Basic at ₹2,999/month (10 leads), Pro at ₹6,999/month (unlimited leads), and Premium at ₹19,999/year (unlimited leads + featured listing). See our plans page for full details.' },
+      { q: 'What are the subscription plans?', a: 'Plans run for 3, 6, or 12 months — ₹7,999, ₹14,999, and ₹19,999 respectively — all with upto 10 leads/month. Higher tiers add priority placement, an analytics dashboard, and a dedicated account manager rather than more leads. See our plans page for the full feature breakdown.' },
       { q: 'How many leads will I receive?', a: 'Lead volume depends on your city, plan tier, and how complete your profile is. Designers with full portfolios, good ratings, and quick response times receive significantly more leads.' },
       { q: 'What is the lead reveal process?', a: "When a homeowner submits an enquiry, you receive a notification with project details (but not their contact info). If you accept the lead, the homeowner's phone and email are instantly revealed so you can reach out." },
-      { q: 'Can I cancel my subscription?', a: 'Yes, you can cancel any time from your dashboard. Monthly plans stop at the end of the billing cycle. Annual plans are non-refundable but remain active for the full year.' },
+      { q: 'Can I cancel my subscription?', a: 'You can stop renewing at any time from your dashboard. Plans are prepaid for their full 3, 6, or 12-month term and are non-refundable, but your listing stays live for the term you’ve already paid for.' },
     ],
   },
 ];

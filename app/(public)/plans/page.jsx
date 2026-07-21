@@ -19,7 +19,6 @@ const FALLBACK_PLANS = [
       'Upto 10 qualified leads per month',
       'Verified designer badge',
       'Portfolio showcase',
-      'Analytics dashboard',
       'Email support',
     ],
   },
@@ -62,7 +61,7 @@ const FALLBACK_PLANS = [
 const FAQS = [
   {
     q: 'Can I cancel my subscription anytime?',
-    a: 'Yes. You can cancel your subscription at any time. Your plan remains active until the end of your current billing period. No refunds are issued for partial months.',
+    a: "You can stop renewing at any time from your dashboard. Plans are prepaid for their full 3, 6, or 12-month term and are non-refundable, but your listing stays live for the term you've already paid for.",
   },
   {
     q: 'What counts as a "lead"?',
@@ -78,7 +77,7 @@ const FAQS = [
   },
   {
     q: 'How do I get paid — do you take a commission?',
-    a: 'Intrafer charges a flat monthly subscription fee only. We take zero commission on your projects. All revenue from your clients goes directly to you.',
+    a: 'Intrafer charges a flat subscription fee only. We take zero commission on your projects. All revenue from your clients goes directly to you.',
   },
 ];
 
@@ -141,7 +140,7 @@ export default function PlansPage() {
             Simple, transparent pricing
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.7, maxWidth: '480px', margin: '0 auto' }}>
-            Pay a flat monthly fee. Receive qualified leads. Zero commission on your projects — ever.
+            Pay a flat subscription. Receive qualified leads. Zero commission on your projects — ever.
           </p>
         </div>
       </section>

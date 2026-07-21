@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle, TrendingUp, Users, Star, Zap } from 'lucide-react';
+import { ArrowRight, CheckCircle, TrendingUp, Users, Star, Zap, BarChart3 } from 'lucide-react';
 import { IMAGES } from '@/lib/images';
 
 const BENEFITS = [
@@ -12,7 +12,7 @@ const BENEFITS = [
   { Icon: Star,       title: 'Build your reputation',   desc: "Collect verified reviews from completed projects. A strong profile compounds over time." },
   { Icon: Zap,        title: 'Instant notifications',   desc: "Get WhatsApp and email alerts the moment a new lead matches your profile. Never miss an opportunity." },
   { Icon: CheckCircle,title: 'No commission cuts',      desc: "We charge a flat subscription. Every rupee of project revenue goes directly to you." },
-  { Icon: TrendingUp, title: 'Analytics dashboard',     desc: "Track your leads, conversion rate, and win rate. Understand what's working and optimize your business." },
+  { Icon: BarChart3,  title: 'Analytics dashboard',     desc: "Track your leads, conversion rate, and win rate in one place to see exactly where your pipeline is strong or slipping." },
 ];
 
 const STEPS = [
@@ -160,7 +160,7 @@ export default function ForDesignersPage() {
       <section style={{ background: 'var(--bg-parchment)', padding: '80px 40px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '10px' }}>WHY INTRAFER</p>
-          <h2 className="section-heading">Everything you need to grow</h2>
+          <h2 className="section-heading">Better leads, no commission, full control</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px', marginTop: '44px' }} className="grid-mobile-1">
             {BENEFITS.map(({ Icon, title, desc }) => (
               <div key={title} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
