@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 
-const DEFAULT_HERO_SUBTITLE = "India's most trusted interior designer marketplace. Browse verified portfolios, compare quotes, and connect with the perfect designer for your home.";
+const DEFAULT_HERO_SUBTITLE = "Compare vetted interior designers by city, style, and budget. Every portfolio shown is real, completed work — submit one enquiry and hear back within two days.";
 
 export default function AdminCmsPage() {
   const [heroSubtext, setHeroSubtext] = useState(DEFAULT_HERO_SUBTITLE);

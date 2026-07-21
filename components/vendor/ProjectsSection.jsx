@@ -13,7 +13,7 @@ export default function ProjectsSection({ projects }) {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+    <div className="grid-mobile-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
       {projects.map((project) => (
         <Link
           key={project._id || project.id}

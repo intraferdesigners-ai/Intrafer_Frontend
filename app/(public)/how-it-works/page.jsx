@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Shield, Star, Clock, Lock } from 'lucide-react';
 
 export const metadata = {
   title: 'How Intrafer Works | Interior Design Made Simple',
@@ -15,7 +16,7 @@ const STEPS = [
   },
   {
     num: '02', title: 'Submit your enquiry',
-    desc: 'Fill in your project requirements in under 2 minutes. No account needed — verify with OTP. Your details stay private until a designer accepts.',
+    desc: 'Share your project requirements — no account needed, just a quick OTP to verify your number. Your contact details stay private until a designer accepts.',
     image: '/images/how-it-works/step2.jpg',
     features: ['No account needed', 'OTP verification only', 'Private until accepted'],
   },
@@ -33,17 +34,17 @@ const STEPS = [
   },
   {
     num: '05', title: 'Transform your space',
-    desc: 'Work with your chosen designer to bring your vision to life. Track progress, provide feedback, and enjoy your beautifully transformed home.',
+    desc: 'Work directly with your chosen designer from there — agree on scope and pricing, track progress, and sign off once the work is done.',
     image: '/images/how-it-works/step5.jpg',
     features: ['Timeline tracking', 'Regular updates', 'Quality assured'],
   },
 ];
 
 const TRUST_BADGES = [
-  { icon: '🛡', title: 'Verified designers only' },
-  { icon: '★', title: '4.9★ average rating' },
-  { icon: '⏱', title: '48h response guarantee' },
-  { icon: '🔒', title: 'Privacy protected' },
+  { Icon: Shield, title: 'Verified designers only' },
+  { Icon: Star,   title: '4.9★ average rating' },
+  { Icon: Clock,  title: '48h response guarantee' },
+  { Icon: Lock,   title: 'Privacy protected' },
 ];
 
 export default function HowItWorksPage() {
@@ -129,7 +130,9 @@ export default function HowItWorksPage() {
             borderRadius: '12px', padding: '20px', textAlign: 'center',
             boxShadow: 'var(--shadow-sm)',
           }}>
-            <div style={{ fontSize: '28px', marginBottom: '8px' }}>{b.icon}</div>
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px' }}>
+              <b.Icon size={20} color="var(--primary)" />
+            </div>
             <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)' }}>{b.title}</p>
           </div>
         ))}

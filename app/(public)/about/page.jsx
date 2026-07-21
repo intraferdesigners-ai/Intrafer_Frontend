@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { IMAGES } from '@/lib/images';
 
 export const metadata = {
@@ -13,15 +14,15 @@ const STATS = [
 ];
 
 const STEPS = [
-  { n: '01', title: 'Portfolio review',   desc: "We manually review every project in a designer's portfolio. We check that images are real, credits are accurate, and completed work matches the quoted quality." },
-  { n: '02', title: 'Credential check',   desc: 'We verify business registration, past client references, and professional background. Designers from recognized institutions are highlighted in their profiles.' },
-  { n: '03', title: 'Quality assessment', desc: "New designers start on probation — their first 3 leads are monitored for quality. Designers who don't respond within 48 hours are flagged and eventually removed." },
+  { n: '01', title: 'Portfolio review',   desc: "Every portfolio project is reviewed by hand — we confirm the images are real, credited to the right designer, and consistent with the quality being advertised." },
+  { n: '02', title: 'Credential check',   desc: 'We confirm business registration, check professional background, and follow up with past clients where possible. Designers from recognised institutions are noted on their profile.' },
+  { n: '03', title: 'Quality assessment', desc: "New designers are monitored closely for their first three leads. Anyone who consistently misses the 48-hour response window is flagged and removed from the platform." },
 ];
 
 const TEAM = [
-  { initials: 'RS', name: 'Rahul Sharma',  role: 'Co-founder & CEO', bio: 'Former design consultant, 8 years in interior industry.' },
-  { initials: 'PK', name: 'Priya Kumar',   role: 'Co-founder & CTO', bio: 'Ex-Flipkart engineer, passionate about marketplace design.' },
-  { initials: 'AM', name: 'Aryan Mehta',   role: 'Head of Design',   bio: 'Architect turned product designer, IIT Bombay.' },
+  { initials: 'RS', name: 'Rahul Sharma',  role: 'Co-founder & CEO', bio: 'Eight years as an interior design consultant before co-founding Intrafer.' },
+  { initials: 'PK', name: 'Priya Kumar',   role: 'Co-founder & CTO', bio: 'Previously built marketplace systems at Flipkart; now leads product and engineering.' },
+  { initials: 'AM', name: 'Aryan Mehta',   role: 'Head of Design',   bio: 'Trained as an architect at IIT Bombay, now leads design across the platform.' },
 ];
 
 export default function AboutPage() {
@@ -31,13 +32,12 @@ export default function AboutPage() {
       {/* ── HERO ── */}
       <section style={{ background: 'var(--bg-parchment)', padding: '108px 40px 80px', textAlign: 'center' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '12px' }}>OUR STORY</p>
+          <p className="caps-label-primary" style={{ marginBottom: '12px' }}>ABOUT INTRAFER</p>
           <h1 className="section-heading" style={{ marginBottom: '18px' }}>
-            We believe everyone deserves a beautiful home
+            Built to fix how India hires interior designers
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.8, maxWidth: '540px', margin: '0 auto 40px' }}>
-            Intrafer was built to solve a simple problem: finding a trustworthy interior designer is harder than it should be.
-            We created a marketplace where verification, transparency, and quality are built in from day one.
+            Most homeowners still find a designer through a WhatsApp forward or a neighbour&apos;s recommendation, with no way to check if the portfolio is real. Intrafer checks every designer&apos;s credentials and completed work before they&apos;re listed, so you can compare verified options instead of guessing.
           </p>
           <div style={{ position: 'relative', height: '400px', borderRadius: 'var(--r-2xl)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', maxWidth: '960px', margin: '0 auto' }}>
             <Image src={IMAGES.banners.about} alt="Interior design inspiration" fill style={{ objectFit: 'cover' }} priority sizes="(max-width: 768px) 100vw, 960px" />
@@ -55,13 +55,13 @@ export default function AboutPage() {
           </div>
           <div>
             <p style={{ fontSize: '15px', color: 'var(--text-sub)', lineHeight: 1.85, marginBottom: '20px' }}>
-              The interior design industry in India is fragmented and opaque. Homeowners struggle to find designers they can trust — recommendations are scattered across WhatsApp groups and local referrals, portfolio images are often stock photos, and pricing is impossible to benchmark without getting multiple quotes.
+              The interior design industry in India is fragmented and opaque. Homeowners typically find a designer through WhatsApp groups or a neighbour&apos;s referral, with portfolio photos that are often stock images and no reliable way to compare pricing without collecting multiple quotes.
             </p>
             <p style={{ fontSize: '15px', color: 'var(--text-sub)', lineHeight: 1.85, marginBottom: '20px' }}>
-              We built a platform where designers are verified, portfolios are real, and enquiries are free for homeowners. Our verification process checks every designer's completed work, credentials, and client references before they appear on Intrafer.
+              Intrafer&apos;s answer is a marketplace where enquiries cost nothing and every listed designer has been checked — their completed projects, business registration, and client references reviewed before their profile goes live.
             </p>
             <p style={{ fontSize: '15px', color: 'var(--text-sub)', lineHeight: 1.85 }}>
-              Today Intrafer connects homeowners with 500+ verified designers across India. We're growing quickly — but our commitment to verification standards remains absolute.
+              Today, more than 500 verified designers across India are listed on Intrafer, with new applicants added only after they pass this review.
             </p>
           </div>
         </div>
@@ -125,6 +125,38 @@ export default function AboutPage() {
                 <div style={{ fontSize: '13px', color: 'var(--text-mid)' }}>{m.bio}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ── CTA ── */}
+      <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <div className="cta-always-dark" style={{ borderRadius: 'var(--r-xl)', padding: '60px 40px', textAlign: 'center' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '36px', color: '#FAFAF8', fontWeight: 400, marginBottom: '12px' }}>
+              See the verified designers for yourself
+            </h2>
+            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,.5)', marginBottom: '24px' }}>
+              Browse real portfolios from 500+ checked designers, or submit your requirements and let them come to you.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <Link href="/vendors" style={{
+                display: 'inline-block', background: 'var(--primary)', color: '#fff',
+                padding: '13px 32px', borderRadius: 'var(--r-md)', fontSize: '14px',
+                fontWeight: 500, textDecoration: 'none',
+              }}>
+                Browse designers
+              </Link>
+              <Link href="/enquiry" style={{
+                display: 'inline-block', background: 'transparent', color: 'rgba(255,255,255,.6)',
+                padding: '12px 28px', borderRadius: 'var(--r-md)', fontSize: '14px',
+                border: '1px solid rgba(255,255,255,.2)', textDecoration: 'none',
+              }}>
+                Submit enquiry
+              </Link>
+            </div>
           </div>
         </div>
       </section>
