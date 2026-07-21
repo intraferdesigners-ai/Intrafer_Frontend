@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Building2 } from 'lucide-react';
 import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
+import ProjectsSection from '../../../../components/vendor/ProjectsSection';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -13,6 +14,17 @@ async function fetchProject(id) {
     return json.data?.project ?? null;
   } catch {
     return null;
+  }
+}
+
+async function fetchRelatedProjects(id) {
+  try {
+    const res = await fetch(`${API}/public/projects/${id}/related`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data?.projects || [];
+  } catch {
+    return [];
   }
 }
 
@@ -32,7 +44,10 @@ const LABEL = {
 };
 
 export default async function ProjectDetailPage({ params }) {
-  const project = await fetchProject(params.projectId);
+  const [project, relatedProjects] = await Promise.all([
+    fetchProject(params.projectId),
+    fetchRelatedProjects(params.projectId),
+  ]);
 
   // vendorId is populated server-side into the vendor sub-document (see
   // getProjectById), so project.vendorId IS the vendor object — no second fetch.
@@ -79,6 +94,8 @@ export default async function ProjectDetailPage({ params }) {
         {project.style && <span className="spec-pill">{project.style}</span>}
         {project.location && <span className="spec-pill">📍 {project.location}</span>}
         {project.completedYear && <span className="spec-pill">📅 {project.completedYear}</span>}
+        {project.budget && <span className="spec-pill">💰 {project.budget}</span>}
+        {project.timeline && <span className="spec-pill">⏱️ {project.timeline}</span>}
       </div>
 
       {/* Two col layout: images left, vendor card right */}
@@ -213,6 +230,20 @@ export default async function ProjectDetailPage({ params }) {
           </div>
         </div>
       </div>
+
+      {/* ── RELATED PROJECTS ── */}
+      {relatedProjects.length > 0 && (
+        <div style={{ marginTop: 64, borderTop: '1px solid var(--border)', paddingTop: 48 }}>
+          <span style={{ ...LABEL, marginBottom: 6 }}>RELATED PROJECTS</span>
+          <h2 style={{
+            fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 300,
+            color: 'var(--text)', margin: '0 0 28px', letterSpacing: '-.015em',
+          }}>
+            More projects you might like
+          </h2>
+          <ProjectsSection projects={relatedProjects} />
+        </div>
+      )}
     </div>
   );
 }

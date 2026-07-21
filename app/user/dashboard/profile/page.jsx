@@ -17,7 +17,7 @@ const SECTION_LABEL = {
 };
 
 export default function UserProfilePage() {
-  const { setAuth } = useAuthStore();
+  const { updateUser } = useAuthStore();
 
   const [form,        setForm]        = useState({ name: '', email: '', phone: '' });
   const [saving,      setSaving]      = useState(false);
@@ -76,8 +76,7 @@ export default function UserProfilePage() {
       if (u) {
         setForm({ name: u.name || '', email: u.email || '', phone: u.phone || '' });
         // Update Zustand store
-        const token = document.cookie.match(/accessToken=([^;]+)/)?.[1] || '';
-        setAuth(u, token);
+        updateUser(u);
       }
       toast.success('Profile updated!');
     } catch (err) {

@@ -50,6 +50,17 @@ async function fetchSimilar(id) {
   }
 }
 
+async function fetchReviews(id) {
+  try {
+    const res = await fetch(`${API}/reviews/vendor/${id}`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data?.reviews || [];
+  } catch {
+    return [];
+  }
+}
+
 export async function generateMetadata({ params }) {
   try {
     const vendor = await fetchVendor(params.vendorId);
@@ -70,10 +81,11 @@ const LABEL = {
 };
 
 export default async function VendorProfilePage({ params }) {
-  const [vendor, projects, similar] = await Promise.all([
+  const [vendor, projects, similar, reviews] = await Promise.all([
     fetchVendor(params.vendorId),
     fetchProjects(params.vendorId),
     fetchSimilar(params.vendorId),
+    fetchReviews(params.vendorId),
   ]);
 
   if (!vendor) {
@@ -334,6 +346,45 @@ export default async function VendorProfilePage({ params }) {
             <span style={LABEL}>PORTFOLIO ({projects.length} projects)</span>
             <ProjectsSection projects={projects} />
           </div>
+
+          {/* Reviews */}
+          {reviews.length > 0 && (
+            <div style={{ marginTop: 32 }}>
+              <span style={LABEL}>REVIEWS ({reviews.length})</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {reviews.map((review) => (
+                  <div key={review._id} style={{
+                    border: '1px solid var(--border)', borderRadius: 'var(--r-lg)',
+                    padding: '16px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: '2px' }}>
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <Star
+                            key={n}
+                            size={14}
+                            fill={n <= review.rating ? '#F59E0B' : 'none'}
+                            color="#F59E0B"
+                          />
+                        ))}
+                      </div>
+                      <span style={{ fontSize: '12px', color: 'var(--text-hint)' }}>
+                        {formatDate(review.createdAt)}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', margin: '8px 0 0' }}>
+                      {review.userId?.name || 'Anonymous'}
+                    </p>
+                    {review.comment && (
+                      <p style={{ fontSize: '13px', color: 'var(--text-sub)', lineHeight: 1.6, margin: '6px 0 0' }}>
+                        {review.comment}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── RIGHT COLUMN — sticky enquiry card ── */}

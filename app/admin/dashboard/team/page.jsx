@@ -20,6 +20,8 @@ const PERMISSIONS = [
   { key: 'manage_support',         label: 'Manage Support'         },
   { key: 'manage_email_templates', label: 'Manage Email Templates' },
   { key: 'manage_settings',        label: 'Manage Settings'        },
+  { key: 'manage_taxonomy',        label: 'Manage Cities & Categories' },
+  { key: 'manage_portfolio',       label: 'Portfolio Approvals'    },
 ];
 
 const CAPS_LABEL = {

@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import api from '../../lib/api';
 
 const INDIAN_CITIES = [
   'Agra', 'Ahmedabad', 'Ajmer', 'Aligarh', 'Allahabad',
@@ -29,6 +30,7 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown, co
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [inputVal, setInputVal] = useState(value || '');
+  const [cities, setCities] = useState(INDIAN_CITIES);
   const wrapRef = useRef(null);
 
   // Close on outside click
@@ -41,13 +43,24 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown, co
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Prefer admin-managed cities when available; silently keep the hardcoded
+  // fallback list if the endpoint fails or returns nothing.
+  useEffect(() => {
+    api.get('/public/cities')
+      .then(({ data }) => {
+        const names = (data.data?.cities || []).map((c) => c.name);
+        if (names.length > 0) setCities(names);
+      })
+      .catch(() => {});
+  }, []);
+
   // Sync with parent value
   useEffect(() => { setInputVal(value || ''); }, [value]);
 
-  const filtered = INDIAN_CITIES.filter(c =>
+  const filtered = cities.filter(c =>
     c.toLowerCase().startsWith(search.toLowerCase())
   ).concat(
-    INDIAN_CITIES.filter(c =>
+    cities.filter(c =>
       !c.toLowerCase().startsWith(search.toLowerCase()) &&
       c.toLowerCase().includes(search.toLowerCase())
     )

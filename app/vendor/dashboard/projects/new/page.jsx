@@ -14,6 +14,11 @@ const PROJECT_TYPES = [
   'Commercial', 'Bedroom', 'Bathroom', 'Full Home Interior',
 ];
 
+const BUDGET_RANGES = [
+  'Below ₹3 Lakhs', '₹3–5 Lakhs', '₹5–10 Lakhs', '₹10–15 Lakhs',
+  '₹15–25 Lakhs', '₹25–50 Lakhs', 'Above ₹50 Lakhs',
+];
+
 const SECTION_LABEL = {
   fontSize: 10, fontWeight: 600, letterSpacing: '0.1em',
   color: 'var(--color-text-hint)', textTransform: 'uppercase',
@@ -48,6 +53,7 @@ export default function NewProjectPage() {
   const [form, setForm] = useState({
     title: '', description: '', projectType: 'Residential',
     location: '', completedYear: new Date().getFullYear(), isPublished: false,
+    budget: '', timeline: '',
   });
   const [imageFiles,      setImageFiles]      = useState([]);
   const [imagePreviews,   setImagePreviews]   = useState([]);
@@ -85,6 +91,8 @@ export default function NewProjectPage() {
       fd.append('location',      form.location.trim());
       fd.append('completedYear', form.completedYear);
       fd.append('isPublished',   form.isPublished);
+      fd.append('budget',        form.budget);
+      fd.append('timeline',      form.timeline.trim());
       imageFiles.forEach((file) => fd.append('images', file));
       if (beforeIndex !== null) fd.append('beforeImageIndex', beforeIndex);
       if (afterIndex  !== null) fd.append('afterImageIndex',  afterIndex);
@@ -177,6 +185,26 @@ export default function NewProjectPage() {
                   onChange={(e) => setForm((p) => ({ ...p, completedYear: e.target.value }))}
                   min={2000}
                   max={2030}
+                />
+              </div>
+              <div className="form-row" style={{ gap: 12 }}>
+                <div>
+                  <label style={FIELD_LABEL}>Budget</label>
+                  <select
+                    className="form-select"
+                    value={form.budget}
+                    onChange={(e) => setForm((p) => ({ ...p, budget: e.target.value }))}
+                    style={SELECT_STYLE}
+                  >
+                    <option value="">No preference</option>
+                    {BUDGET_RANGES.map((b) => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+                <Input
+                  label="Timeline"
+                  value={form.timeline}
+                  onChange={(e) => setForm((p) => ({ ...p, timeline: e.target.value }))}
+                  placeholder="e.g. 8 weeks"
                 />
               </div>
               <div>

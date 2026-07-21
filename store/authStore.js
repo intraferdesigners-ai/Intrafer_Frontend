@@ -20,6 +20,11 @@ const useAuthStore = create((set) => ({
     set({ user: null, token: null, role: null });
   },
 
+  // Merges partial fields into the current user object only — unlike setAuth,
+  // this never touches the token/cookies, so it's safe for lightweight
+  // profile-field updates (e.g. the emailNotifications toggle).
+  updateUser: (partial) => set((state) => ({ user: { ...state.user, ...partial } })),
+
   setLoading: (bool) => set({ isLoading: bool }),
 
   initFromCookies: () => {

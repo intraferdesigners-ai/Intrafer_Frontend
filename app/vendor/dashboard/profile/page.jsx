@@ -51,6 +51,18 @@ export default function VendorProfilePage() {
   const [saving,         setSaving]         = useState(false);
   const [savingAvailability, setSavingAvailability] = useState(false);
   const [uploadingPhoto, setUploadingPhoto]  = useState(false);
+  const [specOptions,    setSpecOptions]     = useState(SPECIALIZATION_OPTIONS);
+
+  // Prefer admin-managed categories when available; silently keep the
+  // hardcoded fallback list if the endpoint fails or returns nothing.
+  useEffect(() => {
+    api.get('/public/categories')
+      .then(({ data }) => {
+        const names = (data.data?.categories || []).map((c) => c.name);
+        if (names.length > 0) setSpecOptions(names);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     api.get('/vendor/profile')
@@ -342,7 +354,7 @@ export default function VendorProfilePage() {
             Specializations
           </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {SPECIALIZATION_OPTIONS.map((spec) => (
+            {specOptions.map((spec) => (
               <button key={spec} type="button" style={specPillStyle(spec)} onClick={() => toggleSpec(spec)}>
                 {spec}
               </button>

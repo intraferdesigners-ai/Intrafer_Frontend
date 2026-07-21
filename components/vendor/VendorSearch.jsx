@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search } from 'lucide-react';
 import Button from '../ui/Button';
 import CitySelect from '../ui/CitySelect';
+import api from '../../lib/api';
 
 const SPECIALIZATIONS = [
   'All', 'Residential', 'Modular Kitchen', 'Living Room',
@@ -40,8 +41,20 @@ export default function VendorSearch() {
   const [city,           setCity]           = useState(searchParams.get('city')           || '');
   const [specialization, setSpecialization] = useState(searchParams.get('specialization') || 'All');
   const [sort,           setSort]           = useState(searchParams.get('sort')           || 'rating');
+  const [specOptions,    setSpecOptions]    = useState(SPECIALIZATIONS);
 
   const hasFilters = !!(searchParams.get('city') || searchParams.get('specialization'));
+
+  // Prefer admin-managed categories when available; silently keep the
+  // hardcoded fallback list if the endpoint fails or returns nothing.
+  useEffect(() => {
+    api.get('/public/categories')
+      .then(({ data }) => {
+        const names = (data.data?.categories || []).map((c) => c.name);
+        if (names.length > 0) setSpecOptions(['All', ...names]);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -88,7 +101,7 @@ export default function VendorSearch() {
         <div style={{ flex: '1 1 160px' }}>
           <label style={LABEL_STYLE}>Specialization</label>
           <select value={specialization} onChange={(e) => setSpecialization(e.target.value)} style={SELECT_STYLE}>
-            {SPECIALIZATIONS.map((s) => (
+            {specOptions.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>

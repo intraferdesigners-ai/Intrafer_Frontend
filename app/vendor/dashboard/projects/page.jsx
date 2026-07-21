@@ -2,11 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Building2, Eye, EyeOff, Pencil, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Building2, Eye, EyeOff, Pencil, Trash2, GripVertical, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
 import Spinner from '../../../../components/ui/Spinner';
+
+const MODERATION_BADGE = {
+  pending:  { label: 'Pending review', icon: Clock,       color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
+  approved: { label: 'Approved',       icon: CheckCircle2, color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
+  rejected: { label: 'Rejected',       icon: XCircle,      color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'  },
+};
 
 export default function VendorProjectsPage() {
   const [projects,      setProjects]      = useState([]);
@@ -200,6 +206,29 @@ export default function VendorProjectsPage() {
                     </p>
                   )}
                 </div>
+
+                {/* Moderation status */}
+                {(() => {
+                  const badge = MODERATION_BADGE[project.moderationStatus] || MODERATION_BADGE.pending;
+                  const BadgeIcon = badge.icon;
+                  return (
+                    <div style={{ padding: '10px 14px 0' }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        fontSize: 11, fontWeight: 500, padding: '3px 8px',
+                        borderRadius: 20, color: badge.color, background: badge.bg,
+                      }}>
+                        <BadgeIcon size={11} />
+                        {badge.label}
+                      </span>
+                      {project.moderationStatus === 'rejected' && project.rejectionReason && (
+                        <p style={{ fontSize: 11, color: 'var(--color-danger)', margin: '6px 0 0', lineHeight: 1.5 }}>
+                          {project.rejectionReason}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Actions */}
                 <div style={{

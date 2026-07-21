@@ -8,6 +8,7 @@ import StickyMobileCTA from '../components/ui/StickyMobileCTA';
 import BeforeAfterSlider from '../components/ui/BeforeAfterSlider';
 import EMICalculator from '../components/ui/EMICalculator';
 import VendorCard from '../components/vendor/VendorCard';
+import ProjectsSection from '../components/vendor/ProjectsSection';
 import { IMAGES } from '../lib/images';
 import { BLOG_POSTS } from '../lib/blog-data';
 import {
@@ -63,6 +64,26 @@ async function fetchFeaturedVendors() {
     const json = await res.json();
     const list = json.data?.vendors || json.vendors || json;
     return Array.isArray(list) ? list : [];
+  } catch { return []; }
+}
+
+const DEFAULT_HERO_SUBTITLE = "India's most trusted interior designer marketplace. Browse verified portfolios, compare quotes, and connect with the perfect designer for your home.";
+
+async function fetchHomepageContent() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/homepage-content`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const json = await res.json();
+    return json.data?.heroSubtitle || DEFAULT_HERO_SUBTITLE;
+  } catch { return DEFAULT_HERO_SUBTITLE; }
+}
+
+async function fetchFeaturedProjects() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/featured-projects`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const json = await res.json();
+    return json.data?.projects || [];
   } catch { return []; }
 }
 
@@ -124,8 +145,8 @@ const STYLES_STRIP = [
 const FEATURED_BLOG_FALLBACK = BLOG_POSTS.slice(0, 3);
 
 export default async function Home() {
-  const [apiVendors, statsData, apiBlogPosts] = await Promise.all([
-    fetchFeaturedVendors(), fetchStats(), fetchFeaturedBlogPosts(),
+  const [apiVendors, statsData, apiBlogPosts, featuredProjects, heroSubtitle] = await Promise.all([
+    fetchFeaturedVendors(), fetchStats(), fetchFeaturedBlogPosts(), fetchFeaturedProjects(), fetchHomepageContent(),
   ]);
   const vendors = apiVendors.length > 0 ? apiVendors : FEATURED_FALLBACK;
   const FEATURED_BLOG = apiBlogPosts.length > 0 ? apiBlogPosts : FEATURED_BLOG_FALLBACK;
@@ -165,7 +186,7 @@ export default async function Home() {
               )}
             </h1>
             <p style={{ maxWidth: '400px', fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.75, marginTop: '18px' }}>
-              India&apos;s most trusted interior designer marketplace. Browse verified portfolios, compare quotes, and connect with the perfect designer for your home.
+              {heroSubtitle}
             </p>
             <div className="hero-cta-row" style={{ display: 'flex', gap: '12px', marginTop: '28px', flexWrap: 'wrap' }}>
               <Link href="/vendors" style={{ flex: '1 1 auto', minWidth: '160px' }}>
@@ -323,6 +344,24 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {featuredProjects.length > 0 && (
+        <>
+          <div className="divider" />
+
+          {/* ── FEATURED PROJECTS ── */}
+          <section style={{ background: 'var(--bg)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
+            <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+              <p className="caps-label-primary" style={{ marginBottom: '10px' }}>FEATURED PROJECTS</p>
+              <h2 className="section-heading" style={{ marginBottom: '8px' }}>Real work, real results</h2>
+              <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '40px' }}>
+                A curated look at completed projects from designers on Intrafer.
+              </p>
+              <ProjectsSection projects={featuredProjects} />
+            </div>
+          </section>
+        </>
+      )}
 
       <div className="divider" />
 

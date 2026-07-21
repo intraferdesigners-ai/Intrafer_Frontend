@@ -1,147 +1,234 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CreditCard } from 'lucide-react';
-import api from '@/lib/api';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import Badge from '@/components/ui/Badge';
-import Spinner from '@/components/ui/Spinner';
-import { formatDate, getInitials } from '@/lib/utils';
+import { Search } from 'lucide-react';
+import api from '../../../../lib/api';
+import Button from '../../../../components/ui/Button';
+import Spinner from '../../../../components/ui/Spinner';
+import { formatDate, formatINR } from '../../../../lib/utils';
 
-const COL = {
-  vendor:  { flex: 2 },
-  plan:    { flex: 1 },
-  status:  { flex: 1 },
-  period:  { flex: 1.5 },
+const STATUS_BADGE = {
+  pending:   { label: 'Pending',   bg: 'var(--color-warning-bg)',  color: 'var(--color-warning)'   },
+  active:    { label: 'Active',    bg: 'var(--color-success-bg)',  color: 'var(--color-success)'   },
+  expired:   { label: 'Expired',   bg: 'var(--color-surface-alt)', color: 'var(--color-text-hint)' },
+  cancelled: { label: 'Cancelled', bg: 'var(--color-danger-bg)',   color: 'var(--color-danger)'    },
+  failed:    { label: 'Failed',    bg: 'var(--color-danger-bg)',   color: 'var(--color-danger)'    },
 };
 
+const STATUS_OPTIONS = [
+  { value: '',          label: 'All' },
+  { value: 'pending',   label: 'Pending' },
+  { value: 'active',    label: 'Active' },
+  { value: 'expired',   label: 'Expired' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'failed',    label: 'Failed' },
+];
+
 const HEADER_CELL = {
-  fontSize: 11, fontWeight: 600, letterSpacing: '0.06em',
-  color: 'var(--color-text-hint)', textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 600, color: 'var(--color-text-hint)',
+  letterSpacing: '0.06em', textTransform: 'uppercase',
+};
+
+const INPUT_STYLE = {
+  padding: '9px 12px', fontSize: 13,
+  background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)',
+  borderRadius: 'var(--radius-md)', color: 'var(--color-text)',
+  fontFamily: 'var(--font-ui)',
 };
 
 export default function AdminSubscriptionsPage() {
-  const [vendors,  setVendors]  = useState([]);
-  const [loading,  setLoading]  = useState(true);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading,        setLoading]      = useState(true);
+  const [page,           setPage]         = useState(1);
+  const [totalPages,     setTotalPages]   = useState(1);
+  const [total,          setTotal]        = useState(0);
+
+  const [status,         setStatus]         = useState('');
+  const [planNameInput,  setPlanNameInput]  = useState('');
+  const [planName,       setPlanName]       = useState('');
+  const [searchInput,    setSearchInput]    = useState('');
+  const [search,         setSearch]         = useState('');
 
   useEffect(() => {
-    api.get('/admin/vendors')
+    setLoading(true);
+    const params = new URLSearchParams({ limit: '15', page: String(page) });
+    if (status) params.set('status', status);
+    if (planName) params.set('planName', planName);
+    if (search) params.set('search', search);
+    api.get(`/admin/subscriptions?${params}`)
       .then(({ data }) => {
-        const all = data.data?.vendors || [];
-        setVendors(all.filter((v) => v.subscriptionId));
+        const d = data.data;
+        setSubscriptions(d.subscriptions || []);
+        setTotalPages(d.totalPages || 1);
+        setTotal(d.total || 0);
       })
-      .catch(() => {})
+      .catch(() => setSubscriptions([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [status, planName, search, page]);
+
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    setPlanName(planNameInput.trim());
+    setSearch(searchInput.trim());
+    setPage(1);
+  };
+
+  const handleStatusChange = (e) => {
+    setStatus(e.target.value);
+    setPage(1);
+  };
 
   return (
-    <DashboardLayout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 300, color: 'var(--color-text)', margin: '0 0 4px' }}>
-            Subscriptions
-          </h1>
-          <p style={{ fontSize: '13px', color: 'var(--color-text-hint)', margin: 0 }}>
-            {loading ? '…' : `${vendors.length} active subscription${vendors.length !== 1 ? 's' : ''}`}
-          </p>
-        </div>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 24 }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 300, color: 'var(--color-text)', margin: 0 }}>
+          Subscriptions &amp; payments
+        </h1>
+        {!loading && (
+          <span style={{ fontSize: 13, color: 'var(--color-text-hint)', background: 'var(--color-surface-alt)', padding: '2px 10px', borderRadius: 20, fontWeight: 500 }}>
+            {total} total
+          </span>
+        )}
       </div>
 
+      {/* Filters */}
+      <form onSubmit={handleFilterSubmit} style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+        <select value={status} onChange={handleStatusChange} style={{ ...INPUT_STYLE, cursor: 'pointer' }}>
+          {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <input
+          type="text"
+          value={planNameInput}
+          onChange={(e) => setPlanNameInput(e.target.value)}
+          placeholder="Plan name…"
+          style={{ ...INPUT_STYLE, width: 160 }}
+        />
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Search by vendor…"
+          style={{ ...INPUT_STYLE, width: 200 }}
+        />
+        <Button type="submit" variant="secondary" size="sm" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Search size={14} /> Apply
+        </Button>
+      </form>
+
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
-          <Spinner size={28} />
-        </div>
-      ) : vendors.length === 0 ? (
-        <div style={{ textAlign: 'center', paddingTop: '80px' }}>
-          <CreditCard size={48} color="var(--color-text-hint)" />
-          <p style={{ marginTop: '16px', fontSize: '15px', color: 'var(--color-text-hint)' }}>
-            No active subscriptions yet.
-          </p>
+        <div style={{ padding: '48px 0' }}><Spinner size="md" /></div>
+      ) : subscriptions.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '48px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', fontSize: 13, color: 'var(--color-text-hint)' }}>
+          No subscriptions found.
         </div>
       ) : (
         <>
           {/* Header row */}
-          <div style={{
-            display: 'flex', gap: '12px',
-            padding: '10px 16px', marginBottom: '8px',
-            background: 'var(--color-surface-alt)',
-            borderRadius: 'var(--radius-lg)',
+          <div className="admin-table-header" style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-md)', padding: '10px 16px', marginBottom: 8,
           }}>
-            <div style={{ ...COL.vendor,  ...HEADER_CELL }}>VENDOR</div>
-            <div style={{ ...COL.plan,    ...HEADER_CELL }}>PLAN</div>
-            <div style={{ ...COL.status,  ...HEADER_CELL }}>STATUS</div>
-            <div style={{ ...COL.period,  ...HEADER_CELL }}>PERIOD</div>
+            <div style={{ ...HEADER_CELL, flex: 1.6 }}>Vendor</div>
+            <div style={{ ...HEADER_CELL, flex: 1 }}>Plan</div>
+            <div style={{ ...HEADER_CELL, flex: 1 }}>Price</div>
+            <div style={{ ...HEADER_CELL, flex: 1 }}>Status</div>
+            <div style={{ ...HEADER_CELL, flex: 0.9 }}>Coupon</div>
+            <div style={{ ...HEADER_CELL, flex: 1 }}>Start</div>
+            <div style={{ ...HEADER_CELL, flex: 1 }}>End</div>
+            <div style={{ ...HEADER_CELL, flex: 1.6 }}>Payment ID</div>
           </div>
 
-          {vendors.map((vendor) => {
-            const sub     = vendor.subscriptionId || {};
-            const user    = vendor.userId || {};
-            const isActive = sub.isActive ?? vendor.isListingEnabled;
-
+          {subscriptions.map((sub) => {
+            const badge = STATUS_BADGE[sub.status] || STATUS_BADGE.pending;
             return (
               <div
-                key={vendor._id}
+                key={sub._id}
+                className="admin-table-row"
                 style={{
-                  display: 'flex', gap: '12px', alignItems: 'center',
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '14px 16px', marginBottom: '8px',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)', padding: '14px 16px', marginBottom: 8,
+                  flexWrap: 'wrap',
                 }}
               >
                 {/* Vendor */}
-                <div style={{ ...COL.vendor, display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                  <div style={{
-                    width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
-                    background: 'var(--primary-bg)', color: 'var(--primary)',
-                    fontSize: '13px', fontWeight: 600,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    {getInitials(vendor.businessName || 'V')}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-text)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {vendor.businessName}
-                    </p>
-                    <p style={{ fontSize: '11px', color: 'var(--color-text-hint)', margin: 0, fontFamily: 'monospace' }}>
-                      {user.email || vendor.location?.city || '—'}
-                    </p>
-                  </div>
+                <div style={{ flex: 1.6, minWidth: 140, fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>
+                  {sub.vendorId?.businessName || 'Unknown vendor'}
                 </div>
 
                 {/* Plan */}
-                <div style={{ ...COL.plan }}>
-                  <span style={{
-                    fontSize: '12px', fontWeight: 600, padding: '3px 10px',
-                    background: 'var(--primary-bg)', color: 'var(--primary)',
-                    borderRadius: '20px',
-                  }}>
-                    {sub.planName || 'Unknown plan'}
-                  </span>
+                <div style={{ flex: 1, fontSize: 13, color: 'var(--color-text-sub)' }}>
+                  {sub.planName}
+                </div>
+
+                {/* Price */}
+                <div style={{ flex: 1, fontSize: 13, color: 'var(--color-text-sub)' }}>
+                  {formatINR(sub.planPrice)}
                 </div>
 
                 {/* Status */}
-                <div style={{ ...COL.status }}>
-                  <Badge
-                    label={isActive ? 'Active' : 'Expired'}
-                    variant={isActive ? 'success' : 'danger'}
-                  />
+                <div style={{ flex: 1 }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 500, padding: '3px 8px',
+                    borderRadius: 20, color: badge.color, background: badge.bg,
+                  }}>
+                    {badge.label}
+                  </span>
                 </div>
 
-                {/* Period */}
-                <div style={{ ...COL.period }}>
-                  <p style={{ fontSize: '12px', color: 'var(--color-text-sub)', margin: '0 0 2px' }}>
-                    {sub.startDate ? formatDate(sub.startDate) : '—'}
-                  </p>
-                  <p style={{ fontSize: '12px', color: 'var(--color-text-hint)', margin: 0 }}>
-                    → {sub.endDate ? formatDate(sub.endDate) : '—'}
-                  </p>
+                {/* Coupon */}
+                <div style={{ flex: 0.9, fontSize: 12, color: 'var(--color-text-hint)' }}>
+                  {sub.couponCode || '—'}
+                </div>
+
+                {/* Start date */}
+                <div style={{ flex: 1, fontSize: 12, color: 'var(--color-text-hint)' }}>
+                  {sub.startDate ? formatDate(sub.startDate) : '—'}
+                </div>
+
+                {/* End date */}
+                <div style={{ flex: 1, fontSize: 12, color: 'var(--color-text-hint)' }}>
+                  {sub.endDate ? formatDate(sub.endDate) : '—'}
+                </div>
+
+                {/* Razorpay payment ID */}
+                <div style={{
+                  flex: 1.6, fontFamily: 'var(--font-mono)', fontSize: 11,
+                  color: 'var(--color-text-hint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {sub.razorpayPaymentId || '—'}
                 </div>
               </div>
             );
           })}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 24 }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={page === 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                ← Prev
+              </Button>
+              <span style={{ fontSize: 13, color: 'var(--color-text-sub)' }}>
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={page === totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next →
+              </Button>
+            </div>
+          )}
         </>
       )}
-    </DashboardLayout>
+    </div>
   );
 }
