@@ -158,7 +158,11 @@ export default function SuccessContent() {
         </Link>
       </div>
 
-      <p style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '24px', lineHeight: 1.6 }}>
+      <p style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '16px', lineHeight: 1.6 }}>
+        This also set up your free Intrafer account — no password to remember. Next time, just enter your email on the sign-in page and we&apos;ll send you a code.
+      </p>
+
+      <p style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '12px', lineHeight: 1.6 }}>
         🔒 Your contact details are only shared after the designer accepts your enquiry.
       </p>
     </div>

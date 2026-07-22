@@ -100,7 +100,7 @@ function EnquiryForm() {
           Tell us about your project
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--text-hint)', margin: '0 0 28px' }}>
-          We&apos;ll connect you with the designer. No account needed.
+          We&apos;ll connect you with the designer. No password required — we&apos;ll verify your number with a quick code.
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
