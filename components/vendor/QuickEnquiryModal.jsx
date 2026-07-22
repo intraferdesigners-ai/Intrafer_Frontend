@@ -6,7 +6,7 @@ import Image from 'next/image';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { X, User, Phone, Mail } from 'lucide-react';
+import { X, User, Phone, Mail, Lock, Clock, BadgeCheck } from 'lucide-react';
 
 const PROJECT_TYPES = [
   'Residential', 'Modular Kitchen', 'Full Home Interior',
@@ -94,10 +94,17 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
 
   const formContent = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      {/* Vendor preview strip */}
+      {/* Vendor preview strip — subtle dot-grid + soft glow texture, confined to this strip */}
       <div style={{
-        background: 'var(--bg-parchment)', borderRadius: 'var(--r-md)',
+        position: 'relative', overflow: 'hidden', borderRadius: 'var(--r-md)',
         padding: '12px 14px', display: 'flex', gap: '10px', alignItems: 'center',
+        backgroundColor: 'var(--bg-parchment)',
+        backgroundImage: [
+          'radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 60%)',
+          'radial-gradient(circle at 10% 92%, color-mix(in srgb, var(--text) 10%, transparent), transparent 55%)',
+          'radial-gradient(circle, var(--border) 1px, transparent 1px)',
+        ].join(', '),
+        backgroundSize: 'auto, auto, 14px 14px',
       }}>
         {imgSrc && (
           <div style={{ position: 'relative', width: 48, height: 48, borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
@@ -115,6 +122,22 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
               }}>{s}</span>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Trust row — same icons/wording/sizing as the enquiry page's context panel */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 18px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-hint)' }}>
+          <Lock size={14} color="var(--text-hint)" style={{ flexShrink: 0 }} />
+          No password needed
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-hint)' }}>
+          <Clock size={14} color="var(--text-hint)" style={{ flexShrink: 0 }} />
+          Designers typically reply within 48 hours
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-hint)' }}>
+          <BadgeCheck size={14} color="var(--text-hint)" style={{ flexShrink: 0 }} />
+          Verified designer
         </div>
       </div>
 
