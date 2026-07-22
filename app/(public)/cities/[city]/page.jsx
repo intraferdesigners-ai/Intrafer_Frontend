@@ -7,37 +7,31 @@ const CITY_DATA = {
     name: 'Bangalore', state: 'Karnataka',
     image: '/images/cities/bangalore.jpg',
     description: 'Find the best interior designers in Bangalore. From modern apartments in Whitefield to luxury villas in Sarjapur, our verified designers cover every neighbourhood and style.',
-    vendorCount: 8,
   },
   mumbai: {
     name: 'Mumbai', state: 'Maharashtra',
     image: '/images/cities/mumbai.jpg',
     description: 'Top-rated interior designers in Mumbai. Whether you need a compact sea-facing flat redesigned or a luxury Bandra home transformed, our Mumbai designers deliver.',
-    vendorCount: 0,
   },
   delhi: {
     name: 'Delhi NCR', state: 'Delhi',
     image: '/images/cities/delhi.jpg',
     description: 'Discover interior designers in Delhi NCR. From South Delhi farmhouses to Gurgaon high-rises, find designers who know the city\'s unique aesthetic sensibility.',
-    vendorCount: 0,
   },
   hyderabad: {
     name: 'Hyderabad', state: 'Telangana',
     image: '/images/cities/bangalore.jpg',
     description: 'Find interior designers in Hyderabad. HITEC City apartments, Jubilee Hills villas, and everything in between — our designers know Hyderabad intimately.',
-    vendorCount: 0,
   },
   chennai: {
     name: 'Chennai', state: 'Tamil Nadu',
     image: '/images/cities/mumbai.jpg',
     description: 'Interior designers in Chennai who blend Tamil craftsmanship with contemporary design. From Adyar to OMR, find designers who understand Chennai homes.',
-    vendorCount: 0,
   },
   pune: {
     name: 'Pune', state: 'Maharashtra',
     image: '/images/cities/delhi.jpg',
     description: 'Connect with Pune\'s best interior designers. Aundh, Koregaon Park, Hinjewadi — our designers bring style to every Pune neighbourhood.',
-    vendorCount: 0,
   },
 };
 
@@ -115,7 +109,7 @@ export default async function CityPage({ params }) {
         {/* Stats strip */}
         <div className="city-stats-grid" style={{ marginBottom: '48px' }}>
           {[
-            { label: 'Designers', value: vendors.length || cityData.vendorCount },
+            { label: 'Designers', value: vendors.length > 0 ? vendors.length : 'New' },
             { label: 'Avg rating', value: stats ? `${stats.avgRating}★` : '4.9★' },
             { label: 'Response', value: '48h' },
           ].map((s) => (

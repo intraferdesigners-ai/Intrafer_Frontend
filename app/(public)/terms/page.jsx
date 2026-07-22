@@ -113,8 +113,8 @@ export default function TermsOfServicePage() {
         <ul style={{ paddingLeft: '20px' }}>
           {[
             'You authorize Razorpay to charge your selected payment method',
-            'Subscriptions auto-renew unless cancelled before the renewal date',
-            'Refunds are not provided for partial billing periods',
+            'Plans are prepaid in full for their 3, 6, or 12-month term and do not auto-renew — you choose to resubscribe at the end of your term',
+            'Payments are non-refundable once a term has started',
             'Lead credits do not carry over to the next billing period',
           ].map((item, i) => (
             <li key={i} style={{ marginBottom: '8px' }}>{item}</li>
