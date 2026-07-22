@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import api from '@/lib/api';
 import { IMAGES } from '@/lib/images';
 
@@ -33,7 +34,7 @@ export default function AuthHeroPanel() {
     <div className="hide-mobile" style={{
       position: 'relative', overflow: 'hidden',
       display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-      padding: 'clamp(28px, 4vw, 40px)', minHeight: '560px',
+      padding: 'clamp(28px, 4vw, 40px)', minHeight: '100dvh',
     }}>
       <Image
         src={IMAGES.hero.main}
@@ -45,13 +46,17 @@ export default function AuthHeroPanel() {
       <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: OVERLAY, zIndex: 1 }} />
 
       <div style={{ position: 'relative', zIndex: 2 }}>
-        <div style={{
-          width: '38px', height: '38px', borderRadius: '8px',
-          background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(0,0,0,.2)',
-        }}>
-          <Image src="/images/logo/logo.png" alt="Intrafer" width={30} height={30} style={{ objectFit: 'contain' }} />
-        </div>
+        {/* No site navbar renders on /auth/* routes, so this doubles as the
+            page's only way back home. */}
+        <Link href="/" style={{ display: 'inline-flex' }}>
+          <div style={{
+            width: '38px', height: '38px', borderRadius: '8px',
+            background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(0,0,0,.2)',
+          }}>
+            <Image src="/images/logo/logo.png" alt="Intrafer" width={30} height={30} style={{ objectFit: 'contain' }} />
+          </div>
+        </Link>
       </div>
 
       <div style={{ position: 'relative', zIndex: 2 }}>

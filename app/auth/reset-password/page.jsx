@@ -12,7 +12,9 @@ import Input from '@/components/ui/Input';
 import AuthSplitCard from '@/components/auth/AuthSplitCard';
 
 const Logo = () => (
-  <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain', marginBottom: '20px' }} />
+  <Link href="/" style={{ display: 'inline-flex', marginBottom: '20px' }}>
+    <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain' }} />
+  </Link>
 );
 
 function ResetPasswordForm() {
@@ -49,7 +51,7 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <AuthSplitCard maxWidth="880px">
+      <AuthSplitCard>
         <div style={{ textAlign: 'center' }}>
           <Logo />
           <h1 style={{
@@ -73,7 +75,7 @@ function ResetPasswordForm() {
 
   if (done) {
     return (
-      <AuthSplitCard maxWidth="880px">
+      <AuthSplitCard>
         <div style={{ textAlign: 'center' }}>
           <Logo />
           <div style={{

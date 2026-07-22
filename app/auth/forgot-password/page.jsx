@@ -139,7 +139,9 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthSplitCard>
-      <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain', marginBottom: '20px' }} />
+      <Link href="/" style={{ display: 'inline-flex', marginBottom: '20px' }}>
+        <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain' }} />
+      </Link>
       <Link href="/auth/login" style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
         fontSize: '13px', color: 'var(--text-hint)',

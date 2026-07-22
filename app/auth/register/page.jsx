@@ -236,7 +236,9 @@ export default function RegisterPage() {
 
   return (
     <AuthSplitCard>
-      <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain', marginBottom: '20px' }} />
+      <Link href="/" style={{ display: 'inline-flex', marginBottom: '20px' }}>
+        <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain' }} />
+      </Link>
       <div style={{ marginBottom: '24px' }}>
         <div style={{
           width: '44px', height: '44px', borderRadius: '50%',
