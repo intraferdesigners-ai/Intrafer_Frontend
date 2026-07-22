@@ -13,20 +13,13 @@ import Spinner from '../../../../../components/ui/Spinner';
 import ReviewModal from '../../../../../components/user/ReviewModal';
 import MessageThread from '../../../../../components/shared/MessageThread';
 import { formatDate } from '../../../../../lib/utils';
+import { PIPELINE, getStageIndex } from '../../../../../lib/leadPipeline';
 
 const LABEL = {
   fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
   textTransform: 'uppercase', color: 'var(--color-text-hint)',
   display: 'block', marginBottom: 4,
 };
-
-const PIPELINE = [
-  { key: 'new',            label: 'Enquiry submitted'    },
-  { key: 'accepted',       label: 'Accepted by designer' },
-  { key: 'contacted',      label: 'Designer contacted'   },
-  { key: 'quotation_sent', label: 'Quotation sent'       },
-  { key: 'won',            label: 'Project confirmed'    },
-];
 
 const STATUS_BANNERS = {
   new: {
@@ -58,11 +51,6 @@ const STATUS_BANNERS = {
     text: 'You have cancelled this enquiry.',
   },
 };
-
-function getStageIndex(status) {
-  if (status === 'lost' || status === 'cancelled') return -1;
-  return PIPELINE.findIndex((s) => s.key === status);
-}
 
 function DetailRow({ icon: Icon, label, value }) {
   if (!value) return null;
@@ -397,7 +385,7 @@ export default function EnquiryDetailPage() {
                             color: 'var(--color-text-hint)', margin: '0 0 6px',
                             fontStyle: histEntry ? 'normal' : 'italic',
                           }}>
-                            {histEntry?.createdAt ? formatDate(histEntry.createdAt) : 'Pending'}
+                            {histEntry?.changedAt ? formatDate(histEntry.changedAt) : 'Pending'}
                           </p>
                         </div>
                       </div>

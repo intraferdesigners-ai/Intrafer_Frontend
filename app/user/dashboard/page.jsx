@@ -8,7 +8,10 @@ import api from '../../../lib/api';
 import useAuthStore from '../../../store/authStore';
 import Badge from '../../../components/ui/Badge';
 import Spinner from '../../../components/ui/Spinner';
+import PipelineProgress from '../../../components/shared/PipelineProgress';
 import { formatRelativeTime } from '../../../lib/utils';
+
+const TERMINAL_NEGATIVE_STATUSES = new Set(['lost', 'cancelled']);
 
 const LABEL = {
   fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
@@ -250,6 +253,9 @@ export default function UserDashboard() {
                     alignItems: 'flex-end', gap: 6, flexShrink: 0,
                   }}>
                     <Badge status={lead.status} />
+                    {!TERMINAL_NEGATIVE_STATUSES.has(lead.status) && (
+                      <PipelineProgress status={lead.status} />
+                    )}
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-hint)' }}>
                       {formatRelativeTime(lead.createdAt)}
                     </div>

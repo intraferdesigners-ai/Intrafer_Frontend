@@ -6,7 +6,10 @@ import { FileText, ArrowRight } from 'lucide-react';
 import api from '../../../../lib/api';
 import Badge from '../../../../components/ui/Badge';
 import Spinner from '../../../../components/ui/Spinner';
+import PipelineProgress from '../../../../components/shared/PipelineProgress';
 import { formatRelativeTime } from '../../../../lib/utils';
+
+const TERMINAL_NEGATIVE_STATUSES = new Set(['lost', 'cancelled']);
 
 const FILTERS = [
   { key: 'all',    label: 'All'    },
@@ -119,6 +122,13 @@ export default function EnquiriesPage() {
               </span>
               <Badge status={lead.status} />
             </div>
+
+            {/* Pipeline progress */}
+            {!TERMINAL_NEGATIVE_STATUSES.has(lead.status) && (
+              <div style={{ marginBottom: 12 }}>
+                <PipelineProgress status={lead.status} />
+              </div>
+            )}
 
             {/* Project type + vendor */}
             <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--color-text)', margin: '0 0 2px' }}>
