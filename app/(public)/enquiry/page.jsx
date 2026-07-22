@@ -132,14 +132,6 @@ function EnquiryForm() {
       paddingTop: HEADER_HEIGHT, minHeight: `calc(100dvh - ${HEADER_HEIGHT})`,
       display: 'flex', flexDirection: 'column',
     }}>
-      {vendorId && (
-        <div style={{ padding: '20px clamp(16px,4vw,24px) 0' }}>
-          <Link href={`/vendors/${vendorId}`} className="back-link">
-            ← Back to designer
-          </Link>
-        </div>
-      )}
-
       <div className="enquiry-split-card" style={{
         flex: 1, width: '100%',
         background: 'var(--color-surface)',
@@ -150,20 +142,31 @@ function EnquiryForm() {
           padding: 'clamp(28px, 4vw, 40px)',
           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                width: '38px', height: '38px', borderRadius: '8px', flexShrink: 0,
-                background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0,0,0,.2)',
-              }}>
-                <Image src="/images/logo/logo.png" alt="Intrafer" width={30} height={30} style={{ objectFit: 'contain' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {vendorId && (
+                <Link href={`/vendors/${vendorId}`} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  width: 'fit-content', fontSize: '12px',
+                  color: `color-mix(in srgb, ${PANEL_FG} 70%, transparent)`,
+                }}>
+                  ← Back to designer
+                </Link>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '38px', height: '38px', borderRadius: '8px', flexShrink: 0,
+                  background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,.2)',
+                }}>
+                  <Image src="/images/logo/logo.png" alt="Intrafer" width={30} height={30} style={{ objectFit: 'contain' }} />
+                </div>
+                <span style={{
+                  fontSize: '11px', fontWeight: 700, letterSpacing: '.16em',
+                  opacity: 0.6, color: PANEL_FG,
+                }}>
+                  INTRAFER
+                </span>
               </div>
-              <span style={{
-                fontSize: '11px', fontWeight: 700, letterSpacing: '.16em',
-                opacity: 0.6, color: PANEL_FG,
-              }}>
-                INTRAFER
-              </span>
             </div>
 
             <div>
