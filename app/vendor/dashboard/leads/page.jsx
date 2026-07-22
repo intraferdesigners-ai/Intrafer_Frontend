@@ -29,6 +29,7 @@ const FILTER_TABS = [
 export default function VendorLeadsPage() {
   const [leads,            setLeads]            = useState([]);
   const [loading,          setLoading]          = useState(true);
+  const [loadError,        setLoadError]        = useState(false);
   const [filter,           setFilter]           = useState('all');
   const [acceptingId,      setAcceptingId]      = useState(null);
   const [confirmingId,     setConfirmingId]     = useState(null);
@@ -36,13 +37,17 @@ export default function VendorLeadsPage() {
 
   const fetchLeads = useCallback(() => {
     setLoading(true);
+    setLoadError(false);
     const url = filter === 'all' ? '/leads/vendor' : `/leads/vendor?status=${filter}`;
     api.get(url)
       .then(({ data }) => {
         const d = data.data;
         setLeads(Array.isArray(d) ? d : d.leads || []);
       })
-      .catch(() => setLeads([]))
+      .catch(() => {
+        setLeads([]);
+        setLoadError(true);
+      })
       .finally(() => setLoading(false));
   }, [filter]);
 
@@ -151,6 +156,25 @@ export default function VendorLeadsPage() {
 
       {loading ? (
         <div style={{ padding: '48px 0' }}><Spinner size="md" /></div>
+      ) : loadError ? (
+        <div style={{
+          background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-xl)', padding: '48px 24px', textAlign: 'center',
+        }}>
+          <p style={{ fontSize: 13, color: 'var(--color-text-hint)', margin: '0 0 12px' }}>
+            Couldn&apos;t load your leads. Please try again.
+          </p>
+          <button
+            onClick={fetchLeads}
+            style={{
+              padding: '6px 16px', borderRadius: 'var(--radius-sm)',
+              background: 'var(--color-primary)', color: '#fff',
+              border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+            }}
+          >
+            Try again
+          </button>
+        </div>
       ) : leads.length === 0 ? (
         <div style={{
           background: 'var(--color-surface)', border: '1px solid var(--color-border)',

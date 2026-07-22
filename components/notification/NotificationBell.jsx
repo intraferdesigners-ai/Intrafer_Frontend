@@ -10,9 +10,18 @@ const POLL_INTERVAL_MS = 45000;
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
+  const [anchorRect, setAnchorRect] = useState(null);
   const containerRef = useRef(null);
+  const buttonRef = useRef(null);
   const unreadCount = useNotificationStore((state) => state.unreadCount);
   const setUnreadCount = useNotificationStore((state) => state.setUnreadCount);
+
+  const handleToggle = () => {
+    if (!isOpen && buttonRef.current) {
+      setAnchorRect(buttonRef.current.getBoundingClientRect());
+    }
+    setIsOpen((prev) => !prev);
+  };
 
   useEffect(() => {
     const fetchUnreadCount = () => {
@@ -40,7 +49,8 @@ export default function NotificationBell() {
   return (
     <div ref={containerRef} style={{ position: 'relative', display: 'flex' }}>
       <button
-        onClick={() => setIsOpen((prev) => !prev)}
+        ref={buttonRef}
+        onClick={handleToggle}
         aria-label="Notifications"
         style={{
           position: 'relative',
@@ -65,7 +75,7 @@ export default function NotificationBell() {
         )}
       </button>
 
-      <NotificationPanel isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <NotificationPanel isOpen={isOpen} onClose={() => setIsOpen(false)} anchorRect={anchorRect} />
     </div>
   );
 }

@@ -22,12 +22,32 @@ export default function MessageThread({ leadId }) {
   const [text,     setText]     = useState('');
   const [sending,  setSending]  = useState(false);
 
-  const bottomRef  = useRef(null);
-  const firstLoad  = useRef(true);
+  const containerRef = useRef(null);
+  const firstLoad     = useRef(true);
+
+  const scrollToBottom = () => {
+    const el = containerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  };
 
   const fetchMessages = useCallback(() => {
+    const wasFirstLoad = firstLoad.current;
     api.get(`/leads/${leadId}/messages`)
-      .then(({ data }) => setMessages(data.data?.messages || []))
+      .then(({ data }) => {
+        const next = data.data?.messages || [];
+        setMessages((prev) => {
+          // Only auto-scroll for genuinely new messages arriving after the
+          // thread has already loaded (e.g. a reply coming in via polling)
+          // — never on the initial population, which would otherwise jump
+          // the whole page down to the thread past the contact card. Scoped
+          // to this container's own scrollTop, never scrollIntoView, so it
+          // can't move page scroll either.
+          if (!wasFirstLoad && next.length > prev.length) {
+            requestAnimationFrame(scrollToBottom);
+          }
+          return next;
+        });
+      })
       .catch(() => {})
       .finally(() => {
         if (firstLoad.current) {
@@ -43,10 +63,6 @@ export default function MessageThread({ leadId }) {
     return () => clearInterval(interval);
   }, [fetchMessages]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
   const handleSend = async () => {
     const trimmed = text.trim();
     if (!trimmed || sending) return;
@@ -55,7 +71,10 @@ export default function MessageThread({ leadId }) {
     try {
       const { data } = await api.post(`/leads/${leadId}/messages`, { text: trimmed });
       const message = data.data?.message;
-      if (message) setMessages((prev) => [...prev, message]);
+      if (message) {
+        setMessages((prev) => [...prev, message]);
+        requestAnimationFrame(scrollToBottom);
+      }
       setText('');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send message.');
@@ -76,7 +95,7 @@ export default function MessageThread({ leadId }) {
       borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
     }}>
-      <div style={{
+      <div ref={containerRef} style={{
         flex: 1, minHeight: 220, maxHeight: 420, overflowY: 'auto',
         padding: 16, display: 'flex', flexDirection: 'column', gap: 10,
       }}>
@@ -114,7 +133,6 @@ export default function MessageThread({ leadId }) {
             );
           })
         )}
-        <div ref={bottomRef} />
       </div>
 
       <div style={{

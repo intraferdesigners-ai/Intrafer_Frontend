@@ -21,7 +21,7 @@ const NOTIFICATION_CONFIG = {
 
 const DEFAULT_CONFIG = { icon: Bell, color: 'var(--text-hint)', bg: 'var(--bg-parchment)' };
 
-export default function NotificationPanel({ isOpen, onClose }) {
+export default function NotificationPanel({ isOpen, onClose, anchorRect }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading]             = useState(true);
 
@@ -74,12 +74,35 @@ export default function NotificationPanel({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
+  // Fixed + viewport-anchored (rather than absolute relative to the bell's
+  // own wrapper) so the panel isn't clipped/squeezed by narrow containers
+  // the bell happens to sit in (e.g. the sidebar's logo column) — it always
+  // opens at a sensible spot relative to the bell's actual screen position.
+  // Prefer aligning the panel's left edge with the bell's left edge (natural
+  // when the bell sits in a left-hand sidebar, so the panel opens rightward
+  // over the main content); only right-align if that would run the panel
+  // off the right edge of the viewport (e.g. a bell near a mobile header's
+  // right side).
+  const MARGIN      = 16;
+  const PANEL_WIDTH = 360;
+  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const panelWidth    = Math.min(PANEL_WIDTH, viewportWidth - MARGIN * 2);
+
+  const top = anchorRect ? anchorRect.bottom + 8 : 60;
+  let left;
+  if (anchorRect) {
+    left = anchorRect.left + panelWidth + MARGIN <= viewportWidth
+      ? anchorRect.left
+      : Math.max(MARGIN, anchorRect.right - panelWidth);
+  } else {
+    left = MARGIN;
+  }
+
   return (
     <div style={{
-      position: 'absolute',
-      top: '100%',
-      right: 0,
-      marginTop: '8px',
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
       width: 'min(360px, calc(100vw - 32px))',
       maxHeight: '480px',
       background: 'var(--surface)',
@@ -87,7 +110,7 @@ export default function NotificationPanel({ isOpen, onClose }) {
       borderRadius: 'var(--r-xl)',
       boxShadow: 'var(--shadow-lg)',
       overflow: 'hidden',
-      zIndex: 100,
+      zIndex: 1000,
     }}>
       {/* Header */}
       <div style={{
@@ -168,8 +191,7 @@ export default function NotificationPanel({ isOpen, onClose }) {
                   </div>
                   <p style={{
                     fontSize: '12px', color: 'var(--text-sub)', lineHeight: 1.5,
-                    marginTop: '2px', overflow: 'hidden',
-                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                    marginTop: '2px', wordBreak: 'break-word',
                   }}>
                     {n.message}
                   </p>
