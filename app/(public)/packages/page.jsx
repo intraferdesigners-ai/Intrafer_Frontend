@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { CheckCircle, ShieldCheck, Clock, Wallet } from 'lucide-react';
 import EMICalculator from '../../../components/ui/EMICalculator';
 
 export const metadata = {
@@ -89,7 +90,7 @@ export default function PackagesPage() {
         color: '#fff', padding: '16px', textAlign: 'center',
         borderRadius: '12px', marginBottom: '32px', fontSize: '14px', fontWeight: 500,
       }}>
-        LIMITED TIME: Get 30% off — Book this month and save up to ₹7 Lakhs
+        Save 30% off list price — up to ₹7 Lakhs on a complete home package
       </div>
 
       <p className="caps-label-primary" style={{ marginBottom: '10px' }}>INTERIOR PACKAGES</p>
@@ -190,13 +191,19 @@ export default function PackagesPage() {
       {/* Trust badges */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginTop: '48px' }} className="grid-2col">
         {[
-          { icon: '✓', title: 'Verified designers' },
-          { icon: '🛡', title: '10-year warranty on structure' },
-          { icon: '⏱', title: 'On-time delivery' },
-          { icon: '💰', title: 'Fixed price guarantee' },
+          { Icon: CheckCircle, title: 'Verified designers' },
+          { Icon: ShieldCheck, title: '10-year warranty on structure' },
+          { Icon: Clock,       title: 'On-time delivery' },
+          { Icon: Wallet,      title: 'Fixed price guarantee' },
         ].map((b) => (
           <div key={b.title} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', marginBottom: '6px' }}>{b.icon}</div>
+            <div style={{
+              width: '40px', height: '40px', borderRadius: '50%',
+              background: 'var(--primary-bg)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px',
+            }}>
+              <b.Icon size={20} color="var(--primary)" />
+            </div>
             <p style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text)' }}>{b.title}</p>
           </div>
         ))}
