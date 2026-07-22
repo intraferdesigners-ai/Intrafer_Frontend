@@ -77,7 +77,7 @@ export default async function RecentProjectsPage() {
         </div>
       ) : (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '80px', textAlign: 'center' }}>
-          <p style={{ fontSize: '18px', color: 'var(--text-mid)', marginBottom: '20px' }}>Projects loading...</p>
+          <p style={{ fontSize: '18px', color: 'var(--text-mid)', marginBottom: '20px' }}>No projects listed yet — check back soon, or browse our verified designers directly.</p>
           <Link href="/vendors" style={{ color: 'var(--primary)', fontWeight: 500, fontSize: '14px', textDecoration: 'none' }}>Browse designers →</Link>
         </div>
       )}

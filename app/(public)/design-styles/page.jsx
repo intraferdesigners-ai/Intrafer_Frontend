@@ -8,17 +8,28 @@ export const metadata = {
 };
 
 const STYLES_DATA = [
-  { slug:'modern',       label:'Modern',       desc:'Clean lines, neutral palette, functional beauty.',       image: IMAGES.styles.modern,       count:'8 designers' },
-  { slug:'scandinavian', label:'Scandinavian', desc:'Light woods, minimalism, cosy warmth.',                 image: IMAGES.styles.scandinavian, count:'4 designers' },
-  { slug:'traditional',  label:'Traditional',  desc:'Rich textures, classic furniture, timeless elegance.',  image: IMAGES.styles.traditional,  count:'3 designers' },
-  { slug:'minimalist',   label:'Minimalist',   desc:'Less is more — curated, calm, clutter-free.',           image: IMAGES.styles.minimalist,   count:'5 designers' },
-  { slug:'bohemian',     label:'Bohemian',     desc:'Eclectic, colourful, layered with personality.',        image: IMAGES.styles.bohemian,     count:'3 designers' },
-  { slug:'industrial',   label:'Industrial',   desc:'Raw materials, exposed brick, urban edge.',              image: IMAGES.styles.industrial,   count:'4 designers' },
-  { slug:'luxury',       label:'Luxury',       desc:'Bespoke materials, premium finishes, timeless grandeur.', image: IMAGES.styles.luxury,     count:'5 designers' },
-  { slug:'contemporary', label:'Contemporary', desc:'Current trends, bold accents, sophisticated spaces.',    image: IMAGES.styles.contemporary, count:'6 designers' },
+  { slug:'modern',       label:'Modern',       desc:'Clean lines, neutral palette, functional beauty.',       image: IMAGES.styles.modern },
+  { slug:'scandinavian', label:'Scandinavian', desc:'Light woods, minimalism, cosy warmth.',                 image: IMAGES.styles.scandinavian },
+  { slug:'traditional',  label:'Traditional',  desc:'Rich textures, classic furniture, timeless elegance.',  image: IMAGES.styles.traditional },
+  { slug:'minimalist',   label:'Minimalist',   desc:'Less is more — curated, calm, clutter-free.',           image: IMAGES.styles.minimalist },
+  { slug:'bohemian',     label:'Bohemian',     desc:'Eclectic, colourful, layered with personality.',        image: IMAGES.styles.bohemian },
+  { slug:'industrial',   label:'Industrial',   desc:'Raw materials, exposed brick, urban edge.',              image: IMAGES.styles.industrial },
+  { slug:'luxury',       label:'Luxury',       desc:'Bespoke materials, premium finishes, timeless grandeur.', image: IMAGES.styles.luxury },
+  { slug:'contemporary', label:'Contemporary', desc:'Current trends, bold accents, sophisticated spaces.',    image: IMAGES.styles.contemporary },
 ];
 
-export default function DesignStylesPage() {
+async function fetchStyleCounts() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/style-counts`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const json = await res.json();
+    return json.data?.counts || {};
+  } catch { return {}; }
+}
+
+export default async function DesignStylesPage() {
+  const counts = await fetchStyleCounts();
+
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '108px 40px 80px' }}>
       <p className="caps-label-primary" style={{ marginBottom: '10px' }}>EXPLORE STYLES</p>
@@ -32,7 +43,10 @@ export default function DesignStylesPage() {
         gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))',
         gap: '20px',
       }}>
-        {STYLES_DATA.map((style) => (
+        {STYLES_DATA.map((style) => {
+          const n = counts[style.slug] || 0;
+          const countLabel = n > 0 ? `${n} designer${n !== 1 ? 's' : ''}` : 'New';
+          return (
           <Link key={style.slug} href={`/design-styles/${style.slug}`} style={{ textDecoration: 'none' }}>
             <div style={{
               background: 'var(--surface)', border: '1px solid var(--border)',
@@ -59,13 +73,14 @@ export default function DesignStylesPage() {
                   {style.desc}
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', color: 'var(--text-hint)' }}>{style.count}</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-hint)' }}>{countLabel}</span>
                   <span style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 500 }}>View designers →</span>
                 </div>
               </div>
             </div>
           </Link>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
