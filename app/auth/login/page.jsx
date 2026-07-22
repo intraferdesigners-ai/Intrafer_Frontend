@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Mail, Lock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../lib/api';
@@ -10,6 +11,7 @@ import useAuthStore from '../../../store/authStore';
 import { setAuthTokens } from '../../../lib/auth';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import AuthSplitCard from '../../../components/auth/AuthSplitCard';
 
 const tabStyle = (active) => ({
   flex: 1, padding: '8px 12px', borderRadius: 'var(--r-sm)', border: 'none',
@@ -148,15 +150,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{
-      background: 'var(--surface)',
-      border: '1px solid var(--border)',
-      borderRadius: 'var(--r-2xl)',
-      padding: '40px',
-      width: '100%',
-      maxWidth: '420px',
-      boxShadow: 'var(--shadow-lg)',
-    }}>
+    <AuthSplitCard>
+      <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain', marginBottom: '20px' }} />
       <div style={{ marginBottom: '28px' }}>
         <div style={{
           width: '44px', height: '44px', borderRadius: '50%',
@@ -363,6 +358,6 @@ export default function LoginPage() {
           Sign up
         </Link>
       </p>
-    </div>
+    </AuthSplitCard>
   );
 }

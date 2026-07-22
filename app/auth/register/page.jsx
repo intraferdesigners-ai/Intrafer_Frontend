@@ -7,6 +7,7 @@ import { Mail, Lock, User, Phone, UserPlus } from 'lucide-react';
 import api from '../../../lib/api';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import AuthSplitCard from '../../../components/auth/AuthSplitCard';
 
 export default function RegisterPage() {
   const [name,     setName]     = useState('');
@@ -39,16 +40,6 @@ export default function RegisterPage() {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     }
     setLoading(false);
-  };
-
-  const cardStyle = {
-    background: 'var(--surface)',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--r-2xl)',
-    padding: '40px',
-    width: '100%',
-    maxWidth: '420px',
-    boxShadow: 'var(--shadow-lg)',
   };
 
   if (success) {
@@ -244,7 +235,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div style={cardStyle}>
+    <AuthSplitCard>
+      <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain', marginBottom: '20px' }} />
       <div style={{ marginBottom: '24px' }}>
         <div style={{
           width: '44px', height: '44px', borderRadius: '50%',
@@ -319,6 +311,6 @@ export default function RegisterPage() {
           Sign in
         </Link>
       </p>
-    </div>
+    </AuthSplitCard>
   );
 }

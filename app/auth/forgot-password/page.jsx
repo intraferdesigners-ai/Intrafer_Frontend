@@ -7,6 +7,7 @@ import { Mail, MailCheck, ArrowLeft } from 'lucide-react';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import AuthSplitCard from '@/components/auth/AuthSplitCard';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -137,15 +138,8 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div style={{
-      background: 'var(--surface)',
-      border: '1px solid var(--border)',
-      borderRadius: 'var(--r-2xl)',
-      padding: '40px',
-      width: '100%',
-      maxWidth: '420px',
-      boxShadow: 'var(--shadow-lg)',
-    }}>
+    <AuthSplitCard>
+      <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain', marginBottom: '20px' }} />
       <Link href="/auth/login" style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
         fontSize: '13px', color: 'var(--text-hint)',
@@ -208,6 +202,6 @@ export default function ForgotPasswordPage() {
           Sign in
         </Link>
       </p>
-    </div>
+    </AuthSplitCard>
   );
 }

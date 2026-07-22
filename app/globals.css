@@ -914,6 +914,14 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   grid-template-columns: 38% 62%;
 }
 
+/* Auth pages split layout — hero photo panel is hidden on mobile via
+   .hide-mobile rather than stacked, since a full-height photo pushing a
+   sign-in form below the fold is worse than just not showing it there. */
+.auth-split-card {
+  display: grid;
+  grid-template-columns: 45% 55%;
+}
+
 /* How-it-works step layout */
 .how-step-layout {
   display: grid;
@@ -982,6 +990,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
   /* Enquiry page */
   .enquiry-split-card { grid-template-columns: 1fr; }
+
+  /* Auth pages — hero panel hidden via .hide-mobile (see its own rule
+     above), so the grid just collapses to the single remaining column. */
+  .auth-split-card { grid-template-columns: 1fr; }
 
   /* How-it-works */
   .how-step-layout { grid-template-columns: 1fr; gap: 24px; direction: ltr; }

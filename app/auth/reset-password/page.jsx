@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock, CheckCircle2, ArrowLeft } from 'lucide-react';
@@ -8,6 +9,11 @@ import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import AuthSplitCard from '@/components/auth/AuthSplitCard';
+
+const Logo = () => (
+  <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain', marginBottom: '20px' }} />
+);
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -43,66 +49,61 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div style={{
-        background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: 'var(--r-2xl)', padding: '40px', width: '100%',
-        maxWidth: '420px', boxShadow: 'var(--shadow-lg)', textAlign: 'center',
-      }}>
-        <h1 style={{
-          fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 400,
-          color: 'var(--text)', marginBottom: '10px',
-        }}>
-          Invalid reset link
-        </h1>
-        <p style={{ fontSize: '14px', color: 'var(--text-mid)', marginBottom: '24px' }}>
-          This link is missing its reset token. Please request a new password reset link.
-        </p>
-        <Link href="/auth/forgot-password">
-          <Button variant="primary" size="lg" style={{ width: '100%' }}>
-            Request new link
-          </Button>
-        </Link>
-      </div>
+      <AuthSplitCard maxWidth="880px">
+        <div style={{ textAlign: 'center' }}>
+          <Logo />
+          <h1 style={{
+            fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 400,
+            color: 'var(--text)', marginBottom: '10px',
+          }}>
+            Invalid reset link
+          </h1>
+          <p style={{ fontSize: '14px', color: 'var(--text-mid)', marginBottom: '24px' }}>
+            This link is missing its reset token. Please request a new password reset link.
+          </p>
+          <Link href="/auth/forgot-password">
+            <Button variant="primary" size="lg" style={{ width: '100%' }}>
+              Request new link
+            </Button>
+          </Link>
+        </div>
+      </AuthSplitCard>
     );
   }
 
   if (done) {
     return (
-      <div style={{
-        background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: 'var(--r-2xl)', padding: 'clamp(28px, 5vw, 48px)', width: '100%',
-        maxWidth: '440px', boxShadow: 'var(--shadow-lg)', textAlign: 'center',
-      }}>
-        <div style={{
-          width: '80px', height: '80px', borderRadius: '50%',
-          background: 'var(--primary-bg)', border: '2px solid var(--primary-light)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 24px',
-        }}>
-          <CheckCircle2 size={36} color="var(--primary)" strokeWidth={1.8} />
+      <AuthSplitCard maxWidth="880px">
+        <div style={{ textAlign: 'center' }}>
+          <Logo />
+          <div style={{
+            width: '80px', height: '80px', borderRadius: '50%',
+            background: 'var(--primary-bg)', border: '2px solid var(--primary-light)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px',
+          }}>
+            <CheckCircle2 size={36} color="var(--primary)" strokeWidth={1.8} />
+          </div>
+          <h1 style={{
+            fontFamily: 'var(--font-display)', fontSize: 'clamp(22px, 4vw, 28px)',
+            fontWeight: 400, color: 'var(--text)', marginBottom: '10px', letterSpacing: '-.02em',
+          }}>
+            Password reset
+          </h1>
+          <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.65, marginBottom: '32px' }}>
+            Your password has been updated. Please sign in with your new password.
+          </p>
+          <Button variant="primary" size="lg" style={{ width: '100%' }} onClick={() => router.push('/auth/login')}>
+            Back to login
+          </Button>
         </div>
-        <h1 style={{
-          fontFamily: 'var(--font-display)', fontSize: 'clamp(22px, 4vw, 28px)',
-          fontWeight: 400, color: 'var(--text)', marginBottom: '10px', letterSpacing: '-.02em',
-        }}>
-          Password reset
-        </h1>
-        <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.65, marginBottom: '32px' }}>
-          Your password has been updated. Please sign in with your new password.
-        </p>
-        <Button variant="primary" size="lg" style={{ width: '100%' }} onClick={() => router.push('/auth/login')}>
-          Back to login
-        </Button>
-      </div>
+      </AuthSplitCard>
     );
   }
 
   return (
-    <div style={{
-      background: 'var(--surface)', border: '1px solid var(--border)',
-      borderRadius: 'var(--r-2xl)', padding: '40px', width: '100%',
-      maxWidth: '420px', boxShadow: 'var(--shadow-lg)',
-    }}>
+    <AuthSplitCard>
+      <Logo />
       <Link href="/auth/login" style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
         fontSize: '13px', color: 'var(--text-hint)', textDecoration: 'none', marginBottom: '24px',
@@ -165,7 +166,7 @@ function ResetPasswordForm() {
           Reset password
         </Button>
       </form>
-    </div>
+    </AuthSplitCard>
   );
 }
 
