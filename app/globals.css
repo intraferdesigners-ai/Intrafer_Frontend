@@ -908,6 +908,12 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   position: relative;
 }
 
+/* Enquiry page split layout */
+.enquiry-split-card {
+  display: grid;
+  grid-template-columns: 38% 62%;
+}
+
 /* How-it-works step layout */
 .how-step-layout {
   display: grid;
@@ -973,6 +979,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   /* Package card */
   .package-card-inner { grid-template-columns: 1fr; }
   .package-card-image { height: 220px; }
+
+  /* Enquiry page */
+  .enquiry-split-card { grid-template-columns: 1fr; }
 
   /* How-it-works */
   .how-step-layout { grid-template-columns: 1fr; gap: 24px; direction: ltr; }
