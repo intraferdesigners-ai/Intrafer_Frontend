@@ -25,17 +25,20 @@ const STEPS = [
   { n: 3, label: 'Get matched' },
 ];
 
-// Left panel: dark accent background. Token-driven per the design brief
-// (var(--color-text) as bg / var(--color-surface) as the base foreground)
-// so it never goes invisible — but note this means the panel's *look*
-// inverts in dark mode (near-white bg, navy text) rather than staying a
-// fixed navy panel, since --text/--surface swap meaning between themes.
-// If the approved mockup specifically wants a panel that stays dark navy
-// in dark mode too, swap these two lines for the codebase's existing
-// .cta-always-dark treatment (#0F172A / #F0F6FF, used on always-dark CTA
-// bands elsewhere) instead.
-const PANEL_BG   = 'var(--color-text)';
-const PANEL_FG   = 'var(--color-surface)';
+// Left panel: fixed dark navy regardless of site theme, reusing the exact
+// same background/text/accent-link triplet as the codebase's existing
+// .cta-always-dark pattern (see app/globals.css and its usage on e.g. the
+// homepage's closing CTA band) — not theme-relative tokens, since --text/
+// --surface swap meaning under .dark and would invert this panel to a
+// light background with navy text instead of staying navy. Applied via
+// inline styles rather than the .cta-always-dark className itself because
+// that class's `* { color: #F0F6FF !important }` rule would force every
+// icon/badge/rating star in this panel to one flat color and block the
+// accent-blue highlights below (same problem .cta-always-dark works around
+// with its own `a { color: #60A5FA !important }` carve-out for links).
+const PANEL_BG      = '#0F172A';
+const PANEL_FG      = '#F0F6FF';
+const PANEL_ACCENT  = '#60A5FA';
 
 function EnquiryForm() {
   const router       = useRouter();
@@ -202,7 +205,7 @@ function EnquiryForm() {
                 )}
                 {vendor.rating > 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '14px' }}>
-                    <span style={{ color: 'var(--color-primary)', fontSize: '13px' }}>★</span>
+                    <span style={{ color: PANEL_ACCENT, fontSize: '13px' }}>★</span>
                     <span style={{ fontSize: '13px', fontWeight: 500, color: PANEL_FG }}>
                       {Number(vendor.rating).toFixed(1)}
                     </span>
@@ -266,7 +269,7 @@ function EnquiryForm() {
                     width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '11px', fontWeight: 600,
-                    background: step.n === 1 ? 'var(--color-primary)' : 'transparent',
+                    background: step.n === 1 ? PANEL_ACCENT : 'transparent',
                     color: step.n === 1 ? '#fff' : PANEL_FG,
                     border: step.n === 1 ? 'none' : `1px solid color-mix(in srgb, ${PANEL_FG} 30%, transparent)`,
                     opacity: step.n === 1 ? 1 : 0.6,
