@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
   User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Heart, Calendar, Newspaper, Tag, LifeBuoy, Mail, Shield, Star,
-  MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck, Scale,
+  MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck, Scale, Kanban,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { clearAuthTokens } from '../../lib/auth';
@@ -49,6 +49,7 @@ const NAV = {
   vendor: [
     { label: 'Dashboard',    href: '/vendor/dashboard',              icon: LayoutDashboard, group: 'OVERVIEW' },
     { label: 'Leads',        href: '/vendor/dashboard/leads',        icon: FileText,        group: 'BUSINESS' },
+    { label: 'Pipeline',     href: '/vendor/dashboard/pipeline',     icon: Kanban,          group: 'BUSINESS' },
     { label: 'Appointments', href: '/vendor/dashboard/appointments', icon: Calendar,        group: 'BUSINESS' },
     { label: 'Portfolio',    href: '/vendor/dashboard/projects',     icon: Building2,       group: 'BUSINESS' },
     { label: 'Reviews',      href: '/vendor/dashboard/reviews',      icon: Star,            group: 'GROWTH'   },
