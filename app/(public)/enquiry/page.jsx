@@ -1,12 +1,13 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User, Phone, Mail, MapPin } from 'lucide-react';
+import { User, Phone, Mail } from 'lucide-react';
 import api from '../../../lib/api';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import CitySelect from '../../../components/ui/CitySelect';
 
 const PROJECT_TYPES = [
   'Residential', 'Modular Kitchen', 'Living Room', 'Office Interiors',
@@ -33,11 +34,24 @@ function EnquiryForm() {
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
 
+  // The vendor's own city is already known once the enquiry is tied to a
+  // specific vendor, so City can default to that and become optional here —
+  // matching QuickEnquiryModal's vendor.location?.city auto-fill behaviour.
+  useEffect(() => {
+    if (!vendorId) return;
+    api.get(`/public/vendors/${vendorId}`)
+      .then(({ data }) => {
+        const vendor = data.data?.vendor;
+        if (vendor?.location?.city) setCity(vendor.location.city);
+      })
+      .catch(() => {});
+  }, [vendorId]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!name.trim() || !email.trim() || !phone.trim() || !city.trim()) {
+    if (!name.trim() || !email.trim() || !phone.trim() || (!vendorId && !city.trim())) {
       setError('Please fill in all fields.');
       return;
     }
@@ -150,7 +164,17 @@ function EnquiryForm() {
                   {BUDGET_RANGES.map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
-              <Input label="City" placeholder="e.g. Bangalore" icon={MapPin} value={city} onChange={(e) => setCity(e.target.value)} />
+              <div>
+                {vendorId ? (
+                  <label style={optionalLabelStyle}>
+                    <span>City</span>
+                    <span style={optionalBadgeStyle}>Optional</span>
+                  </label>
+                ) : (
+                  <label style={labelStyle}>City</label>
+                )}
+                <CitySelect value={city} onChange={(val) => setCity(val)} placeholder="e.g. Bangalore" />
+              </div>
             </div>
 
             <div>

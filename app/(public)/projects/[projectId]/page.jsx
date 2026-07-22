@@ -204,7 +204,7 @@ export default async function ProjectDetailPage({ params }) {
             </div>
 
             {/* CTAs */}
-            <Link href={`/enquiry?vendor=${vendor._id}`} style={{ display: 'block', marginBottom: 8 }}>
+            <Link href={`/enquiry?vendorId=${vendor._id}`} style={{ display: 'block', marginBottom: 8 }}>
               <button style={{
                 width: '100%', height: 48,
                 background: 'var(--primary)', color: '#fff',
