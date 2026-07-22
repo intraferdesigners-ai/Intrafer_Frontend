@@ -156,6 +156,14 @@ export default function ForgotPasswordPage() {
       </Link>
 
       <div style={{ marginBottom: '28px' }}>
+        <div style={{
+          width: '44px', height: '44px', borderRadius: '50%',
+          background: 'var(--primary-bg)', border: '1.5px solid var(--primary-light)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: '16px',
+        }}>
+          <Mail size={20} color="var(--primary)" strokeWidth={1.8} />
+        </div>
         <h1 style={{
           fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 400,
           letterSpacing: '-.01em', color: 'var(--text)', margin: '0 0 6px',

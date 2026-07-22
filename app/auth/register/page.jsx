@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Lock, User, Phone } from 'lucide-react';
+import { Mail, Lock, User, Phone, UserPlus } from 'lucide-react';
 import api from '../../../lib/api';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -246,6 +246,14 @@ export default function RegisterPage() {
   return (
     <div style={cardStyle}>
       <div style={{ marginBottom: '24px' }}>
+        <div style={{
+          width: '44px', height: '44px', borderRadius: '50%',
+          background: 'var(--primary-bg)', border: '1.5px solid var(--primary-light)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: '16px',
+        }}>
+          <UserPlus size={20} color="var(--primary)" strokeWidth={1.8} />
+        </div>
         <h1 style={{
           fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 400,
           letterSpacing: '-.01em', color: 'var(--text)', margin: '0 0 6px',
@@ -258,7 +266,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Role toggle */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
         {[['user', "I'm a homeowner"], ['vendor', "I'm a designer"]].map(([val, label]) => (
           <button
             key={val}
@@ -277,6 +285,12 @@ export default function RegisterPage() {
           </button>
         ))}
       </div>
+
+      <p style={{ fontSize: '12px', color: 'var(--text-hint)', textAlign: 'center', margin: '0 0 20px', lineHeight: 1.5 }}>
+        {role === 'vendor'
+          ? 'Reach homeowners actively looking for a designer · Manage every enquiry from one dashboard'
+          : 'Free to browse and enquire · Verified designers only'}
+      </p>
 
       {error && (
         <div style={{
