@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { User, Phone, Mail, MapPin, Lock, Clock, BadgeCheck, ArrowRight } from 'lucide-react';
 import api from '../../../lib/api';
 import Button from '../../../components/ui/Button';
@@ -170,12 +171,21 @@ function EnquiryForm() {
             padding: 'clamp(28px, 4vw, 40px)',
             display: 'flex', flexDirection: 'column',
           }}>
-            <span style={{
-              fontSize: '11px', fontWeight: 700, letterSpacing: '.16em',
-              opacity: 0.6, color: PANEL_FG,
-            }}>
-              INTRAFER
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '38px', height: '38px', borderRadius: '8px', flexShrink: 0,
+                background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0,0,0,.2)',
+              }}>
+                <Image src="/images/logo/logo.png" alt="Intrafer" width={30} height={30} style={{ objectFit: 'contain' }} />
+              </div>
+              <span style={{
+                fontSize: '11px', fontWeight: 700, letterSpacing: '.16em',
+                opacity: 0.6, color: PANEL_FG,
+              }}>
+                INTRAFER
+              </span>
+            </div>
 
             {vendor ? (
               <div style={{ marginTop: '28px' }}>

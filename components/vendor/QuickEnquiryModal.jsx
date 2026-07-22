@@ -224,8 +224,17 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
         <div className="modal-sheet" style={{ zIndex: 200 }}>
           <div className="modal-sheet-handle" />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 400, color: 'var(--text)' }}>
-              Quick enquiry
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '6px', flexShrink: 0,
+                background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 1px 4px rgba(0,0,0,.15)',
+              }}>
+                <Image src="/images/logo/logo.png" alt="Intrafer" width={20} height={20} style={{ objectFit: 'contain' }} />
+              </div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 400, color: 'var(--text)' }}>
+                Quick enquiry
+              </div>
             </div>
             <button onClick={onClose}
               style={{ background: 'none', border: 'none', cursor: 'pointer',
@@ -260,12 +269,21 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
           flexShrink: 0, marginBottom: '24px', position: 'relative' }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--text)' }}>
-              Quick enquiry
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '7px', flexShrink: 0,
+              background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 1px 4px rgba(0,0,0,.15)',
+            }}>
+              <Image src="/images/logo/logo.png" alt="Intrafer" width={24} height={24} style={{ objectFit: 'contain' }} />
             </div>
-            <div style={{ fontSize: '13px', color: 'var(--text-hint)', marginTop: '2px' }}>
-              {vendor.businessName}{city ? ` · ${city}` : ''}
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--text)' }}>
+                Quick enquiry
+              </div>
+              <div style={{ fontSize: '13px', color: 'var(--text-hint)', marginTop: '2px' }}>
+                {vendor.businessName}{city ? ` · ${city}` : ''}
+              </div>
             </div>
           </div>
           <button onClick={onClose}
