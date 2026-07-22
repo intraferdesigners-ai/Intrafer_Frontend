@@ -9,6 +9,7 @@ import MobileTabBar from './MobileTabBar';
 import ErrorBoundary from '../ui/ErrorBoundary';
 import NotificationBell from '../notification/NotificationBell';
 import { useTheme } from '../../context/ThemeContext';
+import CompareBar from '../vendor/CompareBar';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
@@ -93,6 +94,8 @@ export default function DashboardLayout({ children }) {
         }>
           {children}
         </ErrorBoundary>
+
+        <CompareBar />
       </main>
 
       <MobileTabBar role={role} />

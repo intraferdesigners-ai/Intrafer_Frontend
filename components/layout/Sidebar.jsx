@@ -1,12 +1,12 @@
 'use client';
-import { useMemo } from 'react';
+import { useMemo, Fragment } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
   User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Heart, Calendar, Newspaper, Tag, LifeBuoy, Mail, Shield, Star,
-  MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck,
+  MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck, Scale,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { clearAuthTokens } from '../../lib/auth';
@@ -38,44 +38,52 @@ const ADMIN_NAV_PERMISSIONS = {
 
 const NAV = {
   user: [
-    { label: 'Dashboard',       href: '/user/dashboard',                icon: LayoutDashboard },
-    { label: 'My enquiries',    href: '/user/dashboard/enquiries',      icon: FileText        },
-    { label: 'Appointments',    href: '/user/dashboard/appointments',   icon: Calendar        },
-    { label: 'Saved Designers', href: '/user/dashboard/saved',          icon: Heart           },
-    { label: 'Profile',         href: '/user/dashboard/profile',        icon: User            },
-    { label: 'Settings',        href: '/user/dashboard/settings',       icon: Settings        },
+    { label: 'Dashboard',       href: '/user/dashboard',                icon: LayoutDashboard, group: 'OVERVIEW' },
+    { label: 'My enquiries',    href: '/user/dashboard/enquiries',      icon: FileText,        group: 'ACTIVITY' },
+    { label: 'Appointments',    href: '/user/dashboard/appointments',   icon: Calendar,        group: 'ACTIVITY' },
+    { label: 'Saved Designers', href: '/user/dashboard/saved',          icon: Heart,           group: 'ACTIVITY' },
+    { label: 'Compare',         href: '/compare',                       icon: Scale,           group: 'ACTIVITY' },
+    { label: 'Profile',         href: '/user/dashboard/profile',        icon: User,            group: 'ACCOUNT'  },
+    { label: 'Settings',        href: '/user/dashboard/settings',       icon: Settings,        group: 'ACCOUNT'  },
   ],
   vendor: [
-    { label: 'Dashboard',    href: '/vendor/dashboard',              icon: LayoutDashboard },
-    { label: 'Leads',        href: '/vendor/dashboard/leads',        icon: FileText        },
-    { label: 'Appointments', href: '/vendor/dashboard/appointments', icon: Calendar        },
-    { label: 'Portfolio',    href: '/vendor/dashboard/projects',     icon: Building2       },
-    { label: 'Reviews',      href: '/vendor/dashboard/reviews',      icon: Star            },
-    { label: 'Subscription', href: '/vendor/dashboard/subscription', icon: Crown           },
-    { label: 'Profile',      href: '/vendor/dashboard/profile',      icon: User            },
-    { label: 'Settings',     href: '/vendor/dashboard/settings',     icon: Settings        },
+    { label: 'Dashboard',    href: '/vendor/dashboard',              icon: LayoutDashboard, group: 'OVERVIEW' },
+    { label: 'Leads',        href: '/vendor/dashboard/leads',        icon: FileText,        group: 'BUSINESS' },
+    { label: 'Appointments', href: '/vendor/dashboard/appointments', icon: Calendar,        group: 'BUSINESS' },
+    { label: 'Portfolio',    href: '/vendor/dashboard/projects',     icon: Building2,       group: 'BUSINESS' },
+    { label: 'Reviews',      href: '/vendor/dashboard/reviews',      icon: Star,            group: 'GROWTH'   },
+    { label: 'Subscription', href: '/vendor/dashboard/subscription', icon: Crown,           group: 'GROWTH'   },
+    { label: 'Analytics',    href: '/vendor/dashboard/analytics',    icon: BarChart3,       group: 'GROWTH'   },
+    { label: 'Profile',      href: '/vendor/dashboard/profile',      icon: User,            group: 'ACCOUNT'  },
+    { label: 'Settings',     href: '/vendor/dashboard/settings',     icon: Settings,        group: 'ACCOUNT'  },
   ],
   admin: [
-    { label: 'Dashboard',    href: '/admin/dashboard',               icon: LayoutDashboard },
-    { label: 'Vendors',      href: '/admin/dashboard/vendors',       icon: Building2       },
-    { label: 'Leads',        href: '/admin/dashboard/leads',         icon: FileText        },
-    { label: 'Users',        href: '/admin/dashboard/users',         icon: Users           },
-    { label: 'Analytics',    href: '/admin/dashboard/analytics',     icon: BarChart3       },
-    { label: 'Reports',      href: '/admin/dashboard/reports',       icon: FileBarChart    },
-    { label: 'Subscriptions', href: '/admin/dashboard/subscriptions', icon: Crown          },
-    { label: 'Blog',         href: '/admin/dashboard/blog',          icon: Newspaper       },
-    { label: 'Coupons',      href: '/admin/dashboard/coupons',       icon: Tag             },
-    { label: 'Portfolio Approvals', href: '/admin/dashboard/portfolio-approvals', icon: ClipboardCheck },
-    { label: 'All Projects', href: '/admin/dashboard/projects',      icon: Building2       },
-    { label: 'Cities',       href: '/admin/dashboard/cities',        icon: MapPin          },
-    { label: 'Categories',   href: '/admin/dashboard/categories',    icon: LayoutGrid      },
-    { label: 'Support',      href: '/admin/dashboard/support',       icon: LifeBuoy        },
-    { label: 'Visitors',     href: '/admin/dashboard/visitors',      icon: UserCheck       },
-    { label: 'Profile',      href: '/admin/dashboard/profile',       icon: User            },
-    { label: 'Settings',     href: '/admin/dashboard/settings',      icon: Settings        },
-    { label: 'Email Templates', href: '/admin/dashboard/email-templates', icon: Mail        },
-    { label: 'Team',         href: '/admin/dashboard/team',          icon: Shield          },
-    { label: 'Audit Logs',   href: '/admin/dashboard/audit-logs',    icon: ScrollText      },
+    { label: 'Dashboard',    href: '/admin/dashboard',               icon: LayoutDashboard, group: 'OVERVIEW' },
+
+    { label: 'Vendors',      href: '/admin/dashboard/vendors',       icon: Building2,       group: 'OPERATIONS' },
+    { label: 'Leads',        href: '/admin/dashboard/leads',         icon: FileText,        group: 'OPERATIONS' },
+    { label: 'Users',        href: '/admin/dashboard/users',         icon: Users,           group: 'OPERATIONS' },
+    { label: 'All Projects', href: '/admin/dashboard/projects',      icon: Building2,       group: 'OPERATIONS' },
+    { label: 'Portfolio Approvals', href: '/admin/dashboard/portfolio-approvals', icon: ClipboardCheck, group: 'OPERATIONS' },
+
+    { label: 'Subscriptions', href: '/admin/dashboard/subscriptions', icon: Crown,          group: 'FINANCIAL' },
+    { label: 'Coupons',      href: '/admin/dashboard/coupons',       icon: Tag,             group: 'FINANCIAL' },
+
+    { label: 'Blog',         href: '/admin/dashboard/blog',          icon: Newspaper,       group: 'CONTENT' },
+    { label: 'Cities',       href: '/admin/dashboard/cities',        icon: MapPin,          group: 'CONTENT' },
+    { label: 'Categories',   href: '/admin/dashboard/categories',    icon: LayoutGrid,      group: 'CONTENT' },
+    { label: 'Email Templates', href: '/admin/dashboard/email-templates', icon: Mail,        group: 'CONTENT' },
+
+    { label: 'Support',      href: '/admin/dashboard/support',       icon: LifeBuoy,        group: 'TRUST & SAFETY' },
+    { label: 'Visitors',     href: '/admin/dashboard/visitors',      icon: UserCheck,       group: 'TRUST & SAFETY' },
+    { label: 'Team',         href: '/admin/dashboard/team',          icon: Shield,          group: 'TRUST & SAFETY' },
+    { label: 'Audit Logs',   href: '/admin/dashboard/audit-logs',    icon: ScrollText,      group: 'TRUST & SAFETY' },
+
+    { label: 'Analytics',    href: '/admin/dashboard/analytics',     icon: BarChart3,       group: 'INSIGHTS' },
+    { label: 'Reports',      href: '/admin/dashboard/reports',       icon: FileBarChart,    group: 'INSIGHTS' },
+
+    { label: 'Profile',      href: '/admin/dashboard/profile',       icon: User,            group: 'ACCOUNT' },
+    { label: 'Settings',     href: '/admin/dashboard/settings',      icon: Settings,        group: 'ACCOUNT' },
   ],
 };
 
@@ -168,27 +176,39 @@ export default function Sidebar({ onClose }) {
 
       {/* Nav items */}
       <nav style={{ flex: 1, padding: '0 10px' }}>
-        {items.map((item) => {
+        {items.map((item, i) => {
           const active = pathname.startsWith(item.href);
           const Icon   = item.icon;
+          const showGroupHeader = item.group !== items[i - 1]?.group;
           return (
-            <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: '10px',
-                padding: '10px 12px', borderRadius: 'var(--r-md)',
-                marginBottom: '3px', cursor: 'pointer',
-                background: active ? 'var(--primary-bg)' : 'transparent',
-                color:      active ? 'var(--primary)'    : 'var(--text-mid)',
-                fontWeight: active ? 500 : 400,
-                fontSize: '13px', letterSpacing: '.01em',
-                transition: 'all 150ms ease-out',
-                boxShadow: active ? 'inset 0 0 0 1px var(--primary-light)' : 'none',
-              }}>
-                <Icon size={17} />
-                <span style={{ flex: 1 }}>{item.label}</span>
-                {active && <ChevronRight size={14} />}
-              </div>
-            </Link>
+            <Fragment key={item.href}>
+              {showGroupHeader && (
+                <div style={{
+                  fontSize: '10px', fontWeight: 600, letterSpacing: '.08em',
+                  textTransform: 'uppercase', color: 'var(--text-hint)',
+                  padding: i === 0 ? '8px 12px 6px' : '16px 12px 6px',
+                }}>
+                  {item.group}
+                </div>
+              )}
+              <Link href={item.href} style={{ textDecoration: 'none' }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '10px 12px', borderRadius: 'var(--r-md)',
+                  marginBottom: '3px', cursor: 'pointer',
+                  background: active ? 'var(--primary-bg)' : 'transparent',
+                  color:      active ? 'var(--primary)'    : 'var(--text-mid)',
+                  fontWeight: active ? 500 : 400,
+                  fontSize: '13px', letterSpacing: '.01em',
+                  transition: 'all 150ms ease-out',
+                  boxShadow: active ? 'inset 0 0 0 1px var(--primary-light)' : 'none',
+                }}>
+                  <Icon size={17} />
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                  {active && <ChevronRight size={14} />}
+                </div>
+              </Link>
+            </Fragment>
           );
         })}
       </nav>

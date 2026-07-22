@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { CheckCircle, Clock, ChevronRight, Star, Download, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
@@ -44,10 +45,24 @@ const CAPS_LABEL = {
   display: 'block', marginBottom: 10,
 };
 
-export default function AdminVendorsPage() {
+function getCompletenessPct(vendor) {
+  const criteria = [
+    !!vendor.profilePhoto,
+    (vendor.portfolioImages?.length || 0) > 0,
+    (vendor.description?.length || 0) >= 100,
+    (vendor.specializations?.length || 0) > 0,
+    vendor.userId?.isPhoneVerified === true,
+  ];
+  const metCount = criteria.filter(Boolean).length;
+  return metCount * 20;
+}
+
+function AdminVendorsPageContent() {
+  const searchParams = useSearchParams();
+
   const [vendors,            setVendors]            = useState([]);
   const [loading,            setLoading]            = useState(true);
-  const [filter,             setFilter]             = useState('all');
+  const [filter,             setFilter]             = useState(searchParams.get('filter') || 'all');
   const [updatingId,         setUpdatingId]         = useState(null);
 
   // Rejection modal state
@@ -251,10 +266,19 @@ export default function AdminVendorsPage() {
                   </span>
                 </div>
                 <div style={{
-                  fontSize: 11,
+                  fontSize: 11, marginBottom: 4,
                   color: vendor.isListingEnabled ? 'var(--color-success)' : 'var(--color-text-hint)',
                 }}>
                   {vendor.isListingEnabled ? 'Listing active' : 'Listing off'}
+                </div>
+                <div style={{ background: 'var(--color-border)', borderRadius: 4, height: 5, marginBottom: 2 }}>
+                  <div style={{
+                    width: `${getCompletenessPct(vendor)}%`,
+                    background: 'var(--color-primary)', borderRadius: 4, height: '100%',
+                  }} />
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--color-text-hint)' }}>
+                  {getCompletenessPct(vendor)}% complete
                 </div>
               </div>
 
@@ -439,5 +463,13 @@ export default function AdminVendorsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminVendorsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminVendorsPageContent />
+    </Suspense>
   );
 }

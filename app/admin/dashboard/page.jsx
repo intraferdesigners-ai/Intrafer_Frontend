@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  Building2, Users, FileText, Crown, TrendingUp, ArrowRight,
+  Building2, Users, FileText, Crown, TrendingUp, ArrowRight, AlertCircle, X,
 } from 'lucide-react';
 import api from '../../../lib/api';
 import Spinner from '../../../components/ui/Spinner';
@@ -37,8 +37,9 @@ const QUICK_ACTIONS = [
 ];
 
 export default function AdminDashboard() {
-  const [stats,   setStats]   = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [stats,     setStats]     = useState(null);
+  const [loading,   setLoading]   = useState(true);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     api.get('/admin/analytics')
@@ -69,6 +70,46 @@ export default function AdminDashboard() {
           Platform overview and management.
         </p>
       </div>
+
+      {/* Pending items banner */}
+      {!loading && !dismissed && (stats?.pendingVendors > 0 || stats?.pendingPortfolio > 0) && (
+        <div style={{
+          background: 'var(--color-warning-bg)', border: '1px solid var(--color-accent-bg)',
+          borderRadius: 'var(--radius-lg)', padding: '16px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 12, marginBottom: 20, flexWrap: 'wrap',
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+            {stats.pendingVendors > 0 && (
+              <Link href="/admin/dashboard/vendors?filter=pending" style={{
+                display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
+                color: 'var(--color-warning)', textDecoration: 'none',
+              }}>
+                <AlertCircle size={18} />
+                {stats.pendingVendors} vendor verification{stats.pendingVendors === 1 ? '' : 's'} awaiting review →
+              </Link>
+            )}
+            {stats.pendingPortfolio > 0 && (
+              <Link href="/admin/dashboard/portfolio-approvals" style={{
+                display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
+                color: 'var(--color-warning)', textDecoration: 'none',
+              }}>
+                <AlertCircle size={18} />
+                {stats.pendingPortfolio} portfolio submission{stats.pendingPortfolio === 1 ? '' : 's'} awaiting review →
+              </Link>
+            )}
+          </div>
+          <button
+            onClick={() => setDismissed(true)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--color-text-hint)', flexShrink: 0,
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div style={{ padding: '48px 0' }}><Spinner size="md" /></div>
