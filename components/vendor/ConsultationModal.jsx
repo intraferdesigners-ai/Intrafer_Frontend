@@ -232,7 +232,7 @@ export default function ConsultationModal({ vendor }) {
       </Button>
 
       <p style={{ fontSize: '11px', color: 'var(--text-hint)', textAlign: 'center', margin: 0 }}>
-        OTP verification required. No account needed.
+        No password required — we&apos;ll verify your number before confirming.
       </p>
     </div>
   );
