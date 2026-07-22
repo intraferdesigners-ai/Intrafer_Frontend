@@ -126,23 +126,23 @@ function EnquiryForm() {
           the card must stay the focal point. */}
       <div aria-hidden="true" style={{
         position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-        backgroundImage: 'radial-gradient(circle, var(--color-border) 1px, transparent 1px)',
-        backgroundSize: '26px 26px', opacity: 0.55,
+        backgroundImage: 'radial-gradient(circle, color-mix(in srgb, var(--color-primary) 30%, transparent) 1px, transparent 1px)',
+        backgroundSize: '26px 26px', opacity: 0.45,
       }} />
       <div aria-hidden="true" style={{
-        position: 'absolute', top: '-110px', left: '-110px', width: '360px', height: '360px',
-        borderRadius: '50%', background: 'var(--color-primary)', opacity: 0.1,
-        filter: 'blur(80px)', zIndex: 0, pointerEvents: 'none',
+        position: 'absolute', top: '-60px', left: '-60px', width: '360px', height: '360px',
+        borderRadius: '50%', background: 'var(--color-primary)', opacity: 0.18,
+        filter: 'blur(45px)', zIndex: 0, pointerEvents: 'none',
       }} />
       <div aria-hidden="true" style={{
         position: 'absolute', bottom: '-130px', right: '-90px', width: '420px', height: '420px',
-        borderRadius: '50%', background: 'var(--color-text)', opacity: 0.05,
-        filter: 'blur(90px)', zIndex: 0, pointerEvents: 'none',
+        borderRadius: '50%', background: 'var(--color-text)', opacity: 0.15,
+        filter: 'blur(50px)', zIndex: 0, pointerEvents: 'none',
       }} />
       <div aria-hidden="true" style={{
         position: 'absolute', top: '38%', right: '6%', width: '180px', height: '180px',
-        borderRadius: '50%', background: 'var(--color-primary)', opacity: 0.08,
-        filter: 'blur(60px)', zIndex: 0, pointerEvents: 'none',
+        borderRadius: '50%', background: 'var(--color-primary)', opacity: 0.18,
+        filter: 'blur(40px)', zIndex: 0, pointerEvents: 'none',
       }} />
 
       <div style={{
