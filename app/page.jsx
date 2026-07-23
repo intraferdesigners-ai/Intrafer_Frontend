@@ -103,17 +103,17 @@ const GALLERY_STRIP = [
 ];
 
 const STEPS = [
-  { n: '01', title: 'Browse designers',     desc: 'Filter by city, style, and budget — every profile shows completed projects, not stock photography.' },
-  { n: '02', title: 'Submit an enquiry',    desc: 'No account required. Share your requirements and verify your number by OTP in under a minute.' },
-  { n: '03', title: 'Get matched',          desc: 'Designers commit to replying within 48 hours with a proposal built around your brief.' },
-  { n: '04', title: 'Transform your space', desc: 'Agree on scope and pricing directly with your designer, then track progress through to handover.' },
+  { n: '01', image: '/images/how-it-works/step1.jpg', title: 'Browse designers',     desc: 'Filter by city, style, and budget — every profile shows completed projects, not stock photography.' },
+  { n: '02', image: '/images/how-it-works/step2.jpg', title: 'Submit an enquiry',    desc: 'Share your requirements and verify your number by OTP, in under a minute.' },
+  { n: '03', image: '/images/how-it-works/step3.jpg', title: 'Get matched',          desc: 'Interested designers respond directly with a proposal built around your brief.' },
+  { n: '04', image: '/images/how-it-works/step4.jpg', title: 'Transform your space', desc: 'Agree on scope and pricing directly with your designer, then track progress through to handover.' },
 ];
 
 const WHY_ITEMS = [
   { Icon: Shield,    title: 'A vetting process, not a signup form', desc: "Designers submit portfolios and credentials for review before they're listed. Most applicants don't make the cut." },
   { Icon: Lock,      title: 'No cost to browse or enquire',         desc: "Homeowners pay nothing to use Intrafer — no subscription, no finder's fee, no obligation to hire." },
   { Icon: Star,      title: 'Reviews tied to finished projects',    desc: "You can only leave a review once a project is marked complete, and we don't remove the honest ones." },
-  { Icon: Clock,     title: 'A 48-hour reply, or we reassign it',   desc: "If a designer doesn't respond within two days, your enquiry moves to someone who will." },
+  { Icon: Clock,     title: 'Designers respond directly',           desc: "No call center or account manager in between — you hear straight from designers interested in your project." },
   { Icon: ImageIcon, title: 'Portfolios, not brochures',            desc: 'Every image comes from a completed job a designer actually worked on — nothing licensed or staged.' },
   { Icon: Users,     title: 'You decide, we just introduce',        desc: 'Review two or three proposals, compare pricing and style, then choose who you want to work with.' },
 ];
@@ -266,11 +266,29 @@ export default async function Home() {
           <h2 className="section-heading">From enquiry to handover</h2>
           <div className="steps-grid" style={{ marginTop: '48px' }}>
             {STEPS.map((step) => (
-              <div key={step.n} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '28px', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: '52px', fontWeight: 400, color: 'var(--border-emp)', lineHeight: 1, marginBottom: '14px' }}>{step.n}</div>
-                <div style={{ width: '28px', height: '2px', background: 'var(--primary)', marginBottom: '14px' }} />
-                <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', marginBottom: '8px' }}>{step.title}</p>
-                <p style={{ fontSize: '13px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{step.desc}</p>
+              <div key={step.n} style={{ borderRadius: 'var(--r-xl)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
+                {/* Photo strip — outer wrapper lets the numeral chip overlap below it */}
+                <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'relative', height: '120px', overflow: 'hidden' }}>
+                    <Image src={step.image} alt={step.title} fill style={{ objectFit: 'cover' }} sizes="(max-width: 840px) 50vw, 25vw" />
+                  </div>
+                  <div style={{
+                    position: 'absolute', bottom: '-18px', left: '16px', zIndex: 2,
+                    width: '38px', height: '38px', borderRadius: '10px',
+                    background: 'var(--primary)', color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 500,
+                    boxShadow: '0 4px 10px rgba(29,78,216,.35)',
+                  }}>
+                    {step.n}
+                  </div>
+                </div>
+
+                {/* Navy card body */}
+                <div style={{ background: '#0F172A', padding: '26px 20px 20px' }}>
+                  <p style={{ fontSize: '15px', fontWeight: 500, color: '#fff', margin: '0 0 8px' }}>{step.title}</p>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,.6)', lineHeight: 1.7, margin: 0 }}>{step.desc}</p>
+                </div>
               </div>
             ))}
           </div>
