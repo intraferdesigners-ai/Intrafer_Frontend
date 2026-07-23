@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { FileText, ArrowRight } from 'lucide-react';
+import { FileText, ArrowRight, Plus } from 'lucide-react';
 import api from '../../../../lib/api';
 import Badge from '../../../../components/ui/Badge';
+import Button from '../../../../components/ui/Button';
 import Spinner from '../../../../components/ui/Spinner';
 import PipelineProgress from '../../../../components/shared/PipelineProgress';
 import { formatRelativeTime } from '../../../../lib/utils';
@@ -60,16 +61,23 @@ export default function EnquiriesPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{
-          fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 300,
-          color: 'var(--color-text)', margin: '0 0 6px',
-        }}>
-          My enquiries
-        </h1>
-        <p style={{ fontSize: 14, color: 'var(--color-text-sub)', margin: 0 }}>
-          All your designer enquiries in one place.
-        </p>
+      <div className="dashboard-page-header" style={{ marginBottom: 28 }}>
+        <div>
+          <h1 style={{
+            fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 300,
+            color: 'var(--color-text)', margin: '0 0 6px',
+          }}>
+            My enquiries
+          </h1>
+          <p style={{ fontSize: 14, color: 'var(--color-text-sub)', margin: 0 }}>
+            All your designer enquiries in one place.
+          </p>
+        </div>
+        <Link href="/user/dashboard/enquiries/new" style={{ textDecoration: 'none' }}>
+          <Button variant="primary" size="sm">
+            <Plus size={16} /> New enquiry
+          </Button>
+        </Link>
       </div>
 
       {/* Filter tabs */}
