@@ -16,6 +16,13 @@ import useAuthStore from '../../../../../store/authStore';
 import MessageThread from '../../../../../components/shared/MessageThread';
 import { formatDate, LEAD_STATUS } from '../../../../../lib/utils';
 
+function formatDateTime(dateString) {
+  return new Date(dateString).toLocaleString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  });
+}
+
 const LABEL = {
   fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
   textTransform: 'uppercase', color: 'var(--color-text-hint)',
@@ -56,6 +63,7 @@ export default function VendorLeadDetailPage() {
   const [loading,        setLoading]        = useState(true);
   const [accepting,      setAccepting]      = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [confirming,     setConfirming]     = useState(false);
   const [error,          setError]          = useState('');
 
   // Notes state
@@ -96,6 +104,22 @@ export default function VendorLeadDetailPage() {
       toast.error(err.response?.data?.message || 'Failed to update status.');
     }
     setUpdatingStatus(false);
+  };
+
+  const handleConfirmAppointment = async () => {
+    if (!lead.preferredDate) {
+      toast.error('No preferred date/time was requested for this lead.');
+      return;
+    }
+    setConfirming(true);
+    try {
+      const { data } = await api.put(`/leads/${lead._id}/confirm-appointment`, { dateTime: lead.preferredDate });
+      setLead(data.data?.lead || data.data || data.lead);
+      toast.success('Appointment confirmed.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to confirm appointment.');
+    }
+    setConfirming(false);
   };
 
   const handleSaveNotes = async () => {
@@ -158,6 +182,7 @@ export default function VendorLeadDetailPage() {
                 ENQ-{lead._id?.slice(-8).toUpperCase()}
               </span>
               <Badge status={lead.status} />
+              {lead.isConsultation && <Badge variant="info">Consultation request</Badge>}
             </div>
 
             <h1 style={{
@@ -174,6 +199,40 @@ export default function VendorLeadDetailPage() {
               <DetailItem icon={Calendar} label="Submitted"   value={formatDate(lead.createdAt)} />
               <DetailItem icon={User}     label="Client name" value={lead.userId?.name}      />
             </div>
+
+            {/* Consultation appointment */}
+            {lead.isConsultation && (
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                marginBottom: 24, padding: '10px 12px',
+                background: 'var(--color-primary-bg)', borderRadius: 'var(--radius-md)',
+              }}>
+                {lead.confirmedDateTime ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--color-primary)', fontWeight: 500 }}>
+                    <Calendar size={13} /> Appointment confirmed: {formatDateTime(lead.confirmedDateTime)}
+                  </span>
+                ) : (
+                  <>
+                    <span style={{ fontSize: 12, color: 'var(--color-text-sub)' }}>
+                      Requested: {lead.preferredDate ? formatDateTime(lead.preferredDate) : 'No preferred time given'}
+                    </span>
+                    <button
+                      onClick={handleConfirmAppointment}
+                      disabled={confirming || !lead.preferredDate}
+                      style={{
+                        padding: '6px 14px', borderRadius: 'var(--radius-sm)',
+                        background: 'var(--color-primary)', color: '#fff',
+                        border: 'none', fontSize: 12, fontWeight: 500,
+                        cursor: lead.preferredDate ? 'pointer' : 'not-allowed',
+                        opacity: confirming || !lead.preferredDate ? 0.6 : 1,
+                      }}
+                    >
+                      {confirming ? '...' : 'Confirm appointment'}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: '0 0 24px' }} />
 
