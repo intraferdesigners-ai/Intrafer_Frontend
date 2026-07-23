@@ -303,7 +303,12 @@ export default function VendorCard({ vendor }) {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               {vendor.rating > 0 ? (
-                <>
+                <Link
+                  href={`/vendors/${vendor._id}#reviews`}
+                  onClick={e => e.stopPropagation()}
+                  className="rating-link"
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
                   <span style={{ color: 'var(--primary)', fontSize: '13px' }}>★</span>
                   <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text)' }}>
                     {Number(vendor.rating).toFixed(1)}
@@ -313,7 +318,7 @@ export default function VendorCard({ vendor }) {
                       ({vendor.reviewCount})
                     </span>
                   )}
-                </>
+                </Link>
               ) : (
                 <span style={{ fontSize: '11px', color: 'var(--text-hint)' }}>New</span>
               )}

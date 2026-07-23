@@ -114,7 +114,11 @@ export default async function ComparePage({ searchParams }) {
                   {/* Rating */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 12 }}>
                     {vendor.rating > 0 ? (
-                      <>
+                      <Link
+                        href={`/vendors/${vendor._id}#reviews`}
+                        className="rating-link"
+                        style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                      >
                         <span style={{ color: 'var(--primary)', fontSize: 13 }}>★</span>
                         <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)' }}>
                           {Number(vendor.rating).toFixed(1)}
@@ -124,7 +128,7 @@ export default async function ComparePage({ searchParams }) {
                             ({vendor.reviewCount} review{vendor.reviewCount !== 1 ? 's' : ''})
                           </span>
                         )}
-                      </>
+                      </Link>
                     ) : (
                       <span style={{ fontSize: 11, color: 'var(--text-hint)' }}>New</span>
                     )}

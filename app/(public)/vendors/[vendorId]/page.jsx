@@ -349,7 +349,7 @@ export default async function VendorProfilePage({ params }) {
 
           {/* Reviews */}
           {reviews.length > 0 && (
-            <div style={{ marginTop: 32 }}>
+            <div id="reviews" style={{ marginTop: 32, scrollMarginTop: 64 }}>
               <span style={LABEL}>REVIEWS ({reviews.length})</span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {reviews.map((review) => (
