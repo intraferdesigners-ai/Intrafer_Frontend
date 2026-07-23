@@ -7,7 +7,6 @@ import OfferBanner from '../components/ui/OfferBanner';
 import StickyMobileCTA from '../components/ui/StickyMobileCTA';
 import BeforeAfterSlider from '../components/ui/BeforeAfterSlider';
 import EMICalculator from '../components/ui/EMICalculator';
-import VendorCard from '../components/vendor/VendorCard';
 import { IMAGES } from '../lib/images';
 import { BLOG_POSTS } from '../lib/blog-data';
 import {
@@ -53,22 +52,6 @@ async function fetchStats() {
   } catch { return null; }
 }
 
-async function fetchFeaturedVendors() {
-  try {
-    const featuredRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/vendors?featured=true&limit=3`, { cache: 'no-store' });
-    if (featuredRes.ok) {
-      const json = await featuredRes.json();
-      const list = json.data?.vendors || json.vendors || json;
-      if (Array.isArray(list) && list.length > 0) return list;
-    }
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/vendors?limit=3&sort=rating`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    const json = await res.json();
-    const list = json.data?.vendors || json.vendors || json;
-    return Array.isArray(list) ? list : [];
-  } catch { return []; }
-}
-
 const DEFAULT_HERO_SUBTITLE = "Compare vetted interior designers by city, style, and budget. Every portfolio shown is real, completed work — submit one enquiry and hear back within two days.";
 
 async function fetchHomepageContent() {
@@ -88,12 +71,6 @@ async function fetchFeaturedProjects() {
     return json.data?.projects || [];
   } catch { return []; }
 }
-
-const FEATURED_FALLBACK = [
-  { _id: 'f1', businessName: 'Priya Design Studio', location: { city: 'Bangalore' }, specializations: ['Residential', 'Modular Kitchen'], rating: 4.9, reviewCount: 42, portfolioImages: [IMAGES.vendors.studio1.cover] },
-  { _id: 'f2', businessName: 'The Aesthetic Co.', location: { city: 'Mumbai' }, specializations: ['Living Room', 'Full Home'], rating: 4.7, reviewCount: 28, portfolioImages: [IMAGES.vendors.studio2.cover] },
-  { _id: 'f3', businessName: 'Luxe Interiors', location: { city: 'Delhi NCR' }, specializations: ['Luxury', 'Commercial'], rating: 4.8, reviewCount: 67, portfolioImages: [IMAGES.vendors.studio3.cover] },
-];
 
 const GALLERY_STRIP = [
   { src: IMAGES.gallery.kitchen[0],    label: 'Kitchen',     alt: 'Kitchen design inspiration'     },
@@ -147,10 +124,9 @@ const STYLES_STRIP = [
 const FEATURED_BLOG_FALLBACK = BLOG_POSTS.slice(0, 3);
 
 export default async function Home() {
-  const [apiVendors, statsData, apiBlogPosts, featuredProjects, heroSubtitle] = await Promise.all([
-    fetchFeaturedVendors(), fetchStats(), fetchFeaturedBlogPosts(), fetchFeaturedProjects(), fetchHomepageContent(),
+  const [statsData, apiBlogPosts, featuredProjects, heroSubtitle] = await Promise.all([
+    fetchStats(), fetchFeaturedBlogPosts(), fetchFeaturedProjects(), fetchHomepageContent(),
   ]);
-  const vendors = apiVendors.length > 0 ? apiVendors : FEATURED_FALLBACK;
   const FEATURED_BLOG = apiBlogPosts.length > 0 ? apiBlogPosts : FEATURED_BLOG_FALLBACK;
 
   const trustStats = statsData
@@ -370,24 +346,6 @@ export default async function Home() {
             ))}
           </div>
         </div>
-      </section>
-
-      <div className="divider" />
-
-      {/* ── FEATURED DESIGNERS ── */}
-      <section style={{ background: 'var(--bg-parchment)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
-        <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <div>
-              <p className="caps-label-primary" style={{ marginBottom: '10px' }}>FEATURED DESIGNERS</p>
-              <h2 className="section-heading">This month&apos;s top-rated designers</h2>
-            </div>
-            <Link href="/vendors" style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 500 }}>View all designers →</Link>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '40px' }}>
-            {vendors.map((v) => <VendorCard key={v._id} vendor={v} />)}
-          </div>
-        </Reveal>
       </section>
 
       {featuredProjects.length > 0 && (
