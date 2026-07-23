@@ -68,11 +68,17 @@ export default function ConsultationModal({ vendor }) {
 
   const onClose = () => setIsOpen(false);
 
+  // Once a date is picked, a slot must be picked too — otherwise the date is
+  // silently discarded (preferredDate stays '') and the lead ships with no
+  // preferred time at all.
+  const slotStepIncomplete = !!selectedDate && !preferredDate;
+
   const handleSubmit = async () => {
     setError('');
     if (!name.trim())                          return setError('Please enter your name.');
     if (!email.trim() || !email.includes('@')) return setError('Please enter a valid email.');
     if (!/^[6-9]\d{9}$/.test(phone))          return setError('Please enter a valid 10-digit mobile number.');
+    if (slotStepIncomplete)                    return setError('Please select a time slot, or clear the date to skip scheduling.');
 
     setLoading(true);
     try {
@@ -202,21 +208,28 @@ export default function ConsultationModal({ vendor }) {
             {slotsLoading ? (
               <div style={{ fontSize: '12px', color: 'var(--text-hint)' }}>Loading available times…</div>
             ) : availableSlots.length > 0 ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {availableSlots.map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    style={slotPillStyle(slot)}
-                    onClick={() => setPreferredDate(slot)}
-                  >
-                    {formatSlotTime(slot)}
-                  </button>
-                ))}
-              </div>
+              <>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {availableSlots.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      style={slotPillStyle(slot)}
+                      onClick={() => setPreferredDate(slot)}
+                    >
+                      {formatSlotTime(slot)}
+                    </button>
+                  ))}
+                </div>
+                {!preferredDate && (
+                  <div style={{ fontSize: '12px', color: 'var(--danger)', marginTop: 8 }}>
+                    Select a time to continue.
+                  </div>
+                )}
+              </>
             ) : (
-              <div style={{ fontSize: '12px', color: 'var(--text-hint)' }}>
-                {slotsReason || 'No slots available this day — try another date.'}
+              <div style={{ fontSize: '12px', color: 'var(--danger)' }}>
+                {slotsReason || 'No available times for this date — try another date.'}
               </div>
             )}
           </div>
@@ -249,7 +262,8 @@ export default function ConsultationModal({ vendor }) {
         </div>
       )}
 
-      <Button variant="primary" size="lg" loading={loading} onClick={handleSubmit}
+      <Button variant="primary" size="lg" loading={loading} disabled={slotStepIncomplete}
+        onClick={handleSubmit} title={slotStepIncomplete ? 'Select a time slot to continue, or clear the date' : undefined}
         style={{ width: '100%', height: '52px' }}>
         Request consultation →
       </Button>
