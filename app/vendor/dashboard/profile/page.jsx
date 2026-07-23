@@ -13,8 +13,6 @@ const SPECIALIZATION_OPTIONS = [
   'Commercial', 'Bedroom', 'Bathroom', 'Full Home Interior',
 ];
 
-const WORKING_DAY_OPTIONS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
 const SECTION_LABEL = {
   fontSize: 10, fontWeight: 600, letterSpacing: '0.1em',
   color: 'var(--color-text-hint)', textTransform: 'uppercase',
@@ -45,7 +43,7 @@ export default function VendorProfilePage() {
     services: [],
   });
   const [availability, setAvailability] = useState({
-    workingDays: [], startTime: '10:00', endTime: '18:00', slotDurationMinutes: 60,
+    startTime: '10:00', endTime: '18:00', slotDurationMinutes: 60,
   });
   const [loading,        setLoading]        = useState(true);
   const [saving,         setSaving]         = useState(false);
@@ -81,7 +79,6 @@ export default function VendorProfilePage() {
         });
         if (v.availability) {
           setAvailability({
-            workingDays: v.availability.workingDays || [],
             startTime: v.availability.startTime || '10:00',
             endTime: v.availability.endTime || '18:00',
             slotDurationMinutes: v.availability.slotDurationMinutes || 60,
@@ -153,15 +150,6 @@ export default function VendorProfilePage() {
     setSavingAvailability(false);
   };
 
-  const toggleWorkingDay = (day) => {
-    setAvailability((prev) => ({
-      ...prev,
-      workingDays: prev.workingDays.includes(day)
-        ? prev.workingDays.filter((d) => d !== day)
-        : [...prev.workingDays, day],
-    }));
-  };
-
   const toggleSpec = (spec) => {
     setForm((prev) => ({
       ...prev,
@@ -194,19 +182,6 @@ export default function VendorProfilePage() {
 
   const specPillStyle = (spec) => {
     const active = form.specializations.includes(spec);
-    return {
-      padding: '8px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500,
-      cursor: 'pointer', letterSpacing: '0.01em',
-      transition: 'all 150ms ease-out',
-      ...(active
-        ? { background: 'var(--color-primary-bg)', color: 'var(--color-primary)', border: '1.5px solid var(--color-accent)' }
-        : { background: 'var(--color-surface-alt)', color: 'var(--color-text-sub)', border: '1px solid var(--color-border)' }
-      ),
-    };
-  };
-
-  const dayPillStyle = (day) => {
-    const active = availability.workingDays.includes(day);
     return {
       padding: '8px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500,
       cursor: 'pointer', letterSpacing: '0.01em',
@@ -449,17 +424,6 @@ export default function VendorProfilePage() {
             Availability
           </span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div>
-              <label style={FIELD_LABEL}>Working days</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {WORKING_DAY_OPTIONS.map((day) => (
-                  <button key={day} type="button" style={dayPillStyle(day)} onClick={() => toggleWorkingDay(day)}>
-                    {day}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             <div className="form-row-3" style={{ gap: 12 }}>
               <div>
                 <label style={FIELD_LABEL}>Start time</label>
