@@ -502,10 +502,24 @@ export default async function Home() {
       <div className="divider" />
 
       {/* ── FAQ ── */}
-      <section style={{ background: 'var(--bg-parchment)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>COMMON QUESTIONS</p>
-          <h2 className="section-heading" style={{ marginBottom: '40px' }}>Questions homeowners ask us</h2>
+      <section style={{
+        background: 'var(--bg-parchment)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: '-60px', right: '-60px',
+          width: '240px', height: '240px', borderRadius: '50%',
+          background: 'rgba(29,78,216,.07)',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '-50px', left: '-50px',
+          width: '220px', height: '220px', borderRadius: '50%',
+          background: 'rgba(96,165,250,.08)',
+        }} />
+
+        <div style={{ position: 'relative', maxWidth: '720px', margin: '0 auto' }}>
+          <p className="caps-label-primary" style={{ marginBottom: '10px', textAlign: 'center' }}>COMMON QUESTIONS</p>
+          <h2 className="section-heading" style={{ marginBottom: '40px', textAlign: 'center' }}>Questions homeowners ask us</h2>
           <HomepageFAQ />
         </div>
       </section>
