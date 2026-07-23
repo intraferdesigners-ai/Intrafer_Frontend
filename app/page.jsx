@@ -109,6 +109,16 @@ const STEPS = [
   { n: '04', image: '/images/how-it-works/step4.jpg', title: 'Transform your space', desc: 'Agree on scope and pricing directly with your designer, then track progress through to handover.' },
 ];
 
+// Shared (not per-card inline) so all 4 numeral chips stay pixel-identical.
+const STEP_CHIP_STYLE = {
+  position: 'absolute', bottom: '-18px', left: '16px', zIndex: 2,
+  width: '38px', height: '38px', borderRadius: '10px',
+  background: 'var(--primary)', color: '#fff',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 500,
+  boxShadow: '0 4px 10px rgba(29,78,216,.35)',
+};
+
 const WHY_ITEMS = [
   { Icon: Shield,    title: 'A vetting process, not a signup form', desc: "Designers submit portfolios and credentials for review before they're listed. Most applicants don't make the cut." },
   { Icon: Lock,      title: 'No cost to browse or enquire',         desc: "Homeowners pay nothing to use Intrafer — no subscription, no finder's fee, no obligation to hire." },
@@ -266,26 +276,20 @@ export default async function Home() {
           <h2 className="section-heading">From enquiry to handover</h2>
           <div className="steps-grid" style={{ marginTop: '48px' }}>
             {STEPS.map((step) => (
-              <div key={step.n} style={{ borderRadius: 'var(--r-xl)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
+              <div key={step.n} style={{
+                display: 'flex', flexDirection: 'column', height: '100%',
+                borderRadius: 'var(--r-xl)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)',
+              }}>
                 {/* Photo strip — outer wrapper lets the numeral chip overlap below it */}
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative', flexShrink: 0 }}>
                   <div style={{ position: 'relative', height: '120px', overflow: 'hidden' }}>
                     <Image src={step.image} alt={step.title} fill style={{ objectFit: 'cover' }} sizes="(max-width: 840px) 50vw, 25vw" />
                   </div>
-                  <div style={{
-                    position: 'absolute', bottom: '-18px', left: '16px', zIndex: 2,
-                    width: '38px', height: '38px', borderRadius: '10px',
-                    background: 'var(--primary)', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 500,
-                    boxShadow: '0 4px 10px rgba(29,78,216,.35)',
-                  }}>
-                    {step.n}
-                  </div>
+                  <div style={STEP_CHIP_STYLE}>{step.n}</div>
                 </div>
 
-                {/* Navy card body */}
-                <div style={{ background: '#0F172A', padding: '26px 20px 20px' }}>
+                {/* Navy card body — flex:1 fills any leftover height so all 4 card bottoms stay flush */}
+                <div style={{ background: '#0F172A', padding: '26px 20px 20px', flex: 1 }}>
                   <p style={{ fontSize: '15px', fontWeight: 500, color: '#fff', margin: '0 0 8px' }}>{step.title}</p>
                   <p style={{ fontSize: '12px', color: 'rgba(255,255,255,.6)', lineHeight: 1.7, margin: 0 }}>{step.desc}</p>
                 </div>
