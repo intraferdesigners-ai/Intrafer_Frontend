@@ -527,17 +527,34 @@ export default async function Home() {
       {/* ── CTA BANNER ── */}
       <section className="cta-section-wrapper" style={{ background: 'var(--bg)', paddingTop: 'clamp(40px,5vw,60px)', paddingLeft: 'clamp(16px,4vw,40px)', paddingRight: 'clamp(16px,4vw,40px)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div className="cta-always-dark" style={{ borderRadius: 'var(--r-2xl)', padding: 'clamp(40px,6vw,80px) clamp(20px,5vw,60px)', textAlign: 'center' }}>
-            <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '14px' }}>START TODAY</p>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 400, color: '#FAFAF8', letterSpacing: '-.02em', marginBottom: '14px' }}>
-              Start with a single enquiry
-            </h2>
-            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,.5)', lineHeight: 1.7, maxWidth: '520px', margin: '0 auto 32px' }}>
-              Browsing and enquiries are free, with no obligation to hire. Over 500 vetted designers across India are ready to hear about your project.
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <Link href="/vendors"><button style={{ background: 'var(--primary)', color: '#fff', padding: '14px 32px', borderRadius: 'var(--r-md)', fontSize: '14px', fontWeight: 500, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(181,84,30,.4)' }}>Browse designers</button></Link>
-              <Link href="/for-designers"><button style={{ background: 'transparent', color: 'rgba(255,255,255,.5)', padding: '13px 28px', borderRadius: 'var(--r-md)', fontSize: '14px', border: '1px solid rgba(255,255,255,.15)', cursor: 'pointer' }}>List your studio</button></Link>
+          <div className="cta-always-dark" style={{
+            position: 'relative', overflow: 'hidden',
+            borderRadius: 'var(--r-2xl)', padding: 'clamp(40px,6vw,80px) clamp(20px,5vw,60px)', textAlign: 'center',
+          }}>
+            <Image
+              src={IMAGES.gallery.kitchen[2]}
+              alt=""
+              fill
+              style={{ objectFit: 'cover' }}
+              sizes="100vw"
+            />
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(135deg, rgba(15,23,42,.88) 0%, rgba(15,23,42,.82) 100%)',
+            }} />
+
+            <div style={{ position: 'relative' }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '14px' }}>START TODAY</p>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 400, color: '#FAFAF8', letterSpacing: '-.02em', marginBottom: '14px' }}>
+                Start with a single enquiry
+              </h2>
+              <p style={{ fontSize: '15px', color: 'rgba(255,255,255,.5)', lineHeight: 1.7, maxWidth: '520px', margin: '0 auto 32px' }}>
+                Browsing and enquiries are free, with no obligation to hire. Vetted designers across India are ready to hear about your project.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <Link href="/vendors"><button style={{ background: 'var(--primary)', color: '#fff', padding: '14px 32px', borderRadius: 'var(--r-md)', fontSize: '14px', fontWeight: 500, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(181,84,30,.4)' }}>Browse designers</button></Link>
+                <Link href="/for-designers"><button style={{ background: 'transparent', color: 'rgba(255,255,255,.5)', padding: '13px 28px', borderRadius: 'var(--r-md)', fontSize: '14px', border: '1px solid rgba(255,255,255,.15)', cursor: 'pointer' }}>List your studio</button></Link>
+              </div>
             </div>
           </div>
         </div>
