@@ -5,12 +5,13 @@ import api from '../../lib/api';
 import useNotificationStore from '../../store/notificationStore';
 import useAuthStore from '../../store/authStore';
 import { formatRelativeTime } from '../../lib/utils';
-import { Bell, X, FileText, CheckCircle, Crown, AlertCircle, Calendar, MessageCircle } from 'lucide-react';
+import { Bell, X, FileText, CheckCircle, XCircle, Crown, AlertCircle, Calendar, MessageCircle } from 'lucide-react';
 import Spinner from '../ui/Spinner';
 
 const NOTIFICATION_CONFIG = {
   lead_assigned:         { icon: FileText,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
   lead_accepted:         { icon: CheckCircle,   color: 'var(--success)', bg: 'var(--success-bg)' },
+  lead_cancelled:        { icon: XCircle,       color: 'var(--danger)',  bg: 'var(--danger-bg)'  },
   payment_success:       { icon: Crown,         color: 'var(--primary)', bg: 'var(--primary-bg)' },
   subscription_expiring: { icon: AlertCircle,   color: 'var(--warning)', bg: 'var(--warning-bg)' },
   vendor_approved:       { icon: CheckCircle,   color: 'var(--success)', bg: 'var(--success-bg)' },
@@ -48,6 +49,7 @@ export default function NotificationPanel({ isOpen, onClose, anchorRect }) {
     const deepLinks = {
       lead_assigned:         `/vendor/dashboard/leads/${leadId}`,
       lead_accepted:         `/vendor/dashboard/leads/${leadId}`,
+      lead_cancelled:        `/vendor/dashboard/leads/${leadId}`,
       payment_success:       '/vendor/dashboard/subscription',
       subscription_expiring: '/vendor/dashboard/subscription',
       vendor_approved:       '/vendor/dashboard/profile',

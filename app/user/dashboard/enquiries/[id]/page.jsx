@@ -106,6 +106,7 @@ export default function EnquiryDetailPage() {
   const CONTACT_STATUSES = new Set(['accepted', 'contacted', 'quotation_sent', 'won']);
   const contactRevealed  = lead && CONTACT_STATUSES.has(lead.status);
   const canCancel = lead && ['new', 'accepted'].includes(lead.status);
+  const cancelUnavailable = lead && ['contacted', 'quotation_sent'].includes(lead.status);
   const canReview = lead?.status === 'won' && !hasReviewed;
   const banner = lead ? STATUS_BANNERS[lead.status] : null;
 
@@ -325,6 +326,19 @@ export default function EnquiryDetailPage() {
                     <XCircle size={14} />
                     {cancelling ? 'Cancelling…' : 'Cancel enquiry'}
                   </button>
+                </div>
+              )}
+
+              {/* Fallback note — mid-progress enquiries can't be self-cancelled */}
+              {cancelUnavailable && (
+                <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid var(--color-border)' }}>
+                  <p style={{ fontSize: 13, color: 'var(--color-text-hint)', margin: 0 }}>
+                    This enquiry is already in progress and can no longer be cancelled directly.{' '}
+                    <Link href="/contact" style={{ color: 'var(--color-primary)', fontWeight: 500 }}>
+                      Contact support
+                    </Link>{' '}
+                    if you need help.
+                  </p>
                 </div>
               )}
             </div>
