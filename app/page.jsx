@@ -306,16 +306,9 @@ export default async function Home() {
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '36px 40px' }} className="grid-mobile-1">
-            {WHY_ITEMS.map(({ title, desc }, i) => (
+            {WHY_ITEMS.map(({ title, desc }) => (
               <div key={title} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <span style={{
-                  display: 'inline-block', alignSelf: 'flex-start',
-                  fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 400,
-                  color: '#60A5FA', borderBottom: '2px solid #60A5FA',
-                  paddingBottom: '6px', marginBottom: '14px',
-                }}>
-                  {String(i + 1).padStart(2, '0')}
-                </span>
+                <div style={{ width: '20px', height: '2px', background: '#60A5FA', marginBottom: '14px' }} />
                 <p style={{ fontSize: '14px', fontWeight: 500, color: '#fff', margin: '0 0 6px' }}>{title}</p>
                 <p style={{ fontSize: '12px', color: 'rgba(255,255,255,.6)', lineHeight: 1.65, margin: 0 }}>{desc}</p>
               </div>
