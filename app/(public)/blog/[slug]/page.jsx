@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import Reveal from '../../../../components/ui/Reveal';
 
 const FALLBACK_COVER = '/images/blog/modular-kitchen.jpg';
 
@@ -55,7 +56,7 @@ export default async function BlogPostPage({ params }) {
       <Link href="/blog" className="back-link">← Blog</Link>
 
       {/* Header */}
-      <div style={{ marginBottom: '28px' }}>
+      <Reveal style={{ marginBottom: '28px' }}>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '16px' }}>
           <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.1em', background: 'var(--primary-bg)', color: 'var(--primary)', padding: '4px 12px', borderRadius: '20px', textTransform: 'uppercase' }}>
             {post.category}
@@ -74,12 +75,12 @@ export default async function BlogPostPage({ params }) {
         <p style={{ fontSize: '16px', color: 'var(--text-mid)', fontStyle: 'italic', lineHeight: 1.75 }}>
           {post.excerpt}
         </p>
-      </div>
+      </Reveal>
 
       {/* Hero image */}
-      <div style={{ position: 'relative', height: '480px', borderRadius: 'var(--r-xl)', overflow: 'hidden', marginBottom: '40px', boxShadow: 'var(--shadow-md)' }}>
+      <Reveal delay={0.1} style={{ position: 'relative', height: '480px', borderRadius: 'var(--r-xl)', overflow: 'hidden', marginBottom: '40px', boxShadow: 'var(--shadow-md)' }}>
         <Image src={post.image} alt={post.title} fill style={{ objectFit: 'cover' }} priority sizes="(max-width: 768px) 100vw, 800px" />
-      </div>
+      </Reveal>
 
       {/* Article body */}
       <div

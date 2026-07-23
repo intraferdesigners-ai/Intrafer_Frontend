@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '@/lib/api';
 import { formatINR } from '@/lib/utils';
+import Reveal from '@/components/ui/Reveal';
+import RevealItem from '@/components/ui/RevealItem';
 
 
 const FALLBACK_PLANS = [
@@ -134,7 +136,7 @@ export default function PlansPage() {
 
       {/* Header */}
       <section style={{ background: 'var(--bg-parchment)', padding: '108px 40px 60px', textAlign: 'center' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PRICING</p>
           <h1 className="section-heading" style={{ marginBottom: '14px' }}>
             Simple, transparent pricing
@@ -142,7 +144,7 @@ export default function PlansPage() {
           <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.7, maxWidth: '480px', margin: '0 auto' }}>
             Pay a flat subscription. Receive qualified leads. Zero commission on your projects — ever.
           </p>
-        </div>
+        </Reveal>
       </section>
 
       {/* Plan cards */}
@@ -151,9 +153,10 @@ export default function PlansPage() {
           maxWidth: '1100px', margin: '0 auto',
           display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px',
         }} className="grid-mobile-1">
-          {plans.map((plan) => (
-            <div
+          {plans.map((plan, i) => (
+            <RevealItem
               key={plan.name}
+              index={i}
               className={plan.popular ? 'plan-card-popular' : undefined}
               style={{
                 background: 'var(--surface)',
@@ -216,7 +219,7 @@ export default function PlansPage() {
                   Get started →
                 </button>
               </Link>
-            </div>
+            </RevealItem>
           ))}
         </div>
 

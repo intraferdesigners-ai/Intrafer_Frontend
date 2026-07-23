@@ -10,6 +10,7 @@ import ErrorBoundary from '../ui/ErrorBoundary';
 import NotificationBell from '../notification/NotificationBell';
 import { useTheme } from '../../context/ThemeContext';
 import CompareBar from '../vendor/CompareBar';
+import PageTransition from '../ui/PageTransition';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
@@ -92,7 +93,7 @@ export default function DashboardLayout({ children }) {
             <a href="/auth/login" style={{ color: 'var(--color-primary)' }}>Return to login</a>
           </div>
         }>
-          {children}
+          <PageTransition duration={0.15}>{children}</PageTransition>
         </ErrorBoundary>
 
         <CompareBar />

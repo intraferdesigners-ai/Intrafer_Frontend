@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Spinner from '../../../../components/ui/Spinner';
 import { formatRelativeTime } from '../../../../lib/utils';
+import HoverLift from '../../../../components/ui/HoverLift';
 
 const COLUMNS = [
   { key: 'new',            label: 'New'            },
@@ -225,7 +226,8 @@ export default function VendorPipelinePage() {
                     }}
                   >
                     <Link href={`/vendor/dashboard/leads/${lead._id}`} style={{ textDecoration: 'none' }}>
-                      <div
+                      <HoverLift
+                        y={-2}
                         className="lead-row"
                         style={{
                           background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -265,7 +267,7 @@ export default function VendorPipelinePage() {
                         <div style={{ fontSize: 11, color: 'var(--color-text-sub)', paddingTop: 6, borderTop: '1px solid var(--color-border)' }}>
                           Client: <strong>{lead.userId?.name || 'Unknown'}</strong>
                         </div>
-                      </div>
+                      </HoverLift>
                     </Link>
                   </div>
                 ))}

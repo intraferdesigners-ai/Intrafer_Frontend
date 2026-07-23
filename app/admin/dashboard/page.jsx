@@ -8,6 +8,7 @@ import {
 import api from '../../../lib/api';
 import Spinner from '../../../components/ui/Spinner';
 import { formatINR } from '../../../lib/utils';
+import HoverLift from '../../../components/ui/HoverLift';
 
 const QUICK_ACTIONS = [
   {
@@ -123,7 +124,7 @@ export default function AdminDashboard() {
             marginBottom: 40,
           }}>
             {KPI_CARDS.map(({ label, value, icon: Icon, iconBg, iconColor }) => (
-              <div key={label} style={{
+              <HoverLift key={label} style={{
                 background: 'var(--color-surface)', border: '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-lg)', padding: 20,
               }}>
@@ -146,7 +147,7 @@ export default function AdminDashboard() {
                 }}>
                   {label}
                 </div>
-              </div>
+              </HoverLift>
             ))}
           </div>
 
@@ -160,7 +161,7 @@ export default function AdminDashboard() {
           <div className="grid-mobile-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {QUICK_ACTIONS.map(({ href, icon: Icon, label, sub }) => (
               <Link key={href} href={href} style={{ textDecoration: 'none' }}>
-                <div
+                <HoverLift
                   className="lead-row"
                   style={{
                     background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -181,7 +182,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <ArrowRight size={16} color="var(--color-text-hint)" />
-                </div>
+                </HoverLift>
               </Link>
             ))}
           </div>

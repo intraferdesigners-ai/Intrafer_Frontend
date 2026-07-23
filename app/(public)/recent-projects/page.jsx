@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import Reveal from '../../../components/ui/Reveal';
+import RevealItem from '../../../components/ui/RevealItem';
 
 export const metadata = {
   title: 'Recent Projects | Interior Design Work | Intrafer',
@@ -20,19 +22,21 @@ export default async function RecentProjectsPage() {
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '108px 40px 80px' }}>
-      <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PORTFOLIO</p>
-      <h1 className="section-heading" style={{ marginBottom: '8px' }}>Recent projects</h1>
-      <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '48px' }}>
-        Delivered across India — {projects.length} real completed projects.
-      </p>
+      <Reveal>
+        <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PORTFOLIO</p>
+        <h1 className="section-heading" style={{ marginBottom: '8px' }}>Recent projects</h1>
+        <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '48px' }}>
+          Delivered across India — {projects.length} real completed projects.
+        </p>
+      </Reveal>
 
       {projects.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }} className="grid-mobile-1">
-          {projects.map((project) => {
+          {projects.map((project, i) => {
             const img = project.images?.[0] || project.coverImage;
             return (
+              <RevealItem key={project._id} index={i % 6}>
               <Link
-                key={project._id}
                 href={project._id ? `/projects/${project._id}` : '/vendors'}
                 style={{ textDecoration: 'none' }}
               >
@@ -72,6 +76,7 @@ export default async function RecentProjectsPage() {
                   </div>
                 </div>
               </Link>
+              </RevealItem>
             );
           })}
         </div>

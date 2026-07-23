@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import Reveal from '@/components/ui/Reveal';
 
 const CONTACT_INFO = [
   { Icon: Mail,           label: 'Email',    value: 'support@intrafer.in' },
@@ -47,10 +48,12 @@ export default function ContactPage() {
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
 
       {/* Header */}
-      <p className="caps-label-primary" style={{ marginBottom: '8px' }}>GET IN TOUCH</p>
-      <h1 className="page-heading" style={{ marginBottom: '40px' }}>We&apos;d love to hear from you</h1>
+      <Reveal>
+        <p className="caps-label-primary" style={{ marginBottom: '8px' }}>GET IN TOUCH</p>
+        <h1 className="page-heading" style={{ marginBottom: '40px' }}>We&apos;d love to hear from you</h1>
+      </Reveal>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'start' }} className="grid-mobile-1">
+      <Reveal delay={0.1} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'start' }} className="grid-mobile-1">
 
         {/* Left — Contact info */}
         <div>
@@ -166,7 +169,7 @@ export default function ContactPage() {
             </form>
           )}
         </div>
-      </div>
+      </Reveal>
     </div>
   );
 }

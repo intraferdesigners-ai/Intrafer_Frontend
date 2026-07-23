@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { CheckCircle, ShieldCheck, Clock, Wallet } from 'lucide-react';
 import EMICalculator from '../../../components/ui/EMICalculator';
+import Reveal from '../../../components/ui/Reveal';
+import RevealItem from '../../../components/ui/RevealItem';
 
 export const metadata = {
   title: 'Interior Design Packages — Fixed Price | Intrafer',
@@ -85,24 +87,27 @@ export default function PackagesPage() {
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: 'clamp(80px,10vw,108px) clamp(16px,4vw,40px) 80px' }}>
       {/* Offer strip */}
-      <div style={{
-        background: 'linear-gradient(90deg, #1D4ED8, #3B82F6)',
-        color: '#fff', padding: '16px', textAlign: 'center',
-        borderRadius: '12px', marginBottom: '32px', fontSize: '14px', fontWeight: 500,
-      }}>
-        Save 30% off list price — up to ₹7 Lakhs on a complete home package
-      </div>
+      <Reveal>
+        <div style={{
+          background: 'linear-gradient(90deg, #1D4ED8, #3B82F6)',
+          color: '#fff', padding: '16px', textAlign: 'center',
+          borderRadius: '12px', marginBottom: '32px', fontSize: '14px', fontWeight: 500,
+        }}>
+          Save 30% off list price — up to ₹7 Lakhs on a complete home package
+        </div>
 
-      <p className="caps-label-primary" style={{ marginBottom: '10px' }}>INTERIOR PACKAGES</p>
-      <h1 className="section-heading" style={{ marginBottom: '8px' }}>Complete home interiors at fixed prices</h1>
-      <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '48px' }}>
-        No surprises. No hidden costs. Complete transparency.
-      </p>
+        <p className="caps-label-primary" style={{ marginBottom: '10px' }}>INTERIOR PACKAGES</p>
+        <h1 className="section-heading" style={{ marginBottom: '8px' }}>Complete home interiors at fixed prices</h1>
+        <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '48px' }}>
+          No surprises. No hidden costs. Complete transparency.
+        </p>
+      </Reveal>
 
       {/* Package cards */}
-      {PACKAGES.map((pkg) => (
-        <div
+      {PACKAGES.map((pkg, i) => (
+        <RevealItem
           key={pkg.name}
+          index={i}
           style={{
             background: 'var(--surface)',
             border: `${pkg.popular ? '2px' : '1px'} solid ${pkg.popular ? 'var(--primary)' : 'var(--border)'}`,
@@ -178,7 +183,7 @@ export default function PackagesPage() {
               Book this package
             </Link>
           </div>
-        </div>
+        </RevealItem>
       ))}
 
       {/* EMI Calculator */}

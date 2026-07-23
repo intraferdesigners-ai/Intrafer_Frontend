@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import RevealItem from '../ui/RevealItem';
 
 const ROOMS  = ['All', 'Residential', 'Modular Kitchen', 'Living Room', 'Bedroom', 'Bathroom', 'Office Interiors', 'Full Home Interior'];
 const STYLES = ['All', 'Modern', 'Scandinavian', 'Traditional', 'Minimalist', 'Bohemian', 'Industrial', 'Luxury', 'Contemporary'];
@@ -96,7 +97,8 @@ export default function GalleryGrid({ projects }) {
             const vendorName = item.vendorId?.businessName || '';
 
             return (
-              <Link key={item._id || idx} href={`/vendors/${vendorId}`} style={{ textDecoration: 'none', display: 'block' }}>
+              <RevealItem key={item._id || idx} index={idx % 12}>
+              <Link href={`/vendors/${vendorId}`} style={{ textDecoration: 'none', display: 'block' }}>
                 <div
                   className="gallery-item"
                   style={{
@@ -140,6 +142,7 @@ export default function GalleryGrid({ projects }) {
                   </div>
                 </div>
               </Link>
+              </RevealItem>
             );
           })}
         </div>

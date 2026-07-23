@@ -10,6 +10,7 @@ import Badge from '../../../components/ui/Badge';
 import Spinner from '../../../components/ui/Spinner';
 import PipelineProgress from '../../../components/shared/PipelineProgress';
 import { formatRelativeTime } from '../../../lib/utils';
+import HoverLift from '../../../components/ui/HoverLift';
 
 const TERMINAL_NEGATIVE_STATUSES = new Set(['lost', 'cancelled']);
 
@@ -115,7 +116,7 @@ export default function UserDashboard() {
         {STAT_CARDS.map((card, i) => {
           const Icon = STAT_ICONS[i];
           return (
-            <div key={card.label} style={{
+            <HoverLift key={card.label} style={{
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-lg)', padding: 16, textAlign: 'center',
             }}>
@@ -127,7 +128,7 @@ export default function UserDashboard() {
                 {card.value}
               </div>
               <div style={LABEL}>{card.label}</div>
-            </div>
+            </HoverLift>
           );
         })}
       </div>
@@ -225,7 +226,7 @@ export default function UserDashboard() {
                 href={`/user/dashboard/enquiries/${lead._id}`}
                 style={{ textDecoration: 'none' }}
               >
-                <div className="lead-row" style={{
+                <HoverLift className="lead-row" style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   background: 'var(--color-surface)', border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-lg)', padding: '14px 16px', marginBottom: 8,
@@ -260,7 +261,7 @@ export default function UserDashboard() {
                       {formatRelativeTime(lead.createdAt)}
                     </div>
                   </div>
-                </div>
+                </HoverLift>
               </Link>
             ))
           )}

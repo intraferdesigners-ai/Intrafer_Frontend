@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import FaqContent from './FaqContent';
+import Reveal from '@/components/ui/Reveal';
 
 export const metadata = { title: 'Frequently Asked Questions | Intrafer' };
 
@@ -49,13 +50,17 @@ export const FAQ_GROUPS = [
 export default function FAQPage() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '108px 32px 80px' }}>
-      <p className="caps-label-primary" style={{ marginBottom: '10px' }}>HELP CENTER</p>
-      <h1 className="section-heading" style={{ marginBottom: '8px' }}>Frequently Asked Questions</h1>
-      <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '32px' }}>
-        Everything you need to know about Intrafer.
-      </p>
+      <Reveal>
+        <p className="caps-label-primary" style={{ marginBottom: '10px' }}>HELP CENTER</p>
+        <h1 className="section-heading" style={{ marginBottom: '8px' }}>Frequently Asked Questions</h1>
+        <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '32px' }}>
+          Everything you need to know about Intrafer.
+        </p>
+      </Reveal>
 
-      <FaqContent groups={FAQ_GROUPS} />
+      <Reveal delay={0.1}>
+        <FaqContent groups={FAQ_GROUPS} />
+      </Reveal>
 
       <div className="cta-always-dark" style={{ marginTop: '60px', borderRadius: 'var(--r-xl)', padding: '40px', textAlign: 'center' }}>
         <p style={{ fontSize: '18px', fontWeight: 500, color: '#FAFAF8', marginBottom: '8px' }}>Still have questions?</p>

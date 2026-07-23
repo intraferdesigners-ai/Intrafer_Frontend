@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Shield, Star, Clock, Lock } from 'lucide-react';
+import Reveal from '@/components/ui/Reveal';
+import RevealItem from '@/components/ui/RevealItem';
 
 export const metadata = {
   title: 'How Intrafer Works | Interior Design Made Simple',
@@ -50,11 +52,13 @@ const TRUST_BADGES = [
 export default function HowItWorksPage() {
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: 'clamp(80px,10vw,108px) clamp(16px,4vw,40px) 80px' }}>
-      <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PROCESS</p>
-      <h1 className="section-heading" style={{ marginBottom: '8px' }}>How Intrafer works</h1>
-      <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '64px' }}>
-        From inspiration to transformation in 5 simple steps.
-      </p>
+      <Reveal>
+        <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PROCESS</p>
+        <h1 className="section-heading" style={{ marginBottom: '8px' }}>How Intrafer works</h1>
+        <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '64px' }}>
+          From inspiration to transformation in 5 simple steps.
+        </p>
+      </Reveal>
 
       {/* Progress indicators */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '64px', overflowX: 'auto', paddingBottom: '8px' }}>
@@ -78,8 +82,9 @@ export default function HowItWorksPage() {
       {/* Steps */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '80px' }}>
         {STEPS.map((step, i) => (
-          <div
+          <RevealItem
             key={step.num}
+            index={i}
             style={{
               display: 'grid',
               gridTemplateColumns: i % 2 === 0 ? '1fr 420px' : '420px 1fr',
@@ -115,7 +120,7 @@ export default function HowItWorksPage() {
             <div style={{ position: 'relative', height: '280px', borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-md)', order: i % 2 === 0 ? 2 : 1, flexShrink: 0 }}>
               <Image src={step.image} alt={step.title} fill style={{ objectFit: 'cover' }} sizes="420px" />
             </div>
-          </div>
+          </RevealItem>
         ))}
       </div>
 

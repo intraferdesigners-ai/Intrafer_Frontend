@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle, TrendingUp, Users, Star, Zap, BarChart3 } from 'lucide-react';
 import { IMAGES } from '@/lib/images';
+import Reveal from '@/components/ui/Reveal';
 
 const BENEFITS = [
   { Icon: TrendingUp, title: 'Qualified leads only',    desc: "Every lead is from a verified homeowner actively planning an interior project. No tire-kickers, no spam." },
@@ -56,7 +57,7 @@ export default function ForDesignersPage() {
 
       {/* ── HERO ── */}
       <section style={{ background: 'var(--bg-parchment)', padding: '108px 40px 80px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '64px', alignItems: 'center' }} className="grid-mobile-1">
+        <Reveal style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '64px', alignItems: 'center' }} className="grid-mobile-1">
           <div>
             <p className="caps-label-primary" style={{ marginBottom: '12px' }}>FOR INTERIOR DESIGNERS</p>
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(38px,4vw,52px)', fontWeight: 400, color: 'var(--text)', lineHeight: 1.1, letterSpacing: '-.025em', marginBottom: '18px' }}>
@@ -131,14 +132,14 @@ export default function ForDesignersPage() {
               </div>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <div className="divider" />
 
       {/* ── HOW IT WORKS ── */}
       <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '10px' }}>HOW IT WORKS</p>
           <h2 className="section-heading">Start receiving leads in 3 steps</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px', marginTop: '44px' }} className="grid-mobile-1">
@@ -151,7 +152,7 @@ export default function ForDesignersPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <div className="divider" />

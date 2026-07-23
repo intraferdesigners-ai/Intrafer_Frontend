@@ -7,6 +7,7 @@ import useAuthStore from '../../store/authStore';
 import { formatRelativeTime } from '../../lib/utils';
 import { Bell, X, FileText, CheckCircle, XCircle, Crown, AlertCircle, Calendar, MessageCircle } from 'lucide-react';
 import Spinner from '../ui/Spinner';
+import HoverLift from '../ui/HoverLift';
 
 const NOTIFICATION_CONFIG = {
   lead_assigned:         { icon: FileText,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
@@ -161,8 +162,9 @@ export default function NotificationPanel({ isOpen, onClose, anchorRect }) {
             const config   = NOTIFICATION_CONFIG[n.type] || DEFAULT_CONFIG;
             const IconComp = config.icon;
             return (
-              <div
+              <HoverLift
                 key={n._id}
+                y={-2}
                 className="notif-row"
                 onClick={() => handleNotificationClick(n)}
                 style={{
@@ -201,7 +203,7 @@ export default function NotificationPanel({ isOpen, onClose, anchorRect }) {
                     {formatRelativeTime(n.createdAt)}
                   </span>
                 </div>
-              </div>
+              </HoverLift>
             );
           })
         )}

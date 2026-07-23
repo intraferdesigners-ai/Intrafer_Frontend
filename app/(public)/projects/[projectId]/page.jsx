@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Building2 } from 'lucide-react';
 import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
 import ProjectsSection from '../../../../components/vendor/ProjectsSection';
+import Reveal from '../../../../components/ui/Reveal';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -81,6 +82,7 @@ export default async function ProjectDetailPage({ params }) {
       </Link>
 
       {/* Project title */}
+      <Reveal>
       <h1 style={{
         fontFamily: 'var(--font-display)', fontSize: 'clamp(24px,4vw,36px)', fontWeight: 400,
         color: 'var(--text)', margin: '20px 0 8px',
@@ -97,9 +99,10 @@ export default async function ProjectDetailPage({ params }) {
         {project.budget && <span className="spec-pill">💰 {project.budget}</span>}
         {project.timeline && <span className="spec-pill">⏱️ {project.timeline}</span>}
       </div>
+      </Reveal>
 
       {/* Two col layout: images left, vendor card right */}
-      <div className="two-col-layout">
+      <Reveal delay={0.1} className="two-col-layout">
 
         {/* LEFT: Images + description */}
         <div>
@@ -229,7 +232,7 @@ export default async function ProjectDetailPage({ params }) {
             </Link>
           </div>
         </div>
-      </div>
+      </Reveal>
 
       {/* ── RELATED PROJECTS ── */}
       {relatedProjects.length > 0 && (

@@ -11,6 +11,7 @@ import Spinner from '../../../components/ui/Spinner';
 import Button from '../../../components/ui/Button';
 import OnboardingChecklist from '../../../components/vendor/OnboardingChecklist';
 import { formatDate } from '../../../lib/utils';
+import HoverLift from '../../../components/ui/HoverLift';
 
 const LABEL = {
   fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
@@ -164,7 +165,7 @@ export default function VendorDashboard() {
         gap: 12, marginBottom: 36,
       }}>
         {STATS.map(({ label, value, icon: Icon }) => (
-          <div key={label} style={{
+          <HoverLift key={label} style={{
             background: 'var(--color-surface)', border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-lg)', padding: 20, textAlign: 'center',
           }}>
@@ -176,7 +177,7 @@ export default function VendorDashboard() {
               {value}
             </div>
             <div style={{ ...LABEL, marginTop: 4 }}>{label}</div>
-          </div>
+          </HoverLift>
         ))}
       </div>
 
@@ -209,7 +210,7 @@ export default function VendorDashboard() {
       ) : (
         leads.map((lead) => (
           <Link key={lead._id} href={`/vendor/dashboard/leads/${lead._id}`} style={{ textDecoration: 'none' }}>
-            <div style={{
+            <HoverLift style={{
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-lg)', padding: '14px 16px', marginBottom: 8,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -234,7 +235,7 @@ export default function VendorDashboard() {
                   {formatDate(lead.createdAt)}
                 </div>
               </div>
-            </div>
+            </HoverLift>
           </Link>
         ))
       )}

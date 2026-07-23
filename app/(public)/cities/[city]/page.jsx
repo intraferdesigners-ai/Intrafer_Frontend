@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import VendorCard from '../../../../components/vendor/VendorCard';
+import Reveal from '../../../../components/ui/Reveal';
+import RevealItem from '../../../../components/ui/RevealItem';
 
 const CITY_DATA = {
   bangalore: {
@@ -107,30 +109,36 @@ export default async function CityPage({ params }) {
 
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '64px clamp(16px,4vw,40px) 80px' }}>
         {/* Stats strip */}
-        <div className="city-stats-grid" style={{ marginBottom: '48px' }}>
-          {[
-            { label: 'Designers', value: vendors.length > 0 ? vendors.length : 'New' },
-            { label: 'Avg rating', value: stats ? `${stats.avgRating}★` : '4.9★' },
-            { label: 'Response', value: '48h' },
-          ].map((s) => (
-            <div key={s.label} style={{ background: 'var(--surface)', padding: 'clamp(14px,3vw,20px)', textAlign: 'center' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--primary)' }}>{s.value}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-hint)', letterSpacing: '.08em', marginTop: '4px' }}>{s.label.toUpperCase()}</div>
-            </div>
-          ))}
-        </div>
+        <Reveal>
+          <div className="city-stats-grid" style={{ marginBottom: '48px' }}>
+            {[
+              { label: 'Designers', value: vendors.length > 0 ? vendors.length : 'New' },
+              { label: 'Avg rating', value: stats ? `${stats.avgRating}★` : '4.9★' },
+              { label: 'Response', value: '48h' },
+            ].map((s) => (
+              <div key={s.label} style={{ background: 'var(--surface)', padding: 'clamp(14px,3vw,20px)', textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--primary)' }}>{s.value}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-hint)', letterSpacing: '.08em', marginTop: '4px' }}>{s.label.toUpperCase()}</div>
+              </div>
+            ))}
+          </div>
 
-        <p style={{ fontSize: '16px', color: 'var(--text-mid)', lineHeight: 1.8, maxWidth: '680px', marginBottom: '64px' }}>
-          {cityData.description}
-        </p>
+          <p style={{ fontSize: '16px', color: 'var(--text-mid)', lineHeight: 1.8, maxWidth: '680px', marginBottom: '64px' }}>
+            {cityData.description}
+          </p>
 
-        {/* Vendors */}
-        <p className="caps-label-primary" style={{ marginBottom: '10px' }}>VERIFIED DESIGNERS</p>
-        <h2 className="section-heading" style={{ marginBottom: '32px' }}>Interior designers in {cityData.name}</h2>
+          {/* Vendors */}
+          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>VERIFIED DESIGNERS</p>
+          <h2 className="section-heading" style={{ marginBottom: '32px' }}>Interior designers in {cityData.name}</h2>
+        </Reveal>
 
         {vendors.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px,1fr))', gap: '20px', marginBottom: '48px' }}>
-            {vendors.map((v) => <VendorCard key={v._id} vendor={v} />)}
+            {vendors.map((v, i) => (
+              <RevealItem key={v._id} index={i % 6}>
+                <VendorCard vendor={v} />
+              </RevealItem>
+            ))}
           </div>
         ) : (
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '48px', textAlign: 'center', marginBottom: '48px' }}>

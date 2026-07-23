@@ -8,6 +8,7 @@ import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
 import { getInitials, formatDate } from '../../../../lib/utils';
 import VendorProfileTracker from '../../../../components/vendor/VendorProfileTracker';
 import ConsultationModal from '../../../../components/vendor/ConsultationModal';
+import Reveal from '../../../../components/ui/Reveal';
 
 const PRICE_UNIT_LABEL = {
   flat: '',
@@ -129,7 +130,7 @@ export default async function VendorProfilePage({ params }) {
         <div>
 
           {/* ── COVER BANNER (avatar overlaps here, name never does) ── */}
-          <div style={{ position: 'relative' }}>
+          <Reveal style={{ position: 'relative' }}>
             <div style={{
               height: '200px',
               background: 'linear-gradient(135deg, var(--primary-bg) 0%, var(--bg-cream) 100%)',
@@ -189,7 +190,6 @@ export default async function VendorProfilePage({ params }) {
                 </span>
               )}
             </div>
-          </div>
 
           {/* ── NAME + META — always below the cover, never overlaid on it ── */}
           <div style={{
@@ -267,6 +267,7 @@ export default async function VendorProfilePage({ params }) {
               ))}
             </div>
           </div>
+          </Reveal>
 
           {/* Specializations */}
           {specs.length > 0 && (
@@ -342,14 +343,14 @@ export default async function VendorProfilePage({ params }) {
           })()}
 
           {/* Portfolio */}
-          <div>
+          <Reveal>
             <span style={LABEL}>PORTFOLIO ({projects.length} projects)</span>
             <ProjectsSection projects={projects} />
-          </div>
+          </Reveal>
 
           {/* Reviews */}
           {reviews.length > 0 && (
-            <div id="reviews" style={{ marginTop: 32, scrollMarginTop: 64 }}>
+            <Reveal id="reviews" style={{ marginTop: 32, scrollMarginTop: 64 }}>
               <span style={LABEL}>REVIEWS ({reviews.length})</span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {reviews.map((review) => (
@@ -383,7 +384,7 @@ export default async function VendorProfilePage({ params }) {
                   </div>
                 ))}
               </div>
-            </div>
+            </Reveal>
           )}
         </div>
 

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { IMAGES } from '@/lib/images';
+import Reveal from '@/components/ui/Reveal';
 
 export const metadata = {
   title: "About Intrafer | India's Interior Designer Marketplace",
@@ -31,7 +32,7 @@ export default function AboutPage() {
 
       {/* ── HERO ── */}
       <section style={{ background: 'var(--bg-parchment)', padding: '108px 40px 80px', textAlign: 'center' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '12px' }}>ABOUT INTRAFER</p>
           <h1 className="section-heading" style={{ marginBottom: '18px' }}>
             Built to fix how India hires interior designers
@@ -42,7 +43,7 @@ export default function AboutPage() {
           <div style={{ position: 'relative', height: '400px', borderRadius: 'var(--r-2xl)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', maxWidth: '960px', margin: '0 auto' }}>
             <Image src={IMAGES.banners.about} alt="Interior design inspiration" fill style={{ objectFit: 'cover' }} priority sizes="(max-width: 768px) 100vw, 960px" />
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <div className="divider" />
@@ -85,7 +86,7 @@ export default function AboutPage() {
 
       {/* ── HOW WE VERIFY ── */}
       <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '10px' }}>TRUST & QUALITY</p>
           <h2 className="section-heading" style={{ marginBottom: '44px' }}>How we verify designers</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px' }} className="grid-mobile-1">
@@ -98,7 +99,7 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <div className="divider" />

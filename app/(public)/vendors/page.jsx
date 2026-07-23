@@ -1,10 +1,10 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { Building2 } from 'lucide-react';
-import VendorCard from '../../../components/vendor/VendorCard';
 import VendorSearch from '../../../components/vendor/VendorSearch';
 import VendorBHKFilter from '../../../components/vendor/VendorBHKFilter';
 import CompareBar from '../../../components/vendor/CompareBar';
+import VendorResultsGrid from '../../../components/vendor/VendorResultsGrid';
 
 export const metadata = { title: 'Find Interior Designers | Intrafer' };
 
@@ -65,9 +65,7 @@ export default async function VendorsPage({ searchParams }) {
 
       {vendors.length > 0 ? (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
-            {vendors.map((v) => <VendorCard vendor={v} key={v._id} />)}
-          </div>
+          <VendorResultsGrid vendors={vendors} />
 
           {totalPages > 1 && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 48 }}>

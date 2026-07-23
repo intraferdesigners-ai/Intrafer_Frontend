@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { GUIDES, getGuide } from '../../../../lib/guides-data';
 import { notFound } from 'next/navigation';
+import Reveal from '../../../../components/ui/Reveal';
 
 export async function generateMetadata({ params }) {
   const guide = getGuide(params.slug);
@@ -26,7 +27,7 @@ export default function GuideDetailPage({ params }) {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '60px', alignItems: 'start' }} className="guide-grid">
+      <Reveal style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '60px', alignItems: 'start' }} className="guide-grid">
         {/* Main content */}
         <div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '16px' }}>
@@ -145,7 +146,7 @@ export default function GuideDetailPage({ params }) {
             </Link>
           </div>
         </div>
-      </div>
+      </Reveal>
     </div>
   );
 }

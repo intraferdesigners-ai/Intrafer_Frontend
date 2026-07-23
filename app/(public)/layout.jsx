@@ -3,6 +3,7 @@ import Footer from '../../components/layout/Footer';
 import WhatsAppButton from '../../components/ui/WhatsAppButton';
 import OfferBanner from '../../components/ui/OfferBanner';
 import StickyMobileCTA from '../../components/ui/StickyMobileCTA';
+import PageTransition from '../../components/ui/PageTransition';
 
 export default function PublicLayout({ children }) {
   return (
@@ -10,7 +11,7 @@ export default function PublicLayout({ children }) {
       <OfferBanner />
       <Navbar />
       <main style={{ flex: 1 }}>
-        {children}
+        <PageTransition>{children}</PageTransition>
       </main>
       <Footer />
       <WhatsAppButton />

@@ -8,6 +8,7 @@ import api from '../../../../lib/api';
 import Badge from '../../../../components/ui/Badge';
 import Spinner from '../../../../components/ui/Spinner';
 import { formatDate, formatRelativeTime } from '../../../../lib/utils';
+import HoverLift from '../../../../components/ui/HoverLift';
 
 function formatDateTime(dateString) {
   return new Date(dateString).toLocaleString('en-IN', {
@@ -186,7 +187,7 @@ export default function VendorLeadsPage() {
       ) : (
         leads.map((lead) => (
           <Link key={lead._id} href={`/vendor/dashboard/leads/${lead._id}`} style={{ textDecoration: 'none' }}>
-            <div
+            <HoverLift
               className="lead-row"
               style={{
                 background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -303,7 +304,7 @@ export default function VendorLeadsPage() {
                   </span>
                 </div>
               </div>
-            </div>
+            </HoverLift>
           </Link>
         ))
       )}

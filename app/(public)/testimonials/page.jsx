@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import TestimonialsGrid from './TestimonialsGrid';
+import Reveal from '../../../components/ui/Reveal';
 
 export const metadata = {
   title: 'Testimonials | What Homeowners Say | Intrafer',
@@ -23,12 +24,14 @@ export default async function TestimonialsPage() {
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: 'clamp(80px,10vw,108px) clamp(16px,4vw,40px) 80px' }}>
-      <p className="caps-label-primary" style={{ marginBottom: '10px' }}>VERIFIED REVIEWS</p>
-      <h1 className="section-heading" style={{ marginBottom: '8px' }}>What homeowners say</h1>
+      <Reveal>
+        <p className="caps-label-primary" style={{ marginBottom: '10px' }}>VERIFIED REVIEWS</p>
+        <h1 className="section-heading" style={{ marginBottom: '8px' }}>What homeowners say</h1>
+      </Reveal>
 
       {hasReviews ? (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '36px', flexWrap: 'wrap' }}>
+          <Reveal style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '36px', flexWrap: 'wrap' }}>
             <span style={{ fontFamily: 'var(--font-display)', fontSize: '48px', color: 'var(--primary)', lineHeight: 1 }}>{stats.avgRating}★</span>
             <div>
               <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)' }}>
@@ -36,7 +39,7 @@ export default async function TestimonialsPage() {
               </p>
               <div style={{ fontSize: '20px', color: 'var(--primary)', letterSpacing: '3px' }}>★★★★★</div>
             </div>
-          </div>
+          </Reveal>
 
           <TestimonialsGrid reviews={reviews} />
 

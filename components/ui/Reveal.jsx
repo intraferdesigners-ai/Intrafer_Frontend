@@ -11,11 +11,12 @@ import { motion, useReducedMotion } from 'framer-motion';
 // of visible). Instead, reduced motion collapses the transition to 0s, so
 // whileInView still fires and lands the element at its visible state —
 // just instantly instead of animated.
-export default function Reveal({ children, delay = 0, className, style }) {
+export default function Reveal({ children, delay = 0, className, style, id }) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
     <motion.div
+      id={id}
       className={className}
       style={style}
       initial={{ opacity: 0, y: 24 }}

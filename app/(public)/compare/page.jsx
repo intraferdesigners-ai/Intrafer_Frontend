@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Building2, MapPin, ShieldCheck } from 'lucide-react';
+import RevealItem from '../../../components/ui/RevealItem';
 
 export const metadata = { title: 'Compare Designers | Intrafer' };
 
@@ -68,13 +69,13 @@ export default async function ComparePage({ searchParams }) {
           gap: 20,
           minWidth: vendors.length > 2 ? `${vendors.length * 260}px` : undefined,
         }}>
-          {vendors.map((vendor) => {
+          {vendors.map((vendor, i) => {
             const specs = vendor.specializations || [];
             const location = [vendor.location?.city, vendor.location?.state].filter(Boolean).join(', ') || 'India';
             const cover = vendor.portfolioImages?.[0];
 
             return (
-              <div key={vendor._id} style={{
+              <RevealItem key={vendor._id} index={i} style={{
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
                 borderRadius: 'var(--r-xl)',
@@ -174,7 +175,7 @@ export default async function ComparePage({ searchParams }) {
                     </Link>
                   </div>
                 </div>
-              </div>
+              </RevealItem>
             );
           })}
         </div>

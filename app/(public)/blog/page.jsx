@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import api from '@/lib/api';
+import Reveal from '@/components/ui/Reveal';
+import RevealItem from '@/components/ui/RevealItem';
 
 const CATEGORIES = ['All', 'Kitchen', 'Living Room', 'Bedroom', 'Bathroom', 'Guide'];
 const FALLBACK_COVER = '/images/blog/modular-kitchen.jpg';
@@ -61,11 +63,13 @@ export default function BlogPage() {
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: 'clamp(80px,10vw,108px) clamp(16px,4vw,40px) 80px' }}>
 
       {/* Header */}
-      <p className="caps-label-primary" style={{ marginBottom: '8px' }}>THE INTRAFER BLOG</p>
-      <h1 className="section-heading" style={{ marginBottom: '10px' }}>Design guides &amp; tips</h1>
-      <p style={{ fontSize: '14px', color: 'var(--text-mid)', marginBottom: '32px' }}>
-        Expert advice from India's top interior designers.
-      </p>
+      <Reveal>
+        <p className="caps-label-primary" style={{ marginBottom: '8px' }}>THE INTRAFER BLOG</p>
+        <h1 className="section-heading" style={{ marginBottom: '10px' }}>Design guides &amp; tips</h1>
+        <p style={{ fontSize: '14px', color: 'var(--text-mid)', marginBottom: '32px' }}>
+          Expert advice from India's top interior designers.
+        </p>
+      </Reveal>
 
       {/* Category filter */}
       <div className="scroll-x" style={{ gap: '8px', marginBottom: '40px', paddingBottom: '8px' }}>
@@ -120,8 +124,9 @@ export default function BlogPage() {
       {/* Remaining posts */}
       {rest.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px' }} className="grid-mobile-1">
-          {rest.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+          {rest.map((post, i) => (
+            <RevealItem key={post.slug} index={i % 6}>
+            <Link href={`/blog/${post.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
               <div style={{
                 background: 'var(--surface)', border: '1px solid var(--border)',
                 borderRadius: 'var(--r-xl)', overflow: 'hidden',
@@ -148,6 +153,7 @@ export default function BlogPage() {
                 </div>
               </div>
             </Link>
+            </RevealItem>
           ))}
         </div>
       )}
