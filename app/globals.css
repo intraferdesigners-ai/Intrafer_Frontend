@@ -255,6 +255,15 @@ a { color: inherit; text-decoration: none; }
   transform: translateY(-3px);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .card-hover, .vendor-card-hover, .vendor-card {
+    transition: none;
+  }
+  .card-hover:hover, .vendor-card-hover:hover, .vendor-card:hover {
+    transform: none;
+  }
+}
+
 .spec-pill {
   display: inline-block;
   padding: 3px 10px;

@@ -18,6 +18,8 @@ import AnimatedCounter from '../components/ui/AnimatedCounter';
 import StickySearch from '../components/public/StickySearch';
 import HeroSearch from '../components/public/HeroSearch';
 import HomepageFAQ from '../components/public/HomepageFAQ';
+import Reveal from '../components/ui/Reveal';
+import HowItWorksCard from '../components/ui/HowItWorksCard';
 
 export const metadata = {
   title: 'Intrafer — Vetted Interior Designers Across India',
@@ -109,16 +111,6 @@ const STEPS = [
   { n: '04', image: '/images/how-it-works/step4.jpg', title: 'Transform your space', desc: 'Agree on scope and pricing directly with your designer, then track progress through to handover.' },
 ];
 
-// Shared (not per-card inline) so all 4 numeral chips stay pixel-identical.
-const STEP_CHIP_STYLE = {
-  position: 'absolute', bottom: '-18px', left: '16px', zIndex: 2,
-  width: '38px', height: '38px', borderRadius: '10px',
-  background: 'var(--primary)', color: '#fff',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 500,
-  boxShadow: '0 4px 10px rgba(29,78,216,.35)',
-};
-
 const WHY_ITEMS = [
   { Icon: Shield,    title: 'A vetting process, not a signup form', desc: "Designers submit portfolios and credentials for review before they're listed. Most applicants don't make the cut." },
   { Icon: Lock,      title: 'No cost to browse or enquire',         desc: "Homeowners pay nothing to use Intrafer — no subscription, no finder's fee, no obligation to hire." },
@@ -179,7 +171,7 @@ export default async function Home() {
       {/* ── HERO ── */}
       <section style={{ background: 'var(--bg-parchment)', paddingTop: '68px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: 'clamp(32px,5vw,80px) clamp(16px,4vw,40px)', display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: '64px', alignItems: 'center' }} className="hero-grid grid-mobile-1">
-          <div>
+          <Reveal>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '5px 14px', border: '1px solid var(--border-sub)', borderRadius: '20px', background: 'var(--surface)', fontSize: '10px', letterSpacing: '.14em', color: 'var(--primary)', marginBottom: '20px', boxShadow: 'var(--shadow-sm)' }}>
               <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }} />
               500+ VERIFIED DESIGNERS · INDIA
@@ -212,7 +204,7 @@ export default async function Home() {
             </div>
             {/* Search widget */}
             <HeroSearch />
-          </div>
+          </Reveal>
           {/* Right — hero image collage (hidden on mobile) */}
           <div className="hide-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ height: '300px', borderRadius: 'var(--r-xl)', position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
@@ -275,25 +267,8 @@ export default async function Home() {
           <p className="caps-label-primary" style={{ marginBottom: '10px' }}>HOW IT WORKS</p>
           <h2 className="section-heading">From enquiry to handover</h2>
           <div className="steps-grid" style={{ marginTop: '48px' }}>
-            {STEPS.map((step) => (
-              <div key={step.n} style={{
-                display: 'flex', flexDirection: 'column', height: '100%',
-                borderRadius: 'var(--r-xl)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)',
-              }}>
-                {/* Photo strip — outer wrapper lets the numeral chip overlap below it */}
-                <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <div style={{ position: 'relative', height: '120px', overflow: 'hidden' }}>
-                    <Image src={step.image} alt={step.title} fill style={{ objectFit: 'cover' }} sizes="(max-width: 840px) 50vw, 25vw" />
-                  </div>
-                  <div style={STEP_CHIP_STYLE}>{step.n}</div>
-                </div>
-
-                {/* Navy card body — flex:1 fills any leftover height so all 4 card bottoms stay flush */}
-                <div style={{ background: '#0F172A', padding: '26px 20px 20px', flex: 1 }}>
-                  <p style={{ fontSize: '15px', fontWeight: 500, color: '#fff', margin: '0 0 8px' }}>{step.title}</p>
-                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,.6)', lineHeight: 1.7, margin: 0 }}>{step.desc}</p>
-                </div>
-              </div>
+            {STEPS.map((step, i) => (
+              <HowItWorksCard key={step.n} step={step} index={i} />
             ))}
           </div>
         </div>
@@ -301,32 +276,59 @@ export default async function Home() {
 
       <div className="divider" />
 
-      {/* ── WHY INTRAFER ── */}
-      <section style={{ background: 'var(--bg-parchment)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>WHY INTRAFER</p>
-          <h2 className="section-heading">Why homeowners trust Intrafer</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: '48px', marginTop: '44px' }} className="grid-mobile-1">
-            {WHY_ITEMS.map(({ Icon, title, desc }) => (
-              <div key={title} style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', padding: '20px 0', borderBottom: '1px solid var(--border)' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon size={16} color="var(--primary)" />
-                </div>
-                <div>
-                  <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', marginBottom: '6px' }}>{title}</p>
-                  <p style={{ fontSize: '13px', color: 'var(--text-mid)', lineHeight: 1.7, margin: 0 }}>{desc}</p>
-                </div>
+      {/* ── WHY INTRAFER — full-bleed photo backdrop ── */}
+      <section style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
+        <Image
+          src={IMAGES.gallery.livingRoom[3]}
+          alt=""
+          fill
+          style={{ objectFit: 'cover' }}
+          sizes="100vw"
+        />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(180deg, rgba(15,23,42,.92) 0%, rgba(15,23,42,.8) 45%, rgba(15,23,42,.9) 100%)',
+        }} />
+
+        <Reveal style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto' }}>
+          <p className="caps-label-primary" style={{ marginBottom: '10px', textAlign: 'center' }}>WHY INTRAFER</p>
+          <h2 style={{
+            fontFamily: 'var(--font-display)', fontSize: '38px', fontWeight: 400,
+            color: '#fff', textAlign: 'center', margin: '0 0 12px',
+          }}>
+            Why homeowners trust Intrafer
+          </h2>
+          <p style={{
+            fontSize: '13px', color: 'rgba(255,255,255,.7)', textAlign: 'center',
+            maxWidth: '560px', margin: '0 auto clamp(40px,5vw,56px)',
+          }}>
+            Every safeguard is built around one thing: what actually happens once you submit an enquiry.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '36px 40px' }} className="grid-mobile-1">
+            {WHY_ITEMS.map(({ title, desc }, i) => (
+              <div key={title} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <span style={{
+                  display: 'inline-block', alignSelf: 'flex-start',
+                  fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 400,
+                  color: '#60A5FA', borderBottom: '2px solid #60A5FA',
+                  paddingBottom: '6px', marginBottom: '14px',
+                }}>
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <p style={{ fontSize: '14px', fontWeight: 500, color: '#fff', margin: '0 0 6px' }}>{title}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,.6)', lineHeight: 1.65, margin: 0 }}>{desc}</p>
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <div className="divider" />
 
       {/* ── BEFORE/AFTER ── */}
       <section style={{ background: 'var(--bg-parchment)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '10px' }}>TRANSFORMATIONS</p>
           <h2 className="section-heading" style={{ marginBottom: '8px' }}>See the transformation</h2>
           <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '40px' }}>
@@ -348,7 +350,7 @@ export default async function Home() {
               />
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <div className="divider" />
@@ -381,7 +383,7 @@ export default async function Home() {
 
       {/* ── FEATURED DESIGNERS ── */}
       <section style={{ background: 'var(--bg-parchment)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <div>
               <p className="caps-label-primary" style={{ marginBottom: '10px' }}>FEATURED DESIGNERS</p>
@@ -392,7 +394,7 @@ export default async function Home() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '40px' }}>
             {vendors.map((v) => <VendorCard key={v._id} vendor={v} />)}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {featuredProjects.length > 0 && (
@@ -401,7 +403,7 @@ export default async function Home() {
 
           {/* ── FEATURED PROJECTS ── */}
           <section style={{ background: 'var(--bg)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
-            <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+            <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
               <p className="caps-label-primary" style={{ marginBottom: '10px' }}>FEATURED PROJECTS</p>
               <h2 className="section-heading" style={{ marginBottom: '8px' }}>A closer look at recent work</h2>
               <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '40px' }}>
@@ -429,7 +431,7 @@ export default async function Home() {
                   </Link>
                 ))}
               </div>
-            </div>
+            </Reveal>
           </section>
         </>
       )}
