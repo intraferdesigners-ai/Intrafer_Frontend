@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowRight, CheckCircle, TrendingUp, Users, Star, Zap, BarChart3 } from 'lucide-react';
 import { IMAGES } from '@/lib/images';
 import Reveal from '@/components/ui/Reveal';
+import api from '@/lib/api';
 
 const BENEFITS = [
   { Icon: TrendingUp, title: 'Qualified leads only',    desc: "Every lead is from a verified homeowner actively planning an interior project. No tire-kickers, no spam." },
@@ -51,6 +52,15 @@ const FAQS = [
 export default function ForDesignersPage() {
   useEffect(() => { document.title = 'List Your Interior Design Studio | Intrafer'; }, []);
   const [openFaq, setOpenFaq] = useState(null);
+  const [avgRating, setAvgRating] = useState('4.8');
+
+  useEffect(() => {
+    api.get('/public/stats')
+      .then(({ data }) => {
+        if (data?.data?.avgRating) setAvgRating(data.data.avgRating);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -70,9 +80,9 @@ export default function ForDesignersPage() {
             {/* Stats row */}
             <div style={{ display: 'flex', gap: '32px', marginTop: '28px', flexWrap: 'wrap' }}>
               {[
-                { val: '15–20', label: 'LEADS/MONTH AVG' },
-                { val: '₹45K',  label: 'AVG REVENUE UPLIFT' },
-                { val: '4.8★',  label: 'DESIGNER RATING' },
+                { val: 'Up to 10',    label: 'LEADS/MONTH' },
+                { val: 'Zero',        label: 'COMMISSION' },
+                { val: `${avgRating}★`, label: 'DESIGNER RATING' },
               ].map((s) => (
                 <div key={s.label}>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 400, color: 'var(--primary)', lineHeight: 1 }}>{s.val}</div>
@@ -138,7 +148,7 @@ export default function ForDesignersPage() {
       <div className="divider" />
 
       {/* ── HOW IT WORKS ── */}
-      <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <section id="how-it-works" style={{ background: 'var(--bg)', padding: '80px 40px', scrollMarginTop: '104px' }}>
         <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '10px' }}>HOW IT WORKS</p>
           <h2 className="section-heading">Start receiving leads in 3 steps</h2>
@@ -158,7 +168,7 @@ export default function ForDesignersPage() {
       <div className="divider" />
 
       {/* ── BENEFITS ── */}
-      <section style={{ background: 'var(--bg-parchment)', padding: '80px 40px' }}>
+      <section id="benefits" style={{ background: 'var(--bg-parchment)', padding: '80px 40px', scrollMarginTop: '104px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '10px' }}>WHY INTRAFER</p>
           <h2 className="section-heading">Better leads, no commission, full control</h2>
@@ -224,7 +234,7 @@ export default function ForDesignersPage() {
           </div>
 
           {/* FAQ */}
-          <div style={{ maxWidth: '700px', margin: '60px auto 0' }}>
+          <div id="faq" style={{ maxWidth: '700px', margin: '60px auto 0', scrollMarginTop: '104px' }}>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 400, color: 'var(--text)', marginBottom: '24px', textAlign: 'center' }}>
               Frequently asked questions
             </h3>
