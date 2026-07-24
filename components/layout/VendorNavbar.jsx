@@ -85,7 +85,7 @@ export default function VendorNavbar() {
             <Link href="/auth/login" className="vendor-login-link" style={{ fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
               Vendor login
             </Link>
-            <Link href="/auth/register" className="vendor-cta-btn" style={{
+            <Link href="/auth/register?role=vendor" className="vendor-cta-btn" style={{
               display: 'inline-flex', alignItems: 'center', color: '#0F172A',
               fontSize: '13px', fontWeight: 600, padding: '9px 18px',
               borderRadius: 'var(--r-md)', textDecoration: 'none',
@@ -109,8 +109,13 @@ export default function VendorNavbar() {
           </button>
         </div>
 
-        {/* Trust-bar row */}
-        <div style={{
+        {/* Trust-bar row — hidden below 768px: at mobile widths the three
+            phrases wrap onto 2-3 lines and balloon the fixed header's
+            height (measured 131-159px vs 103px desktop), which would push
+            it out of sync with every vendor-site page's top padding. Hiding
+            it keeps the mobile header locked to the nav row's 64px, same
+            as the homeowner Navbar. */}
+        <div className="hide-mobile" style={{
           borderTop: '1px solid rgba(240,246,255,.1)',
           padding: '10px 20px',
         }}>
@@ -164,7 +169,7 @@ export default function VendorNavbar() {
               Vendor login
             </button>
           </Link>
-          <Link href="/auth/register" onClick={() => setDrawerOpen(false)} style={{ textDecoration: 'none' }}>
+          <Link href="/auth/register?role=vendor" onClick={() => setDrawerOpen(false)} style={{ textDecoration: 'none' }}>
             <button style={{ width: '100%', height: '50px', borderRadius: 'var(--r-md)', background: '#60A5FA', border: 'none', fontSize: '15px', fontWeight: 600, color: '#0F172A', cursor: 'pointer' }}>
               List your studio
             </button>

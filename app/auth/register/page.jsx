@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Lock, User, Phone, UserPlus } from 'lucide-react';
@@ -9,12 +10,15 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import AuthSplitCard from '../../../components/auth/AuthSplitCard';
 
-export default function RegisterPage() {
+function RegisterContent() {
+  const searchParams = useSearchParams();
+  const initialRole = searchParams.get('role') === 'vendor' ? 'vendor' : 'user';
+
   const [name,     setName]     = useState('');
   const [email,    setEmail]    = useState('');
   const [phone,    setPhone]    = useState('');
   const [password, setPassword] = useState('');
-  const [role,     setRole]     = useState('user');
+  const [role,     setRole]     = useState(initialRole);
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState('');
   const [success,  setSuccess]  = useState(false);
@@ -314,5 +318,13 @@ export default function RegisterPage() {
         </Link>
       </p>
     </AuthSplitCard>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterContent />
+    </Suspense>
   );
 }

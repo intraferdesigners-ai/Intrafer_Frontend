@@ -39,7 +39,7 @@ export default function VendorFooter() {
               Join the designers already listed on Intrafer.
             </p>
           </div>
-          <Link href="/auth/register" style={{
+          <Link href="/auth/register?role=vendor" style={{
             display: 'inline-flex', alignItems: 'center',
             background: '#60A5FA', color: '#0F172A',
             fontSize: '14px', fontWeight: 600, padding: '13px 26px',

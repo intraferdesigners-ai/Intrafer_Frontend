@@ -8,9 +8,9 @@ export const metadata = {
 
 export default function VendorPrivacyPolicyPage() {
   return (
-    <div style={{
+    <div className="vendor-page-offset" style={{
       maxWidth: '720px', margin: '0 auto',
-      padding: 'clamp(100px, 13vw, 140px) clamp(16px, 5vw, 40px) 80px',
+      paddingLeft: 'clamp(16px, 5vw, 40px)', paddingRight: 'clamp(16px, 5vw, 40px)', paddingBottom: '80px',
     }}>
       {/* Header */}
       <div style={{ marginBottom: '48px' }}>

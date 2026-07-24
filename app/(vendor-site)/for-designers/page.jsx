@@ -66,7 +66,7 @@ export default function ForDesignersPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
       {/* ── HERO ── */}
-      <section style={{ background: 'var(--bg-parchment)', padding: '108px 40px 80px' }}>
+      <section className="vendor-page-offset" style={{ background: 'var(--bg-parchment)', paddingLeft: '40px', paddingRight: '40px', paddingBottom: '80px' }}>
         <Reveal style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '64px', alignItems: 'center' }} className="grid-mobile-1">
           <div>
             <p className="caps-label-primary" style={{ marginBottom: '12px' }}>FOR INTERIOR DESIGNERS</p>
@@ -92,7 +92,7 @@ export default function ForDesignersPage() {
             </div>
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '32px', flexWrap: 'wrap' }}>
-              <Link href="/auth/register" style={{
+              <Link href="/auth/register?role=vendor" style={{
                 display: 'inline-flex', alignItems: 'center', gap: '8px',
                 background: 'var(--primary)', color: '#fff',
                 padding: '13px 28px', borderRadius: 'var(--r-md)',
@@ -218,7 +218,7 @@ export default function ForDesignersPage() {
                     {f}
                   </div>
                 ))}
-                <Link href="/auth/register" style={{
+                <Link href="/auth/register?role=vendor" style={{
                   display: 'block', marginTop: '24px',
                   background: plan.highlight ? 'var(--primary)' : 'var(--surface)',
                   color: plan.highlight ? '#fff' : 'var(--text-sub)',
@@ -270,7 +270,7 @@ export default function ForDesignersPage() {
               Free to list. No commission. Just a flat subscription and direct access to clients who want to work with you.
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <Link href="/auth/register" style={{
+              <Link href="/auth/register?role=vendor" style={{
                 background: 'var(--primary)', color: '#fff',
                 padding: '14px 32px', borderRadius: 'var(--r-md)',
                 fontSize: '14px', fontWeight: 500, textDecoration: 'none',

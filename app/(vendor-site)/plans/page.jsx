@@ -135,7 +135,7 @@ export default function PlansPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
       {/* Header */}
-      <section style={{ background: 'var(--bg-parchment)', padding: '108px 40px 60px', textAlign: 'center' }}>
+      <section className="vendor-page-offset" style={{ background: 'var(--bg-parchment)', paddingLeft: '40px', paddingRight: '40px', paddingBottom: '60px', textAlign: 'center' }}>
         <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PRICING</p>
           <h1 className="section-heading" style={{ marginBottom: '14px' }}>
@@ -206,7 +206,7 @@ export default function PlansPage() {
                 ))}
               </div>
 
-              <Link href="/auth/register" style={{ display: 'block' }}>
+              <Link href="/auth/register?role=vendor" style={{ display: 'block' }}>
                 <button style={{
                   width: '100%', padding: '13px',
                   background: plan.popular ? 'var(--primary)' : 'var(--surface)',
@@ -259,7 +259,7 @@ export default function PlansPage() {
             <p style={{ fontSize: '15px', color: 'rgba(255,255,255,.5)', marginBottom: '28px' }}>
               Join 500+ verified designers on Intrafer.
             </p>
-            <Link href="/auth/register">
+            <Link href="/auth/register?role=vendor">
               <button style={{
                 background: 'var(--primary)', color: '#fff',
                 padding: '14px 36px', borderRadius: 'var(--r-md)',
