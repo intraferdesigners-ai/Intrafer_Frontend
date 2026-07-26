@@ -178,7 +178,7 @@ export default function Footer() {
               </div>
             </Link>
             <p style={{ fontSize: '13px', color: 'rgba(240,246,255,.35)', lineHeight: 1.7, maxWidth: '220px', marginBottom: '16px' }}>
-              India&apos;s most trusted interior designer marketplace. 500+ verified designers across India.
+              India&apos;s most trusted interior designer marketplace. Verified designers across India.
             </p>
             <a
               href="https://wa.me/919876500000"
