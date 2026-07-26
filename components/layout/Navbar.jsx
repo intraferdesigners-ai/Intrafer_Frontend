@@ -105,7 +105,7 @@ export default function Navbar() {
           {/* Desktop right actions — public site always shows logged-out state */}
           <div className="nav-desktop-links hide-mobile" style={{ gap: '10px', alignItems: 'center' }}>
             <ThemeToggle />
-            <Link href="/auth/login"><Button variant="outline" size="sm">Login</Button></Link>
+            <Link href="/auth/portal"><Button variant="outline" size="sm">Login</Button></Link>
             <Link href="/for-designers">
               <Button variant="primary" size="sm">For designers →</Button>
             </Link>
@@ -187,7 +187,7 @@ export default function Navbar() {
 
         {/* Bottom CTA */}
         <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <Link href="/auth/login" onClick={() => setDrawerOpen(false)} style={{ textDecoration: 'none' }}>
+          <Link href="/auth/portal" onClick={() => setDrawerOpen(false)} style={{ textDecoration: 'none' }}>
             <button style={{ width: '100%', height: '50px', borderRadius: 'var(--r-md)',
               background: 'var(--bg-parchment)', border: '1px solid var(--border)',
               fontSize: '15px', fontWeight: 500, color: 'var(--text)', cursor: 'pointer' }}>
