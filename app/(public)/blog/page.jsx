@@ -164,7 +164,7 @@ export default function BlogPage() {
           Find a designer for your next project
         </h3>
         <p style={{ fontSize: '14px', color: 'var(--text-mid)', marginBottom: '24px' }}>
-          500+ verified interior designers across India.
+          Verified interior designers across India.
         </p>
         <Link href="/vendors" style={{
           display: 'inline-block', background: 'var(--primary)', color: '#fff',
