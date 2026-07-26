@@ -2,22 +2,25 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { IMAGES } from '@/lib/images';
 import Reveal from '@/components/ui/Reveal';
+import AnimatedCounter from '@/components/ui/AnimatedCounter';
 
 export const metadata = {
   title: "About Intrafer | India's Interior Designer Marketplace",
 };
 
-const STATS = [
-  { value: 'Verified', label: 'DESIGNERS ONLY' },
-  { value: '12,000+',label: 'ENQUIRIES PLACED'   },
-  { value: '4.9★',   label: 'AVERAGE RATING'     },
-  { value: '48h',    label: 'RESPONSE GUARANTEE'  },
-];
+async function fetchStats() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const json = await res.json();
+    return json.data || null;
+  } catch { return null; }
+}
 
 const STEPS = [
   { n: '01', title: 'Portfolio review',   desc: "Every portfolio project is reviewed by hand — we confirm the images are real, credited to the right designer, and consistent with the quality being advertised." },
   { n: '02', title: 'Credential check',   desc: 'We confirm business registration, check professional background, and follow up with past clients where possible. Designers from recognised institutions are noted on their profile.' },
-  { n: '03', title: 'Quality assessment', desc: "New designers are monitored closely for their first three leads. Anyone who consistently misses the 48-hour response window is flagged and removed from the platform." },
+  { n: '03', title: 'Quality assessment', desc: "New designers are monitored closely for their first three leads. Designers who consistently fail to respond to enquiries are flagged and removed from the platform." },
 ];
 
 const TEAM = [
@@ -26,7 +29,17 @@ const TEAM = [
   { initials: 'AM', name: 'Aryan Mehta',   role: 'Head of Design',   bio: 'Trained as an architect at IIT Bombay, now leads design across the platform.' },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const statsData = await fetchStats();
+  // Nullish coalescing (not ||) so a genuine 0 from the API isn't mistaken
+  // for "falsy" and silently replaced by the fallback — same pattern used
+  // on the homepage's live stats strip.
+  const STATS = [
+    { value: 'Verified', label: 'DESIGNERS ONLY' },
+    { end: statsData?.enquiryCount ?? 15, suffix: '+', label: 'ENQUIRIES PLACED' },
+    { end: parseFloat(statsData?.avgRating ?? '4.8'), suffix: '★', decimals: 1, label: 'AVERAGE RATING' },
+    { end: statsData?.projectCount ?? 24, suffix: '+', label: 'PROJECTS DELIVERED' },
+  ];
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
@@ -75,7 +88,11 @@ export default function AboutPage() {
         <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '20px' }} className="grid-mobile-1">
           {STATS.map((s) => (
             <div key={s.label} style={{ textAlign: 'center', padding: '24px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', boxShadow: 'var(--shadow-sm)' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 400, color: 'var(--text)', lineHeight: 1, marginBottom: '6px' }}>{s.value}</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 400, color: 'var(--text)', lineHeight: 1, marginBottom: '6px' }}>
+                {s.end !== undefined
+                  ? <AnimatedCounter end={s.end} suffix={s.suffix} decimals={s.decimals || 0} />
+                  : s.value}
+              </div>
               <div style={{ fontSize: '10px', letterSpacing: '.1em', color: 'var(--text-hint)', textTransform: 'uppercase' }}>{s.label}</div>
             </div>
           ))}
