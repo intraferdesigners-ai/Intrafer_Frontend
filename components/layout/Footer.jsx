@@ -22,7 +22,7 @@ const FOOTER_LINKS = [
       { label: 'List your studio',     href: '/for-designers'    },
       { label: 'Subscription plans',   href: '/plans'            },
       { label: 'Vendor dashboard',     href: '/vendor/dashboard' },
-      { label: 'Partner benefits',     href: '/for-designers'    },
+      { label: 'Partner benefits',     href: '/for-designers#benefits' },
     ],
   },
   {
