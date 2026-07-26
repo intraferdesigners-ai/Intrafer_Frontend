@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 const STATS = [
-  { value: '500+',   label: 'VERIFIED DESIGNERS' },
+  { value: 'Verified', label: 'DESIGNERS ONLY' },
   { value: '12,000+',label: 'ENQUIRIES PLACED'   },
   { value: '4.9★',   label: 'AVERAGE RATING'     },
   { value: '48h',    label: 'RESPONSE GUARANTEE'  },
@@ -62,7 +62,7 @@ export default function AboutPage() {
               Intrafer&apos;s answer is a marketplace where enquiries cost nothing and every listed designer has been checked — their completed projects, business registration, and client references reviewed before their profile goes live.
             </p>
             <p style={{ fontSize: '15px', color: 'var(--text-sub)', lineHeight: 1.85 }}>
-              Today, more than 500 verified designers across India are listed on Intrafer, with new applicants added only after they pass this review.
+              Today, verified designers across India are listed on Intrafer, with new applicants added only after they pass this review.
             </p>
           </div>
         </div>
@@ -140,7 +140,7 @@ export default function AboutPage() {
               See the verified designers for yourself
             </h2>
             <p style={{ fontSize: '14px', color: 'rgba(255,255,255,.5)', marginBottom: '24px' }}>
-              Browse real portfolios from 500+ checked designers, or submit your requirements and let them come to you.
+              Browse real portfolios from checked designers, or submit your requirements and let them come to you.
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <Link href="/vendors" style={{
