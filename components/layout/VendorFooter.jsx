@@ -10,7 +10,7 @@ const LINK_COLUMNS = [
     links: [
       { label: 'Benefits',      href: '/for-designers#benefits' },
       { label: 'Pricing',       href: '/plans'                  },
-      { label: 'Vendor login',  href: '/auth/login'              },
+      { label: 'Vendor login',  href: '/auth/login?role=vendor'  },
     ],
   },
   {

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Mail, Lock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -22,9 +22,15 @@ const tabStyle = (active) => ({
   transition: 'all 150ms ease-out',
 });
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setAuth } = useAuthStore();
+
+  // Preserves vendor context across the login -> register hop, so a visitor
+  // who arrived via a vendor-specific entry point (e.g. VendorNavbar's
+  // "Vendor login") doesn't land on a neutral homeowner/designer toggle.
+  const signUpHref = searchParams.get('role') === 'vendor' ? '/auth/register?role=vendor' : '/auth/register';
 
   const [authMethod, setAuthMethod] = useState('password'); // 'password' | 'otp'
 
@@ -356,10 +362,18 @@ export default function LoginPage() {
 
       <p style={{ fontSize: '13px', textAlign: 'center', color: 'var(--text-sub)', marginTop: '24px' }}>
         Don&apos;t have an account?{' '}
-        <Link href="/auth/register" style={{ color: 'var(--primary)', fontWeight: 500 }}>
+        <Link href={signUpHref} style={{ color: 'var(--primary)', fontWeight: 500 }}>
           Sign up
         </Link>
       </p>
     </AuthSplitCard>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }

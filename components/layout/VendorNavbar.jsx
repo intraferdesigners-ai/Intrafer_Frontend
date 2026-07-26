@@ -82,7 +82,7 @@ export default function VendorNavbar() {
 
           {/* Desktop right actions */}
           <div className="nav-desktop-links hide-mobile" style={{ gap: '18px', alignItems: 'center' }}>
-            <Link href="/auth/login" className="vendor-login-link" style={{ fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+            <Link href="/auth/login?role=vendor" className="vendor-login-link" style={{ fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
               Vendor login
             </Link>
             <Link href="/auth/register?role=vendor" className="vendor-cta-btn" style={{
@@ -164,7 +164,7 @@ export default function VendorNavbar() {
         </div>
 
         <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <Link href="/auth/login" onClick={() => setDrawerOpen(false)} style={{ textDecoration: 'none' }}>
+          <Link href="/auth/login?role=vendor" onClick={() => setDrawerOpen(false)} style={{ textDecoration: 'none' }}>
             <button style={{ width: '100%', height: '50px', borderRadius: 'var(--r-md)', background: 'rgba(240,246,255,.08)', border: '1px solid rgba(240,246,255,.2)', fontSize: '15px', fontWeight: 500, color: '#F0F6FF', cursor: 'pointer' }}>
               Vendor login
             </button>

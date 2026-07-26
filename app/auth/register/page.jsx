@@ -12,7 +12,8 @@ import AuthSplitCard from '../../../components/auth/AuthSplitCard';
 
 function RegisterContent() {
   const searchParams = useSearchParams();
-  const initialRole = searchParams.get('role') === 'vendor' ? 'vendor' : 'user';
+  const explicitVendor = searchParams.get('role') === 'vendor';
+  const initialRole = explicitVendor ? 'vendor' : 'user';
 
   const [name,     setName]     = useState('');
   const [email,    setEmail]    = useState('');
@@ -22,6 +23,17 @@ function RegisterContent() {
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState('');
   const [success,  setSuccess]  = useState(false);
+
+  // A vendor-specific entry point (e.g. VendorNavbar's "Vendor login" ->
+  // "Sign up") signals role=vendor explicitly, so the toggle starts hidden.
+  // The "Not a designer?" escape hatch below can still bring it back for
+  // anyone who followed a shared vendor link by mistake.
+  const [showRoleToggle, setShowRoleToggle] = useState(!explicitVendor);
+
+  const switchToHomeowner = () => {
+    setRole('user');
+    setShowRoleToggle(true);
+  };
 
   useEffect(() => { document.title = 'Create account | Intrafer'; }, []);
 
@@ -263,32 +275,58 @@ function RegisterContent() {
         </p>
       </div>
 
-      {/* Role toggle */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-        {[['user', "I'm a homeowner"], ['vendor', "I'm a designer"]].map(([val, label]) => (
-          <button
-            key={val}
-            type="button"
-            onClick={() => setRole(val)}
-            style={{
-              flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 500,
-              cursor: 'pointer', textAlign: 'center', borderRadius: 'var(--r-md)',
-              transition: 'all 150ms ease-out',
-              background: role === val ? 'var(--primary-bg)' : 'var(--bg-parchment)',
-              color:      role === val ? 'var(--primary)'    : 'var(--text-sub)',
-              border:     role === val ? '1.5px solid var(--primary-light)' : '1px solid var(--border)',
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {/* Role toggle — hidden when role=vendor arrived as an explicit signal
+          from a vendor-specific entry point (see showRoleToggle above) */}
+      {showRoleToggle ? (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+          {[['user', "I'm a homeowner"], ['vendor', "I'm a designer"]].map(([val, label]) => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => setRole(val)}
+              style={{
+                flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 500,
+                cursor: 'pointer', textAlign: 'center', borderRadius: 'var(--r-md)',
+                transition: 'all 150ms ease-out',
+                background: role === val ? 'var(--primary-bg)' : 'var(--bg-parchment)',
+                color:      role === val ? 'var(--primary)'    : 'var(--text-sub)',
+                border:     role === val ? '1.5px solid var(--primary-light)' : '1px solid var(--border)',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+          <div style={{
+            flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 500,
+            textAlign: 'center', borderRadius: 'var(--r-md)',
+            background: 'var(--primary-bg)', color: 'var(--primary)',
+            border: '1.5px solid var(--primary-light)',
+          }}>
+            Creating a designer account
+          </div>
+        </div>
+      )}
 
-      <p style={{ fontSize: '12px', color: 'var(--text-hint)', textAlign: 'center', margin: '0 0 20px', lineHeight: 1.5 }}>
+      <p style={{ fontSize: '12px', color: 'var(--text-hint)', textAlign: 'center', margin: showRoleToggle ? '0 0 20px' : '0 0 8px', lineHeight: 1.5 }}>
         {role === 'vendor'
           ? 'Reach homeowners actively looking for a designer · Manage every enquiry from one dashboard'
           : 'Free to browse and enquire · Verified designers only'}
       </p>
+
+      {!showRoleToggle && (
+        <p style={{ textAlign: 'center', margin: '0 0 20px' }}>
+          <button
+            type="button"
+            onClick={switchToHomeowner}
+            style={{ background: 'none', border: 'none', padding: 0, fontSize: '12px', color: 'var(--text-hint)', textDecoration: 'underline', cursor: 'pointer' }}
+          >
+            Not a designer? Register as a homeowner instead
+          </button>
+        </p>
+      )}
 
       {error && (
         <div style={{
