@@ -9,6 +9,7 @@ import BeforeAfterSlider from '../components/ui/BeforeAfterSlider';
 import EMICalculator from '../components/ui/EMICalculator';
 import { IMAGES } from '../lib/images';
 import { BLOG_POSTS } from '../lib/blog-data';
+import { getInitials } from '../lib/utils';
 import {
   ArrowRight, Building2, Shield, Lock, Star,
   Clock, Users, ImageIcon,
@@ -73,6 +74,15 @@ async function fetchFeaturedProjects() {
   } catch { return []; }
 }
 
+async function fetchSiteReviews() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/site-reviews`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const json = await res.json();
+    return json.data?.reviews || [];
+  } catch { return []; }
+}
+
 const GALLERY_STRIP = [
   { src: IMAGES.gallery.kitchen[0],    label: 'Kitchen',     alt: 'Kitchen design inspiration'     },
   { src: IMAGES.gallery.livingRoom[0], label: 'Living Room', alt: 'Living room design inspiration' },
@@ -98,12 +108,6 @@ const WHY_ITEMS = [
   { Icon: Users,     title: 'You decide, we just introduce',        desc: 'Review two or three proposals, compare pricing and style, then choose who you want to work with.' },
 ];
 
-const REVIEWS = [
-  { initials: 'RK', stars: '★★★★★', quote: 'We compared four designers before choosing one. The whole 3BHK — kitchen included — finished within two weeks of the date we agreed on.', name: 'Rahul Kumar', detail: 'Bangalore · 3BHK Residential' },
-  { initials: 'SP', stars: '★★★★★', quote: "I only heard from designers once they'd actually looked at my brief. That alone saved me from the usual round of cold calls.", name: 'Sneha Patel', detail: 'Bangalore · Modular Kitchen' },
-  { initials: 'AM', stars: '★★★★★', quote: 'Submitted the enquiry on a Sunday night, had three replies by Monday morning. Went with the one whose past projects matched what I wanted.', name: 'Arjun Mehta', detail: 'Mumbai · Office Interior' },
-];
-
 const STYLES_STRIP = [
   { slug:'modern',       label:'Modern',       image: IMAGES.styles.modern       },
   { slug:'scandinavian', label:'Scandinavian', image: IMAGES.styles.scandinavian },
@@ -118,10 +122,11 @@ const STYLES_STRIP = [
 const FEATURED_BLOG_FALLBACK = BLOG_POSTS.slice(0, 3);
 
 export default async function Home() {
-  const [statsData, apiBlogPosts, featuredProjects, heroSubtitle] = await Promise.all([
-    fetchStats(), fetchFeaturedBlogPosts(), fetchFeaturedProjects(), fetchHomepageContent(),
+  const [statsData, apiBlogPosts, featuredProjects, heroSubtitle, siteReviews] = await Promise.all([
+    fetchStats(), fetchFeaturedBlogPosts(), fetchFeaturedProjects(), fetchHomepageContent(), fetchSiteReviews(),
   ]);
   const FEATURED_BLOG = apiBlogPosts.length > 0 ? apiBlogPosts : FEATURED_BLOG_FALLBACK;
+  const REVIEWS = siteReviews.filter((r) => r.comment).slice(0, 3);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -404,30 +409,34 @@ export default async function Home() {
         </div>
       </section>
 
-      <div className="divider" />
+      {REVIEWS.length > 0 && (
+        <>
+          <div className="divider" />
 
-      {/* ── REVIEWS ── */}
-      <section style={{ background: 'var(--bg)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>TESTIMONIALS</p>
-          <h2 className="section-heading">What homeowners say</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginTop: '44px' }} className="grid-mobile-1">
-            {REVIEWS.map((r) => (
-              <div key={r.name} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '22px', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ color: 'var(--primary)', fontSize: '14px', letterSpacing: '2px', marginBottom: '12px' }}>{r.stars}</div>
-                <p style={{ fontSize: '14px', color: 'var(--text-sub)', lineHeight: 1.75, fontStyle: 'italic', marginBottom: '16px' }}>&ldquo;{r.quote}&rdquo;</p>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary-bg)', color: 'var(--primary)', fontSize: '13px', fontWeight: 600, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{r.initials}</div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)' }}>{r.name}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-hint)' }}>{r.detail}</div>
+          {/* ── REVIEWS ── */}
+          <section style={{ background: 'var(--bg)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
+            <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+              <p className="caps-label-primary" style={{ marginBottom: '10px' }}>TESTIMONIALS</p>
+              <h2 className="section-heading">What homeowners say</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${REVIEWS.length}, 1fr)`, gap: '16px', marginTop: '44px' }} className="grid-mobile-1">
+                {REVIEWS.map((r) => (
+                  <div key={r.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '22px', boxShadow: 'var(--shadow-sm)' }}>
+                    <div style={{ color: 'var(--primary)', fontSize: '14px', letterSpacing: '2px', marginBottom: '12px' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</div>
+                    <p style={{ fontSize: '14px', color: 'var(--text-sub)', lineHeight: 1.75, fontStyle: 'italic', marginBottom: '16px' }}>&ldquo;{r.comment}&rdquo;</p>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary-bg)', color: 'var(--primary)', fontSize: '13px', fontWeight: 600, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getInitials(r.userName)}</div>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)' }}>{r.userName}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-hint)' }}>{[r.vendorName, r.vendorCity, r.projectType].filter(Boolean).join(' · ')}</div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
+          </section>
+        </>
+      )}
 
       <div className="divider" />
 
