@@ -45,9 +45,6 @@ const FOOTER_LINKS = [
       { label: 'How it works',         href: '/how-it-works'     },
       { label: 'About us',             href: '/about'            },
       { label: 'Contact us',           href: '/contact'          },
-      { label: 'Recent projects',      href: '/recent-projects'  },
-      { label: 'Testimonials',         href: '/testimonials'     },
-      { label: 'FAQs',                 href: '/faq'              },
     ],
   },
   {
@@ -156,7 +153,7 @@ export default function Footer() {
             <Link href="/" style={{ display: 'inline-block', marginBottom: '20px' }}>
               <div style={{
                 background: '#FFFFFF',
-                borderRadius: '10px',
+                borderRadius: 'var(--r-md)',
                 padding: '10px 16px',
                 display: 'inline-flex',
                 boxShadow: '0 2px 8px rgba(0,0,0,.15)',
@@ -224,11 +221,11 @@ export default function Footer() {
           {/* Link columns */}
           {FOOTER_LINKS.map(({ heading, links }) => (
             <div key={heading}>
-              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.1em', color: 'rgba(240,246,255,.5)', marginBottom: '12px', textTransform: 'uppercase' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.1em', color: '#B5541E', marginBottom: '12px', textTransform: 'uppercase' }}>
                 {heading}
               </p>
               {links.map((l) => (
-                <Link key={l.label} href={l.href} style={{ fontSize: '13px', color: 'rgba(240,246,255,.3)', marginBottom: '8px', display: 'block', transition: 'color 150ms', textDecoration: 'none' }}>
+                <Link key={l.label} href={l.href} style={{ fontSize: '13px', color: 'rgba(240,246,255,.3)', marginBottom: '6px', display: 'block', transition: 'color 150ms', textDecoration: 'none' }}>
                   {l.label}
                 </Link>
               ))}
@@ -245,7 +242,7 @@ export default function Footer() {
         }}>
           {/* Popular searches */}
           <div style={{ flex: '2 1 320px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.1em', color: 'rgba(240,246,255,.5)', marginBottom: '12px', textTransform: 'uppercase' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.1em', color: '#B5541E', marginBottom: '12px', textTransform: 'uppercase' }}>
               Popular Searches
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px' }}>
@@ -262,7 +259,7 @@ export default function Footer() {
 
           {/* Newsletter signup */}
           <div style={{ flex: '1 1 260px', maxWidth: '320px' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.1em', color: 'rgba(240,246,255,.5)', marginBottom: '12px', textTransform: 'uppercase' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.1em', color: '#B5541E', marginBottom: '12px', textTransform: 'uppercase' }}>
               Stay Inspired
             </p>
             <p style={{ fontSize: '13px', color: 'rgba(240,246,255,.35)', lineHeight: 1.6, marginBottom: '12px' }}>
@@ -280,7 +277,7 @@ export default function Footer() {
                   fontSize: '13px', padding: '10px 12px',
                   background: 'rgba(255,255,255,.06)',
                   border: '1px solid rgba(240,246,255,.15)',
-                  borderRadius: '8px', color: '#FFFFFF', outline: 'none',
+                  borderRadius: 'var(--r-sm)', color: '#FFFFFF', outline: 'none',
                 }}
               />
               <button
@@ -288,9 +285,9 @@ export default function Footer() {
                 disabled={subscribing}
                 style={{
                   fontSize: '13px', fontWeight: 500, padding: '10px 16px',
-                  background: subscribing ? 'rgba(255,255,255,.15)' : '#FFFFFF',
-                  color: subscribing ? 'rgba(240,246,255,.5)' : '#0F172A',
-                  border: 'none', borderRadius: '8px',
+                  background: subscribing ? 'rgba(181,84,30,.5)' : '#B5541E',
+                  color: '#FFFFFF',
+                  border: 'none', borderRadius: 'var(--r-sm)',
                   cursor: subscribing ? 'not-allowed' : 'pointer',
                   whiteSpace: 'nowrap',
                 }}
