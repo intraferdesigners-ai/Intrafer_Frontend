@@ -5,7 +5,7 @@ import Footer from '../components/layout/Footer';
 import WhatsAppButton from '../components/ui/WhatsAppButton';
 import OfferBanner from '../components/ui/OfferBanner';
 import StickyMobileCTA from '../components/ui/StickyMobileCTA';
-import BeforeAfterSlider from '../components/ui/BeforeAfterSlider';
+import BeforeAfterShowcase from '../components/public/BeforeAfterShowcase';
 import EMICalculator from '../components/ui/EMICalculator';
 import { IMAGES } from '../lib/images';
 import { BLOG_POSTS } from '../lib/blog-data';
@@ -82,6 +82,15 @@ async function fetchSiteReviews() {
     return json.data?.reviews || [];
   } catch { return []; }
 }
+
+// Stock illustrative pairs — only one real Project document currently has
+// both beforeImage and afterImage set, well below the 3-4 needed to make
+// this section reflect real platform activity, so this stays illustrative
+// (no numeric claim attached, unlike the stats/reviews sections).
+const BEFORE_AFTER_PAIRS = [
+  { before: IMAGES.beforeAfter.livingBefore,  after: IMAGES.beforeAfter.livingAfter,  caption: 'Living room · Whitefield, Bangalore' },
+  { before: IMAGES.beforeAfter.kitchenBefore, after: IMAGES.beforeAfter.kitchenAfter, caption: 'Modular kitchen · Koramangala, Bangalore' },
+];
 
 const GALLERY_STRIP = [
   { src: IMAGES.gallery.kitchen[0],    label: 'Kitchen',     alt: 'Kitchen design inspiration'     },
@@ -299,22 +308,7 @@ export default async function Home() {
           <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '40px' }}>
             Drag the slider to compare before and after.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }} className="grid-mobile-1">
-            <div>
-              <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-sub)', marginBottom: '10px' }}>Living room · Whitefield, Bangalore</p>
-              <BeforeAfterSlider
-                before={IMAGES.beforeAfter.livingBefore}
-                after={IMAGES.beforeAfter.livingAfter}
-              />
-            </div>
-            <div>
-              <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-sub)', marginBottom: '10px' }}>Modular kitchen · Koramangala, Bangalore</p>
-              <BeforeAfterSlider
-                before={IMAGES.beforeAfter.kitchenBefore}
-                after={IMAGES.beforeAfter.kitchenAfter}
-              />
-            </div>
-          </div>
+          <BeforeAfterShowcase pairs={BEFORE_AFTER_PAIRS} />
         </Reveal>
       </section>
 

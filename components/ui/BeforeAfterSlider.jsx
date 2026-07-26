@@ -7,6 +7,7 @@ export default function BeforeAfterSlider({
   after,
   beforeLabel = 'BEFORE',
   afterLabel  = 'AFTER',
+  height = '280px',
 }) {
   const [sliderPos, setSliderPos] = useState(50);
   const dragging     = useRef(false);
@@ -62,7 +63,7 @@ export default function BeforeAfterSlider({
       style={{
         position: 'relative', overflow: 'hidden',
         borderRadius: '16px', userSelect: 'none',
-        cursor: 'ew-resize', width: '100%', height: '280px',
+        cursor: 'ew-resize', width: '100%', height,
         boxShadow: 'var(--shadow-md)', touchAction: 'none',
       }}
     >
