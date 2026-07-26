@@ -16,6 +16,7 @@ import {
 import AnimatedCounter from '../components/ui/AnimatedCounter';
 import StickySearch from '../components/public/StickySearch';
 import HeroSearch from '../components/public/HeroSearch';
+import HeroImageCollage from '../components/public/HeroImageCollage';
 import HomepageFAQ from '../components/public/HomepageFAQ';
 import Reveal from '../components/ui/Reveal';
 import HowItWorksCard from '../components/ui/HowItWorksCard';
@@ -103,13 +104,6 @@ const REVIEWS = [
   { initials: 'AM', stars: '★★★★★', quote: 'Submitted the enquiry on a Sunday night, had three replies by Monday morning. Went with the one whose past projects matched what I wanted.', name: 'Arjun Mehta', detail: 'Mumbai · Office Interior' },
 ];
 
-const TRUST_STATS_FALLBACK = [
-  { value: '500+',  label: 'VERIFIED DESIGNERS' },
-  { value: '1200+', label: 'PROJECTS DELIVERED'  },
-  { value: '4.8★',  label: 'AVERAGE RATING'      },
-  { value: '48h',   label: 'RESPONSE'             },
-];
-
 const STYLES_STRIP = [
   { slug:'modern',       label:'Modern',       image: IMAGES.styles.modern       },
   { slug:'scandinavian', label:'Scandinavian', image: IMAGES.styles.scandinavian },
@@ -129,15 +123,6 @@ export default async function Home() {
   ]);
   const FEATURED_BLOG = apiBlogPosts.length > 0 ? apiBlogPosts : FEATURED_BLOG_FALLBACK;
 
-  const trustStats = statsData
-    ? [
-        { value: `${statsData.vendorCount}+`, label: 'VERIFIED DESIGNERS' },
-        { value: `${statsData.projectCount}+`, label: 'PROJECTS DELIVERED' },
-        { value: `${statsData.avgRating}★`,    label: 'AVERAGE RATING'     },
-        { value: '48h',                         label: 'RESPONSE'           },
-      ]
-    : TRUST_STATS_FALLBACK;
-
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <OfferBanner />
@@ -145,12 +130,33 @@ export default async function Home() {
       <StickySearch />
 
       {/* ── HERO ── */}
-      <section style={{ background: 'var(--bg-parchment)', paddingTop: '68px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: 'clamp(32px,5vw,80px) clamp(16px,4vw,40px)', display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: '64px', alignItems: 'center' }} className="hero-grid grid-mobile-1">
+      <section style={{ background: 'var(--bg-parchment)', paddingTop: '68px', position: 'relative', overflow: 'hidden' }}>
+        {/* Ambient depth glows — subtle, not a visual centerpiece. The blue
+            one uses --primary-dark's light-theme value directly (rgba
+            equivalent of #1D4ED8); the second uses the warm rust tone this
+            app already uses for vendor-facing accents (rgba(181,84,30,...),
+            see the CTA banner button below and the vendor-site's own
+            buttons) rather than var(--primary) — that token actually
+            resolves to blue here (#3B82F6), so reusing it verbatim for a
+            second glow would produce two blue-family glows instead of the
+            two-tone warm+cool depth the brief is going for. */}
+        <div aria-hidden="true" style={{
+          position: 'absolute', top: '-140px', right: '-120px',
+          width: '420px', height: '420px', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(29,78,216,.09) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+        <div aria-hidden="true" style={{
+          position: 'absolute', bottom: '-100px', left: '-90px',
+          width: '320px', height: '320px', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(181,84,30,.08) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: 'clamp(32px,5vw,80px) clamp(16px,4vw,40px)', display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: '64px', alignItems: 'center', position: 'relative' }} className="hero-grid grid-mobile-1">
           <Reveal>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '5px 14px', border: '1px solid var(--border-sub)', borderRadius: '20px', background: 'var(--surface)', fontSize: '10px', letterSpacing: '.14em', color: 'var(--primary)', marginBottom: '20px', boxShadow: 'var(--shadow-sm)' }}>
               <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }} />
-              500+ VERIFIED DESIGNERS · INDIA
+              VETTED DESIGNERS · ACROSS INDIA
             </div>
             <h1 style={{ margin: 0 }}>
               {['Interior design,', null, 'the first time'].map((line, i) =>
@@ -182,23 +188,7 @@ export default async function Home() {
             <HeroSearch />
           </Reveal>
           {/* Right — hero image collage (hidden on mobile) */}
-          <div className="hide-mobile" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ height: '300px', borderRadius: 'var(--r-xl)', position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
-              <Image src={IMAGES.hero.main} alt="Modern interior design" fill style={{ objectFit: 'cover' }} priority sizes="(max-width: 768px) 100vw, 50vw" />
-              <div className="vendor-img-badge" style={{ position: 'absolute', bottom: '12px', left: '12px', borderRadius: 'var(--r-sm)', padding: '7px 12px', border: '1px solid var(--border)' }}>
-                <div style={{ fontSize: '12px', fontWeight: 500 }}>Priya Design Studio</div>
-                <div style={{ fontSize: '11px', opacity: 0.65, marginTop: '1px' }}>Bangalore · ★ 4.9</div>
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div style={{ height: '290px', borderRadius: 'var(--r-lg)', position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
-                <Image src={IMAGES.vendors.studio1.cover} alt="Studio interior" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, 25vw" />
-              </div>
-              <div style={{ height: '290px', borderRadius: 'var(--r-lg)', position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
-                <Image src={IMAGES.vendors.studio2.cover} alt="Studio interior" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, 25vw" />
-              </div>
-            </div>
-          </div>
+          <HeroImageCollage />
         </div>
       </section>
 
@@ -208,16 +198,17 @@ export default async function Home() {
       <section style={{ background: 'var(--bg)', padding: 'clamp(32px,5vw,48px) clamp(16px,4vw,40px)' }}>
         <div className="stats-strip" style={{ maxWidth: '1280px', margin: '0 auto' }}>
           {[
-            { end: statsData?.vendorCount || 8,                     suffix: '+', label: 'VERIFIED DESIGNERS' },
-            { end: statsData?.projectCount || 24,                   suffix: '+', label: 'PROJECTS DELIVERED'  },
-            { end: parseFloat(statsData?.avgRating || '4.8'), suffix: '★', decimals: 1, label: 'AVG RATING' },
-            { static: '48h',                                                      label: 'RESPONSE'           },
+            // Nullish coalescing (not ||) so a genuine 0 from the API — e.g.
+            // projectCount before any project is published — doesn't get
+            // mistaken for "falsy" and silently replaced by the fallback.
+            { end: statsData?.vendorCount ?? 8,                     suffix: '+', label: 'VERIFIED DESIGNERS' },
+            { end: statsData?.projectCount ?? 24,                   suffix: '+', label: 'PROJECTS DELIVERED'  },
+            { end: parseFloat(statsData?.avgRating ?? '4.8'), suffix: '★', decimals: 1, label: 'AVG RATING' },
+            { end: statsData?.enquiryCount ?? 15,                   suffix: '+', label: 'ENQUIRIES SUBMITTED' },
           ].map((s) => (
             <div key={s.label} style={{ padding: 'clamp(16px,3vw,28px) 16px', textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px,4vw,44px)', fontWeight: 400, color: 'var(--text)', lineHeight: 1 }}>
-                {s.static
-                  ? s.static
-                  : <AnimatedCounter end={s.end} suffix={s.suffix} decimals={s.decimals || 0} />}
+                <AnimatedCounter end={s.end} suffix={s.suffix} decimals={s.decimals || 0} />
               </div>
               <div style={{ fontSize: '11px', letterSpacing: '.08em', color: 'var(--text-hint)', marginTop: '6px' }}>{s.label}</div>
             </div>
