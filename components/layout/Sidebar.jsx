@@ -112,9 +112,10 @@ export default function Sidebar({ onClose }) {
   }, [role, user]);
 
   const handleLogout = () => {
+    const loginHref = role ? `/auth/login?role=${role}` : '/auth/login';
     clearAuthTokens();
     clearAuth();
-    router.push('/auth/login');
+    router.push(loginHref);
   };
 
   return (

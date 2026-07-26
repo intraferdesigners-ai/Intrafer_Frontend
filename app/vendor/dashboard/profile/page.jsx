@@ -7,6 +7,7 @@ import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
 import Input from '../../../../components/ui/Input';
 import CitySelect from '../../../../components/ui/CitySelect';
+import { getStateForCity } from '../../../../lib/cityStateMap';
 
 const SPECIALIZATION_OPTIONS = [
   'Residential', 'Modular Kitchen', 'Living Room', 'Office Interiors',
@@ -88,6 +89,19 @@ export default function VendorProfilePage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // City -> state is many-to-one in this app's city list, so state auto-fills
+  // and locks whenever the selected city has a known mapping. This also
+  // silently corrects any stale mismatched state from old freeform data
+  // (e.g. a city saved with the wrong state) the next time the profile loads
+  // or the vendor picks a new city — falls back to the freeform field only
+  // for a custom-typed city that isn't in the map.
+  useEffect(() => {
+    const mapped = getStateForCity(form.city);
+    if (mapped) {
+      setForm((p) => (p.state === mapped ? p : { ...p, state: mapped }));
+    }
+  }, [form.city]);
 
   const handlePhotoChange = async (e) => {
     const file = e.target.files?.[0];
@@ -308,6 +322,8 @@ export default function VendorProfilePage() {
               value={form.state}
               onChange={(e) => setForm((p) => ({ ...p, state: e.target.value }))}
               placeholder="e.g. Karnataka"
+              disabled={Boolean(getStateForCity(form.city))}
+              hint={getStateForCity(form.city) ? 'Auto-filled from city' : undefined}
             />
             <Input
               label="Pincode"

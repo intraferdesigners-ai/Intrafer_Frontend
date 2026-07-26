@@ -346,6 +346,12 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 0 0 3px rgba(59,130,246,.1);
 }
 
+.form-input-styled:disabled {
+  background: var(--bg-parchment);
+  color: var(--text-hint);
+  cursor: not-allowed;
+}
+
 /* Legacy form classes — same styles as styled variants */
 .form-input-dark {
   width: 100%;
