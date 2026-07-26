@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { CheckCircle, Clock, ChevronRight, Star, Download, X } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { CheckCircle, Clock, XCircle, ChevronRight, Star, Download, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
@@ -14,7 +14,18 @@ const FILTERS = [
   { key: 'all',      label: 'All'             },
   { key: 'pending',  label: 'Pending approval' },
   { key: 'approved', label: 'Approved'         },
+  { key: 'rejected', label: 'Rejected'         },
 ];
+
+const STATUS_BADGE = {
+  pending:  { label: 'Pending',  Icon: Clock,      color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
+  approved: { label: 'Approved', Icon: CheckCircle, color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
+  rejected: { label: 'Rejected', Icon: XCircle,    color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'  },
+};
+
+function getApprovalStatus(vendor) {
+  return vendor.approvalStatus || (vendor.isApproved ? 'approved' : 'pending');
+}
 
 const REJECTION_REASONS = [
   'No portfolio photos uploaded',
@@ -59,6 +70,7 @@ function getCompletenessPct(vendor) {
 
 function AdminVendorsPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [vendors,            setVendors]            = useState([]);
   const [loading,            setLoading]            = useState(true);
@@ -74,8 +86,9 @@ function AdminVendorsPageContent() {
   useEffect(() => {
     setLoading(true);
     let url = '/admin/vendors';
-    if (filter === 'pending')  url += '?approved=false';
-    if (filter === 'approved') url += '?approved=true';
+    if (filter === 'pending')  url += '?status=pending';
+    if (filter === 'approved') url += '?status=approved';
+    if (filter === 'rejected') url += '?status=rejected';
     api.get(url)
       .then(({ data }) => setVendors(data.data?.vendors || []))
       .catch(() => setVendors([]))
@@ -85,9 +98,16 @@ function AdminVendorsPageContent() {
   const handleApprove = async (vendorId, approve, reason = '') => {
     setUpdatingId(vendorId);
     try {
-      await api.put(`/admin/vendors/${vendorId}/approve`, { approve, rejectionReason: reason });
+      const { data } = await api.put(`/admin/vendors/${vendorId}/approve`, { approve, rejectionReason: reason });
+      const updated = data.data?.vendor;
       setVendors((prev) =>
-        prev.map((v) => v._id === vendorId ? { ...v, isApproved: approve, rejectionReason: approve ? '' : reason } : v)
+        prev.map((v) => v._id === vendorId ? {
+          ...v,
+          isApproved: approve,
+          approvalStatus: approve ? 'approved' : 'rejected',
+          rejectionReason: updated?.rejectionReason ?? (approve ? v.rejectionReason : reason),
+          reviewedAt: updated?.reviewedAt || new Date().toISOString(),
+        } : v)
       );
       toast.success(approve ? 'Vendor approved.' : 'Vendor rejected.');
     } catch (err) {
@@ -140,7 +160,7 @@ function AdminVendorsPageContent() {
       'Specializations': (v.specializations || []).join(' | '),
       'Rating': v.rating,
       'Reviews': v.reviewCount,
-      'Approved': v.isApproved ? 'Yes' : 'No',
+      'Status': STATUS_BADGE[getApprovalStatus(v)].label,
       'Featured': v.isFeatured ? 'Yes' : 'No',
       'Listing Active': v.isListingEnabled ? 'Yes' : 'No',
       'Joined': new Date(v.createdAt || Date.now()).toLocaleDateString('en-IN'),
@@ -253,18 +273,30 @@ function AdminVendorsPageContent() {
 
               {/* Status */}
               <div style={{ flex: COL.status.flex }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
-                  {vendor.isApproved
-                    ? <CheckCircle size={12} color="var(--color-success)" />
-                    : <Clock size={12} color="var(--color-warning)" />
-                  }
-                  <span style={{
-                    fontSize: 12, fontWeight: 500,
-                    color: vendor.isApproved ? 'var(--color-success)' : 'var(--color-warning)',
-                  }}>
-                    {vendor.isApproved ? 'Approved' : 'Pending'}
-                  </span>
-                </div>
+                {(() => {
+                  const status = getApprovalStatus(vendor);
+                  const { label, Icon, color } = STATUS_BADGE[status];
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+                      <Icon size={12} color={color} />
+                      <span style={{ fontSize: 12, fontWeight: 500, color }}>{label}</span>
+                    </div>
+                  );
+                })()}
+                {getApprovalStatus(vendor) === 'rejected' && (
+                  <div style={{ marginBottom: 6 }}>
+                    {vendor.rejectionReason && (
+                      <p style={{ fontSize: 11, color: 'var(--color-danger)', margin: '0 0 2px', lineHeight: 1.5 }}>
+                        {vendor.rejectionReason}
+                      </p>
+                    )}
+                    {vendor.reviewedAt && (
+                      <p style={{ fontSize: 10, color: 'var(--color-text-hint)', margin: 0 }}>
+                        Reviewed {formatDate(vendor.reviewedAt)}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div style={{
                   fontSize: 11, marginBottom: 4,
                   color: vendor.isListingEnabled ? 'var(--color-success)' : 'var(--color-text-hint)',
@@ -352,6 +384,7 @@ function AdminVendorsPageContent() {
                 )}
                 <button
                   type="button"
+                  onClick={() => router.push(`/admin/dashboard/vendors/${vendor._id}`)}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     width: 28, height: 28, borderRadius: 'var(--radius-sm)',

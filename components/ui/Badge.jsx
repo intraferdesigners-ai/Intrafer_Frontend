@@ -10,7 +10,7 @@ const VARIANT_STYLES = {
   neutral: { background: 'var(--bg-parchment)',  color: 'var(--text-mid)' },
 };
 
-export default function Badge({ status, variant, children, className }) {
+export default function Badge({ status, variant, label, children, className }) {
   let style = {};
 
   if (status && LEAD_STATUS[status]) {
@@ -33,7 +33,7 @@ export default function Badge({ status, variant, children, className }) {
       letterSpacing: '.02em',
       whiteSpace: 'nowrap',
     }}>
-      {status ? LEAD_STATUS[status]?.label : children}
+      {status ? LEAD_STATUS[status]?.label : (children ?? label)}
     </span>
   );
 }

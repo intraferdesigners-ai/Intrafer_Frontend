@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, MapPin, Star, Building2, ShieldCheck, ShieldX } from 'lucide-react';
+import { ChevronLeft, MapPin, Star, Building2, ShieldCheck, ShieldX, Clock, XCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -12,36 +12,60 @@ import Badge from '@/components/ui/Badge';
 import Spinner from '@/components/ui/Spinner';
 import { getInitials, formatDate } from '@/lib/utils';
 
+const STATUS_BADGE = {
+  pending:  { label: 'Pending',  Icon: Clock,       color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
+  approved: { label: 'Approved', Icon: CheckCircle, color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
+  rejected: { label: 'Rejected', Icon: XCircle,     color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'  },
+};
+
+function getApprovalStatus(vendor) {
+  return vendor.approvalStatus || (vendor.isApproved ? 'approved' : 'pending');
+}
+
 export default function AdminVendorDetailPage() {
   const { id }                        = useParams();
   const [vendor,    setVendor]        = useState(null);
   const [projects,  setProjects]      = useState([]);
   const [loading,   setLoading]       = useState(true);
   const [updating,  setUpdating]      = useState(false);
+  const [showRejectForm, setShowRejectForm] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   useEffect(() => {
     if (!id) return;
     Promise.all([
-      api.get(`/admin/vendors`),
+      api.get(`/admin/vendors/${id}`).catch(() => ({ data: { data: { vendor: null } } })),
       api.get(`/public/vendors/${id}/projects`).catch(() => ({ data: { data: { projects: [] } } })),
     ])
-      .then(([vendorsRes, projectsRes]) => {
-        const found = (vendorsRes.data?.data?.vendors || []).find((v) => v._id === id);
-        setVendor(found || null);
+      .then(([vendorRes, projectsRes]) => {
+        setVendor(vendorRes.data?.data?.vendor || null);
         setProjects(projectsRes.data?.data?.projects || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
 
-  const handleApprove = async (approve) => {
+  const handleApprove = async (approve, reason = '') => {
+    if (!approve && !reason.trim()) {
+      toast.error('A rejection reason is required.');
+      return;
+    }
     setUpdating(true);
     try {
-      await api.put(`/admin/vendors/${id}/approve`, { approve });
-      setVendor((v) => ({ ...v, isApproved: approve }));
-      toast.success(approve ? 'Vendor approved.' : 'Vendor revoked.');
-    } catch {
-      toast.error('Action failed.');
+      const { data } = await api.put(`/admin/vendors/${id}/approve`, { approve, rejectionReason: reason });
+      const updated = data.data?.vendor;
+      setVendor((v) => ({
+        ...v,
+        isApproved: approve,
+        approvalStatus: approve ? 'approved' : 'rejected',
+        rejectionReason: updated?.rejectionReason ?? (approve ? v.rejectionReason : reason),
+        reviewedAt: updated?.reviewedAt || new Date().toISOString(),
+      }));
+      toast.success(approve ? 'Vendor approved.' : 'Vendor rejected.');
+      setShowRejectForm(false);
+      setRejectionReason('');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Action failed.');
     } finally {
       setUpdating(false);
     }
@@ -107,12 +131,20 @@ export default function AdminVendorDetailPage() {
           <p style={{ fontSize: '13px', color: 'var(--color-text-hint)', margin: '0 0 8px', fontFamily: 'monospace' }}>
             {user.email || '—'} · {user.phone || '—'}
           </p>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <Badge
-              label={vendor.isApproved ? 'Approved' : 'Pending'}
-              variant={vendor.isApproved ? 'success' : 'warning'}
-            />
-            {vendor.isListingEnabled && <Badge label="Listing active" variant="info" />}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {(() => {
+              const { label, color, bg } = STATUS_BADGE[getApprovalStatus(vendor)];
+              return (
+                <span style={{
+                  display: 'inline-block', padding: '3px 10px', borderRadius: 20,
+                  fontSize: 11, fontWeight: 500, letterSpacing: '.02em',
+                  background: bg, color,
+                }}>
+                  {label}
+                </span>
+              );
+            })()}
+            {vendor.isListingEnabled && <Badge variant="info">Listing active</Badge>}
             {vendor.rating > 0 && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--color-text-hint)' }}>
                 <Star size={12} color="var(--color-accent)" fill="var(--color-accent)" />
@@ -122,23 +154,82 @@ export default function AdminVendorDetailPage() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-          {!vendor.isApproved ? (
-            <Button variant="success" size="sm" loading={updating} onClick={() => handleApprove(true)}>
-              <ShieldCheck size={14} /> Approve
-            </Button>
+          {getApprovalStatus(vendor) !== 'approved' ? (
+            <>
+              <Button variant="success" size="sm" loading={updating} onClick={() => handleApprove(true)}>
+                <ShieldCheck size={14} /> Approve
+              </Button>
+              <Button variant="danger" size="sm" loading={updating} onClick={() => setShowRejectForm((s) => !s)}>
+                <ShieldX size={14} /> Reject
+              </Button>
+            </>
           ) : (
-            <Button variant="danger" size="sm" loading={updating} onClick={() => handleApprove(false)}>
+            <Button variant="danger" size="sm" loading={updating} onClick={() => setShowRejectForm((s) => !s)}>
               <ShieldX size={14} /> Revoke
             </Button>
           )}
         </div>
       </div>
 
+      {/* Inline reject-with-reason form */}
+      {showRejectForm && (
+        <div style={{
+          background: 'var(--color-surface)', border: '1px solid var(--color-danger)',
+          borderRadius: 'var(--radius-xl)', padding: '20px', marginBottom: '20px',
+        }}>
+          <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.08em', color: 'var(--color-text-hint)', textTransform: 'uppercase', marginBottom: '10px' }}>
+            Reason for rejection
+          </p>
+          <textarea
+            rows={3}
+            placeholder="Explain what needs to change before this vendor can be approved..."
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            style={{
+              width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--color-border)', background: 'var(--color-surface-alt)',
+              fontSize: 13, color: 'var(--color-text)', resize: 'vertical',
+              fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+              marginBottom: 14,
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button variant="secondary" size="sm" onClick={() => { setShowRejectForm(false); setRejectionReason(''); }}>
+              Cancel
+            </Button>
+            <Button variant="danger" size="sm" loading={updating} onClick={() => handleApprove(false, rejectionReason)}>
+              Send rejection
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Two-column body */}
       <div className="lead-detail-layout">
 
         {/* Left */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          {/* Rejection reason — prominent, not just in the reject-modal write path */}
+          {getApprovalStatus(vendor) === 'rejected' && vendor.rejectionReason && (
+            <div style={{ background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xl)', padding: '20px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.08em', color: 'var(--color-danger)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                Rejected{vendor.reviewedAt ? ` · ${formatDate(vendor.reviewedAt)}` : ''}
+              </p>
+              <p style={{ fontSize: '14px', lineHeight: 1.7, color: 'var(--color-text)', margin: 0 }}>
+                {vendor.rejectionReason}
+              </p>
+            </div>
+          )}
+
+          {/* Previously rejected — kept as historical context after a later approval */}
+          {getApprovalStatus(vendor) === 'approved' && vendor.rejectionReason && (
+            <div style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', padding: '14px 20px' }}>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-hint)', margin: 0, lineHeight: 1.6 }}>
+                Previously rejected: {vendor.rejectionReason}
+              </p>
+            </div>
+          )}
 
           {/* Description */}
           <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', padding: '24px' }}>

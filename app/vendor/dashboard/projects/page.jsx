@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Building2, Eye, EyeOff, Pencil, Trash2, GripVertical, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Plus, Building2, Eye, EyeOff, Pencil, Trash2, GripVertical, Clock, CheckCircle2, XCircle, Lock, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
@@ -16,20 +16,32 @@ const MODERATION_BADGE = {
 
 export default function VendorProjectsPage() {
   const [projects,      setProjects]      = useState([]);
+  const [vendor,        setVendor]        = useState(null);
   const [loading,       setLoading]       = useState(true);
   const [deletingId,    setDeletingId]    = useState(null);
   const [dragIndex,     setDragIndex]     = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [deleteModal,   setDeleteModal]   = useState(null);
 
+  // Mirrors the backend gate in vendor.controller.js's createProject, which
+  // checks isListingEnabled rather than live Subscription status — that's
+  // the same flag lead/admin/public controllers already treat as canonical,
+  // and some seeded demo vendors have isListingEnabled: true with no
+  // Subscription document at all, so checking subscription status here
+  // would show them a paywall the backend wouldn't actually enforce.
+  const hasActiveSubscription = vendor?.isListingEnabled || false;
+
   useEffect(() => {
-    api.get('/vendor/projects')
-      .then(({ data }) => {
-        const d = data.data;
+    Promise.allSettled([
+      api.get('/vendor/projects'),
+      api.get('/vendor/profile'),
+    ]).then(([pRes, vRes]) => {
+      if (pRes.status === 'fulfilled') {
+        const d = pRes.value.data.data;
         setProjects(Array.isArray(d) ? d : d.projects || []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      }
+      if (vRes.status === 'fulfilled') setVendor(vRes.value.data.data?.vendor);
+    }).finally(() => setLoading(false));
   }, []);
 
   const handleTogglePublish = async (project) => {
@@ -87,13 +99,50 @@ export default function VendorProjectsPage() {
         }}>
           Portfolio
         </h1>
-        <Link href="/vendor/dashboard/projects/new" style={{ textDecoration: 'none' }}>
-          <Button variant="primary" size="sm" style={{ width: '100%' }}>
-            <Plus size={16} />
-            Add project
-          </Button>
-        </Link>
+        {!loading && (hasActiveSubscription ? (
+          <Link href="/vendor/dashboard/projects/new" style={{ textDecoration: 'none' }}>
+            <Button variant="primary" size="sm" style={{ width: '100%' }}>
+              <Plus size={16} />
+              Add project
+            </Button>
+          </Link>
+        ) : (
+          <Link href="/vendor/dashboard/subscription" style={{ textDecoration: 'none' }}>
+            <Button variant="secondary" size="sm" style={{ width: '100%' }}>
+              <Lock size={14} />
+              Subscribe to add projects
+            </Button>
+          </Link>
+        ))}
       </div>
+
+      {/* Subscription paywall banner — portfolio uploads require an active
+          subscription (Profile -> Subscribe -> Portfolio -> approval).
+          Existing projects (e.g. from before this gate existed) stay
+          visible either way; only the ability to add new ones is gated. */}
+      {!loading && !hasActiveSubscription && (
+        <div style={{
+          background: 'var(--color-warning-bg)', border: '1px solid var(--color-warning)',
+          borderRadius: 'var(--radius-lg)', padding: '16px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 12, marginBottom: 20, flexWrap: 'wrap',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--color-warning)' }}>
+            <AlertCircle size={18} />
+            An active subscription is required before adding portfolio projects.
+          </div>
+          <Link href="/vendor/dashboard/subscription" style={{ textDecoration: 'none' }}>
+            <button style={{
+              padding: '8px 16px', fontSize: 12, fontWeight: 600,
+              background: 'var(--color-primary)', color: '#fff',
+              border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+              letterSpacing: '0.02em',
+            }}>
+              Subscribe now →
+            </button>
+          </Link>
+        </div>
+      )}
 
       {loading ? (
         <div style={{ padding: '48px 0' }}><Spinner size="md" /></div>
@@ -107,13 +156,23 @@ export default function VendorProjectsPage() {
             No projects yet
           </p>
           <p style={{ fontSize: 13, color: 'var(--color-text-sub)', margin: '0 0 24px' }}>
-            Add your first project to showcase your work.
+            {hasActiveSubscription
+              ? 'Add your first project to showcase your work.'
+              : 'Subscribe to a plan to unlock portfolio uploads.'}
           </p>
-          <Link href="/vendor/dashboard/projects/new">
-            <Button variant="primary" size="sm">
-              <Plus size={15} /> Add project
-            </Button>
-          </Link>
+          {hasActiveSubscription ? (
+            <Link href="/vendor/dashboard/projects/new">
+              <Button variant="primary" size="sm">
+                <Plus size={15} /> Add project
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/vendor/dashboard/subscription">
+              <Button variant="primary" size="sm">
+                Subscribe now
+              </Button>
+            </Link>
+          )}
         </div>
       ) : (
         <>

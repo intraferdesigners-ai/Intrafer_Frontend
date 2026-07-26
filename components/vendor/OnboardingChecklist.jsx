@@ -1,9 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckCircle, Circle, ChevronRight } from 'lucide-react';
+import { CheckCircle, Circle, ChevronRight, XCircle, Lock } from 'lucide-react';
 
-export default function OnboardingChecklist({ vendor, projects, subscription }) {
+export default function OnboardingChecklist({ vendor, projects }) {
+  const approvalStatus = vendor?.approvalStatus || (vendor?.isApproved ? 'approved' : 'pending');
+  const isRejected = approvalStatus === 'rejected';
+  // isListingEnabled (not a live Subscription query) is the canonical
+  // "currently subscribed" signal used everywhere else in this app (and by
+  // the backend gate on portfolio uploads) — some seeded demo vendors have
+  // isListingEnabled: true with no Subscription document at all, so this
+  // keeps the checklist consistent with what the backend actually enforces.
+  const hasActiveSubscription = vendor?.isListingEnabled || false;
+  const portfolioDone = (projects?.length || 0) >= 3;
+  const photosDone = projects?.some((p) => p.images?.length > 0) || false;
+
+  // Build order: Profile -> Subscribe -> Portfolio -> admin approval. Portfolio
+  // (and its photos sub-step) stay locked until a subscription is active,
+  // since the backend now rejects project uploads without one.
   const steps = [
     {
       id: 'profile',
@@ -19,37 +33,48 @@ export default function OnboardingChecklist({ vendor, projects, subscription }) 
       cta: 'Complete profile',
     },
     {
+      id: 'subscription',
+      label: 'Subscribe to start receiving leads',
+      desc: 'Choose a plan to activate your listing and get matched with homeowners.',
+      done: hasActiveSubscription,
+      href: '/vendor/dashboard/subscription',
+      cta: 'View plans',
+    },
+    {
       id: 'portfolio',
       label: 'Add 3 portfolio projects',
-      desc: 'Upload your best work with photos and descriptions.',
-      done: (projects?.length || 0) >= 3,
+      desc: hasActiveSubscription
+        ? 'Upload your best work with photos and descriptions.'
+        : 'Subscribe to a plan to unlock portfolio uploads.',
+      done: portfolioDone,
       href: '/vendor/dashboard/projects',
       cta: 'Add projects',
+      locked: !hasActiveSubscription && !portfolioDone,
     },
     {
       id: 'photos',
       label: 'Upload project photos',
-      desc: 'Projects with photos get 5× more enquiries.',
-      done: projects?.some((p) => p.images?.length > 0) || false,
+      desc: hasActiveSubscription
+        ? 'Projects with photos get 5× more enquiries.'
+        : 'Subscribe to a plan to unlock portfolio uploads.',
+      done: photosDone,
       href: '/vendor/dashboard/projects',
       cta: 'Add photos',
+      locked: !hasActiveSubscription && !photosDone,
     },
     {
       id: 'approval',
-      label: 'Awaiting admin approval',
-      desc: 'Our team reviews profiles within 24–48 business hours.',
-      done: vendor?.isApproved || false,
-      href: null,
-      cta: null,
-      pending: true,
-    },
-    {
-      id: 'subscription',
-      label: 'Subscribe to start receiving leads',
-      desc: 'Choose a plan to activate your listing and get matched with homeowners.',
-      done: subscription?.isActive || false,
-      href: '/vendor/dashboard/subscription',
-      cta: 'View plans',
+      label: isRejected ? 'Changes requested' : 'Awaiting admin approval',
+      desc: isRejected
+        ? (vendor?.rejectionReason
+            ? `${vendor.rejectionReason} — update your profile or portfolio and it will be re-reviewed.`
+            : 'Update your profile or portfolio and it will be re-reviewed.')
+        : 'Our team reviews profiles within 24–48 business hours.',
+      done: approvalStatus === 'approved',
+      rejected: isRejected,
+      pending: approvalStatus === 'pending',
+      href: isRejected ? '/vendor/dashboard/profile' : null,
+      cta: isRejected ? 'Update profile' : null,
     },
   ];
 
@@ -99,8 +124,12 @@ export default function OnboardingChecklist({ vendor, projects, subscription }) 
         >
           {/* Icon */}
           <div style={{ flexShrink: 0, marginTop: 1 }}>
-            {step.done ? (
+            {step.locked ? (
+              <Lock size={16} color="var(--color-text-hint)" />
+            ) : step.done ? (
               <CheckCircle size={18} color="var(--color-success)" fill="var(--color-success)" />
+            ) : step.rejected ? (
+              <XCircle size={18} color="var(--color-danger)" />
             ) : step.pending ? (
               <div style={{
                 width: 18, height: 18, borderRadius: '50%',
@@ -123,19 +152,19 @@ export default function OnboardingChecklist({ vendor, projects, subscription }) 
           <div style={{ flex: 1 }}>
             <div style={{
               fontSize: 13, fontWeight: 500,
-              color: 'var(--color-text)',
-              opacity: step.done ? 0.5 : 1,
+              color: step.rejected ? 'var(--color-danger)' : 'var(--color-text)',
+              opacity: step.locked ? 0.6 : step.done ? 0.5 : 1,
               textDecoration: step.done ? 'line-through' : 'none',
             }}>
               {step.label}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--color-text-hint)', marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: step.rejected ? 'var(--color-danger)' : 'var(--color-text-hint)', marginTop: 2, lineHeight: 1.5 }}>
               {step.desc}
             </div>
           </div>
 
           {/* CTA */}
-          {!step.done && step.href && (
+          {!step.done && !step.locked && step.href && (
             <Link
               href={step.href}
               style={{
@@ -145,6 +174,18 @@ export default function OnboardingChecklist({ vendor, projects, subscription }) 
               }}
             >
               {step.cta} <ChevronRight size={13} />
+            </Link>
+          )}
+          {step.locked && (
+            <Link
+              href="/vendor/dashboard/subscription"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 3,
+                fontSize: 12, fontWeight: 500, color: 'var(--color-text-hint)',
+                textDecoration: 'none', flexShrink: 0,
+              }}
+            >
+              Subscribe first <ChevronRight size={13} />
             </Link>
           )}
         </div>
