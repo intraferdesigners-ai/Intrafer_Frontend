@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle, TrendingUp, Users, Star, Zap, BarChart3 } from 'lucide-react';
+import { ArrowRight, CheckCircle, TrendingUp, Users, Star, Zap, BarChart3, Plus, Minus, MessageSquare } from 'lucide-react';
 import { IMAGES } from '@/lib/images';
 import Reveal from '@/components/ui/Reveal';
+import RevealItem from '@/components/ui/RevealItem';
 import api from '@/lib/api';
 
 const BENEFITS = [
@@ -74,7 +75,7 @@ export default function ForDesignersPage() {
               Grow your <em style={{ color: 'var(--primary)', fontStyle: 'italic' }}>design business</em> with Intrafer
             </h1>
             <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.75, maxWidth: '480px' }}>
-              Join 500+ verified designers who receive qualified leads directly from homeowners actively looking for interior design services. No cold calling. No agencies. Just real clients.
+              Verified designers receive qualified leads directly from homeowners actively looking for interior design services. No cold calling, no agencies, no commission.
             </p>
 
             {/* Stats row */}
@@ -113,32 +114,48 @@ export default function ForDesignersPage() {
             </div>
           </div>
 
-          <div>
-            {/* Card 1 */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '20px', boxShadow: 'var(--shadow-md)', marginBottom: '12px' }}>
-              <div style={{ position: 'relative', height: '160px', borderRadius: 'var(--r-lg)', overflow: 'hidden', marginBottom: '14px' }}>
-                <Image src={IMAGES.banners.forDesigners} alt="Designer studio" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, 400px" />
+          {/* Dashboard UI-preview panel — generic mock, no fabricated names/numbers */}
+          <div style={{ background: '#0F172A', border: '1px solid rgba(255,255,255,.08)', borderRadius: 'var(--r-xl)', padding: '22px', boxShadow: 'var(--shadow-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
+              <BarChart3 size={14} color="#60A5FA" />
+              <span style={{ fontSize: '11px', letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,.5)' }}>
+                Your dashboard, at a glance
+              </span>
+            </div>
+
+            {/* Stat tiles — labels only, no invented figures */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 'var(--r-lg)', padding: '14px' }}>
+                <TrendingUp size={16} color="#60A5FA" style={{ marginBottom: '10px' }} />
+                <div style={{ fontSize: '13px', fontWeight: 500, color: '#fff' }}>New leads</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,.5)', marginTop: '2px' }}>This month</div>
               </div>
-              <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)', marginBottom: '2px' }}>Priya Design Studio</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-hint)', marginBottom: '8px' }}>Bangalore · ★ 4.9 · 42 reviews</div>
-              <div style={{ fontSize: '12px', fontStyle: 'italic', color: 'var(--primary-dark)' }}>
-                Joined Intrafer 8 months ago — now receives 18 leads/month
+              <div style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 'var(--r-lg)', padding: '14px' }}>
+                <Star size={16} color="#60A5FA" style={{ marginBottom: '10px' }} />
+                <div style={{ fontSize: '13px', fontWeight: 500, color: '#fff' }}>Reviews</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,.5)', marginTop: '2px' }}>Verified only</div>
               </div>
             </div>
-            {/* Card 2 */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '20px', boxShadow: 'var(--shadow-sm)' }}>
-              <div className="grid-mobile-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                {[
-                  { label: 'Leads this month', val: '18' },
-                  { label: 'Conversion rate', val: '72%' },
-                  { label: 'Revenue uplift', val: '₹52K' },
-                  { label: 'Rating', val: '4.9★' },
-                ].map((s) => (
-                  <div key={s.label}>
-                    <div style={{ fontSize: '10px', letterSpacing: '.08em', color: 'var(--text-hint)', textTransform: 'uppercase', marginBottom: '3px' }}>{s.label}</div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--primary)' }}>{s.val}</div>
-                  </div>
-                ))}
+
+            {/* Activity rows */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'rgba(255,255,255,.03)', borderRadius: 'var(--r-md)' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(96,165,250,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <MessageSquare size={13} color="#60A5FA" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: '#fff' }}>New enquiry — Modular Kitchen</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,.5)' }}>OTP-verified homeowner</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'rgba(255,255,255,.03)', borderRadius: 'var(--r-md)' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(96,165,250,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Star size={13} color="#60A5FA" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: '#fff' }}>New review received</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,.5)' }}>Tied to a completed project</div>
+                </div>
               </div>
             </div>
           </div>
@@ -149,20 +166,26 @@ export default function ForDesignersPage() {
 
       {/* ── HOW IT WORKS ── */}
       <section id="how-it-works" style={{ background: 'var(--bg)', padding: '80px 40px', scrollMarginTop: '104px' }}>
-        <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>HOW IT WORKS</p>
-          <h2 className="section-heading">Start receiving leads in 3 steps</h2>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <Reveal>
+            <p className="caps-label-primary" style={{ marginBottom: '10px' }}>HOW IT WORKS</p>
+            <h2 className="section-heading">Start receiving leads in 3 steps</h2>
+          </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px', marginTop: '44px' }} className="grid-mobile-1">
-            {STEPS.map((s) => (
-              <div key={s.n} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '28px', boxShadow: 'var(--shadow-sm)' }}>
+            {STEPS.map((s, i) => (
+              <RevealItem
+                key={s.n}
+                index={i}
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '28px', boxShadow: 'var(--shadow-sm)' }}
+              >
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: '52px', fontWeight: 400, color: 'var(--border-emp)', lineHeight: 1, marginBottom: '14px' }}>{s.n}</div>
                 <div style={{ width: '28px', height: '2px', background: 'var(--primary)', marginBottom: '14px' }} />
                 <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', marginBottom: '8px' }}>{s.title}</p>
                 <p style={{ fontSize: '13px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{s.desc}</p>
-              </div>
+              </RevealItem>
             ))}
           </div>
-        </Reveal>
+        </div>
       </section>
 
       <div className="divider" />
@@ -170,17 +193,24 @@ export default function ForDesignersPage() {
       {/* ── BENEFITS ── */}
       <section id="benefits" style={{ background: 'var(--bg-parchment)', padding: '80px 40px', scrollMarginTop: '104px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>WHY INTRAFER</p>
-          <h2 className="section-heading">Better leads, no commission, full control</h2>
+          <Reveal>
+            <p className="caps-label-primary" style={{ marginBottom: '10px' }}>WHY INTRAFER</p>
+            <h2 className="section-heading">Better leads, no commission, full control</h2>
+          </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px', marginTop: '44px' }} className="grid-mobile-1">
-            {BENEFITS.map(({ Icon, title, desc }) => (
-              <div key={title} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
+            {BENEFITS.map(({ Icon, title, desc }, i) => (
+              <RevealItem
+                key={title}
+                index={i}
+                hoverLift
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}
+              >
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
                   <Icon size={20} color="var(--primary)" />
                 </div>
                 <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', marginBottom: '8px' }}>{title}</p>
                 <p style={{ fontSize: '13px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{desc}</p>
-              </div>
+              </RevealItem>
             ))}
           </div>
         </div>
@@ -191,17 +221,24 @@ export default function ForDesignersPage() {
       {/* ── PRICING ── */}
       <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PRICING</p>
-          <h2 className="section-heading">Simple, transparent plans</h2>
+          <Reveal>
+            <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PRICING</p>
+            <h2 className="section-heading">Simple, transparent plans</h2>
+          </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px', marginTop: '44px' }} className="grid-mobile-1">
-            {PLANS.map((plan) => (
-              <div key={plan.name} style={{
-                background: plan.highlight ? 'var(--primary-bg)' : 'var(--surface)',
-                border: `${plan.highlight ? '2px' : '1px'} solid ${plan.highlight ? 'var(--primary)' : 'var(--border)'}`,
-                borderRadius: 'var(--r-2xl)', padding: '28px',
-                boxShadow: plan.highlight ? 'var(--shadow-md)' : 'var(--shadow-sm)',
-                position: 'relative',
-              }}>
+            {PLANS.map((plan, i) => (
+              <RevealItem
+                key={plan.name}
+                index={i}
+                hoverLift={!plan.highlight}
+                style={{
+                  background: plan.highlight ? 'var(--primary-bg)' : 'var(--surface)',
+                  border: `${plan.highlight ? '2px' : '1px'} solid ${plan.highlight ? 'var(--primary)' : 'var(--border)'}`,
+                  borderRadius: 'var(--r-2xl)', padding: '28px',
+                  boxShadow: plan.highlight ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+                  position: 'relative',
+                }}
+              >
                 {plan.highlight && (
                   <span style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary)', color: '#fff', fontSize: '10px', fontWeight: 700, letterSpacing: '.1em', padding: '4px 14px', borderRadius: '20px' }}>
                     MOST POPULAR
@@ -229,29 +266,44 @@ export default function ForDesignersPage() {
                 }}>
                   Get started
                 </Link>
-              </div>
+              </RevealItem>
             ))}
           </div>
 
           {/* FAQ */}
           <div id="faq" style={{ maxWidth: '700px', margin: '60px auto 0', scrollMarginTop: '104px' }}>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 400, color: 'var(--text)', marginBottom: '24px', textAlign: 'center' }}>
-              Frequently asked questions
-            </h3>
-            {FAQS.map((faq, i) => (
-              <div key={i} style={{ borderBottom: '1px solid var(--border)', padding: '18px 0' }}>
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                  <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)' }}>{faq.q}</span>
-                  <span style={{ fontSize: '18px', color: 'var(--text-hint)', fontWeight: 300, marginLeft: '16px', flexShrink: 0 }}>{openFaq === i ? '−' : '+'}</span>
-                </button>
-                {openFaq === i && (
-                  <p style={{ fontSize: '13px', color: 'var(--text-mid)', lineHeight: 1.75, marginTop: '12px' }}>{faq.a}</p>
-                )}
-              </div>
-            ))}
+            <Reveal>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 400, color: 'var(--text)', marginBottom: '24px', textAlign: 'center' }}>
+                Frequently asked questions
+              </h3>
+              {FAQS.map((faq, i) => {
+                const isOpen = openFaq === i;
+                return (
+                  <div key={i} style={{ borderBottom: '1px solid var(--border)', padding: '18px 0' }}>
+                    <button
+                      onClick={() => setOpenFaq(isOpen ? null : i)}
+                      aria-expanded={isOpen}
+                      style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    >
+                      <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)' }}>{faq.q}</span>
+                      <span style={{
+                        flexShrink: 0, width: '24px', height: '24px', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: isOpen ? 'var(--primary)' : 'var(--primary-bg)',
+                        marginLeft: '16px', transition: 'background 200ms ease-out',
+                      }}>
+                        {isOpen
+                          ? <Minus size={14} color="#fff" />
+                          : <Plus size={14} color="var(--primary)" />}
+                      </span>
+                    </button>
+                    {isOpen && (
+                      <p style={{ fontSize: '13px', color: 'var(--text-mid)', lineHeight: 1.75, marginTop: '12px' }}>{faq.a}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </Reveal>
           </div>
         </div>
       </section>
@@ -261,32 +313,46 @@ export default function ForDesignersPage() {
       {/* ── CTA ── */}
       <section style={{ background: 'var(--bg)', padding: '60px 40px 80px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div className="cta-always-dark" style={{ borderRadius: 'var(--r-2xl)', padding: '80px 60px', textAlign: 'center' }}>
-            <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '14px' }}>START TODAY</p>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 400, color: '#FAFAF8', letterSpacing: '-.02em', marginBottom: '14px' }}>
-              Start growing your design business today
-            </h2>
-            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,.5)', lineHeight: 1.7, maxWidth: '520px', margin: '0 auto 32px' }}>
-              Free to list. No commission. Just a flat subscription and direct access to clients who want to work with you.
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <Link href="/auth/register?role=vendor" style={{
-                background: 'var(--primary)', color: '#fff',
-                padding: '14px 32px', borderRadius: 'var(--r-md)',
-                fontSize: '14px', fontWeight: 500, textDecoration: 'none',
-                boxShadow: '0 4px 14px rgba(181,84,30,.4)',
-              }}>
-                List your studio free
-              </Link>
-              <Link href="/plans" style={{
-                background: 'transparent', color: 'rgba(255,255,255,.5)',
-                padding: '13px 28px', borderRadius: 'var(--r-md)',
-                fontSize: '14px', border: '1px solid rgba(255,255,255,.15)',
-                textDecoration: 'none',
-              }}>
-                View all plans
-              </Link>
-            </div>
+          <div className="cta-always-dark" style={{ position: 'relative', overflow: 'hidden', borderRadius: 'var(--r-2xl)', padding: '80px 60px', textAlign: 'center' }}>
+            <Image
+              src={IMAGES.gallery.bedroom[2]}
+              alt=""
+              fill
+              style={{ objectFit: 'cover' }}
+              sizes="100vw"
+            />
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(135deg, rgba(15,23,42,.88) 0%, rgba(15,23,42,.82) 100%)',
+            }} />
+
+            <Reveal style={{ position: 'relative' }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '14px' }}>START TODAY</p>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 400, color: '#FAFAF8', letterSpacing: '-.02em', marginBottom: '14px' }}>
+                Start growing your design business today
+              </h2>
+              <p style={{ fontSize: '15px', color: 'rgba(255,255,255,.5)', lineHeight: 1.7, maxWidth: '520px', margin: '0 auto 32px' }}>
+                Free to list. No commission. Just a flat subscription and direct access to clients who want to work with you.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <Link href="/auth/register?role=vendor" style={{
+                  background: 'var(--primary)', color: '#fff',
+                  padding: '14px 32px', borderRadius: 'var(--r-md)',
+                  fontSize: '14px', fontWeight: 500, textDecoration: 'none',
+                  boxShadow: '0 4px 14px rgba(181,84,30,.4)',
+                }}>
+                  List your studio free
+                </Link>
+                <Link href="/plans" style={{
+                  background: 'transparent', color: 'rgba(255,255,255,.5)',
+                  padding: '13px 28px', borderRadius: 'var(--r-md)',
+                  fontSize: '14px', border: '1px solid rgba(255,255,255,.15)',
+                  textDecoration: 'none',
+                }}>
+                  View all plans
+                </Link>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
