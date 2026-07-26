@@ -154,6 +154,7 @@ export default function VendorCard({ vendor }) {
                   src={vendor.portfolioImages[0]}
                   alt={vendor.businessName}
                   fill
+                  className="blog-card-img"
                   style={{ objectFit: 'cover' }}
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />

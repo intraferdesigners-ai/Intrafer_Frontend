@@ -96,8 +96,8 @@ export default function BlogPage() {
             display: 'grid', gridTemplateColumns: '55% 45%', gap: 0,
             width: '100%', maxWidth: '100%', boxSizing: 'border-box',
           }} className="grid-mobile-1">
-            <div style={{ position: 'relative', minHeight: '320px' }}>
-              <Image src={featured.image} alt={featured.title} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 100vw, 55vw" />
+            <div style={{ position: 'relative', minHeight: '320px', overflow: 'hidden' }}>
+              <Image src={featured.image} alt={featured.title} fill className="blog-card-img" style={{ objectFit: 'cover' }} sizes="(max-width:768px) 100vw, 55vw" />
             </div>
             <div style={{ padding: '40px 48px 40px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxSizing: 'border-box' }}>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '14px' }}>
@@ -133,8 +133,8 @@ export default function BlogPage() {
                 boxShadow: 'var(--shadow-sm)',
                 transition: 'box-shadow 200ms ease, transform 200ms ease',
               }} className="card-hover">
-                <div style={{ position: 'relative', height: '180px' }}>
-                  <Image src={post.image} alt={post.title} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 100vw, 33vw" />
+                <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
+                  <Image src={post.image} alt={post.title} fill className="blog-card-img" style={{ objectFit: 'cover' }} sizes="(max-width:768px) 100vw, 33vw" />
                 </div>
                 <div style={{ padding: '16px' }}>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>

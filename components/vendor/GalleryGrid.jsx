@@ -113,6 +113,7 @@ export default function GalleryGrid({ projects }) {
                       src={item.images[0]}
                       alt={item.title || 'Project'}
                       fill
+                      className="blog-card-img"
                       style={{ objectFit: 'cover' }}
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />

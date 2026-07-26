@@ -44,9 +44,9 @@ export default async function RecentProjectsPage() {
                   background: 'var(--surface)', border: '1px solid var(--border)',
                   borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-sm)',
                 }} className="card-hover">
-                  <div style={{ position: 'relative', height: '220px' }}>
+                  <div style={{ position: 'relative', height: '220px', overflow: 'hidden' }}>
                     {img ? (
-                      <Image src={img.startsWith('/') || img.startsWith('http') ? img : `/${img}`} alt={project.title || 'Project'} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 100vw, 33vw" />
+                      <Image src={img.startsWith('/') || img.startsWith('http') ? img : `/${img}`} alt={project.title || 'Project'} fill className="blog-card-img" style={{ objectFit: 'cover' }} sizes="(max-width:768px) 100vw, 33vw" />
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-hint)', fontSize: '13px' }}>No image</div>
                     )}
