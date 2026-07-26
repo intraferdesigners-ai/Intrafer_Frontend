@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { IMAGES } from '@/lib/images';
+import AnimatedCounter from '@/components/ui/AnimatedCounter';
 
 // Same fixed navy as the enquiry page's always-dark context panel
 // (#0F172A) — used here as a photo scrim rather than a flat fill. At 0.72
@@ -77,15 +78,21 @@ export default function AuthHeroPanel() {
         borderTop: '1px solid rgba(240,246,255,.18)',
       }}>
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 500, color: FG }}>{vendorCount}+</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 500, color: FG }}>
+            <AnimatedCounter end={vendorCount} suffix="+" />
+          </div>
           <div style={{ fontSize: '10px', letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(240,246,255,.6)', marginTop: '2px' }}>Verified designers</div>
         </div>
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 500, color: FG }}>{avgRating}★</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 500, color: FG }}>
+            <AnimatedCounter end={parseFloat(avgRating)} suffix="★" decimals={1} />
+          </div>
           <div style={{ fontSize: '10px', letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(240,246,255,.6)', marginTop: '2px' }}>Average rating</div>
         </div>
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 500, color: FG }}>{projectCount}+</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 500, color: FG }}>
+            <AnimatedCounter end={projectCount} suffix="+" />
+          </div>
           <div style={{ fontSize: '10px', letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(240,246,255,.6)', marginTop: '2px' }}>Projects delivered</div>
         </div>
       </div>
