@@ -23,6 +23,15 @@ const STATUS_STYLE = {
   closed:      { label: 'Closed',       bg: 'var(--color-surface-alt)', color: 'var(--color-text-hint)' },
 };
 
+// ticket.userId is set when the submitter was logged in at the time of
+// submission (see supportTicket.controller.js's createTicket), null for
+// anonymous/guest submissions from the public contact form.
+const SUBMITTER_BADGE = {
+  registered: { label: 'Registered user', bg: 'var(--color-primary-bg)', color: 'var(--color-primary)'   },
+  guest:      { label: 'Guest',           bg: 'var(--color-surface-alt)', color: 'var(--color-text-hint)' },
+};
+const submitterBadge = (ticket) => (ticket.userId ? SUBMITTER_BADGE.registered : SUBMITTER_BADGE.guest);
+
 const COL = {
   from:    { flex: 2 },
   subject: { flex: 2 },
@@ -145,6 +154,7 @@ export default function AdminSupportPage() {
           {/* Data rows */}
           {tickets.map((ticket) => {
             const statusInfo = STATUS_STYLE[ticket.status] || STATUS_STYLE.open;
+            const badge = submitterBadge(ticket);
             return (
               <div
                 key={ticket._id}
@@ -157,8 +167,16 @@ export default function AdminSupportPage() {
                 }}
               >
                 <div style={{ flex: COL.from.flex, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {ticket.name}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {ticket.name}
+                    </span>
+                    <span style={{
+                      fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 20, flexShrink: 0,
+                      background: badge.bg, color: badge.color,
+                    }}>
+                      {badge.label}
+                    </span>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--color-text-hint)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {ticket.email}
@@ -216,8 +234,21 @@ export default function AdminSupportPage() {
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 300, color: 'var(--color-text)', marginBottom: 4 }}>
                   {selected.subject}
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--color-text-hint)' }}>
-                  {selected.name}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 13, color: 'var(--color-text-hint)' }}>
+                    {selected.name}
+                  </span>
+                  {(() => {
+                    const badge = submitterBadge(selected);
+                    return (
+                      <span style={{
+                        fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 20,
+                        background: badge.bg, color: badge.color,
+                      }}>
+                        {badge.label}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
               <button
