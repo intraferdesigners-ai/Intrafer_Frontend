@@ -7,6 +7,7 @@ import ProjectsSection from '../../../../components/vendor/ProjectsSection';
 import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
 import { getInitials, formatDate } from '../../../../lib/utils';
 import VendorProfileTracker from '../../../../components/vendor/VendorProfileTracker';
+import VendorMobileCTA from '../../../../components/vendor/VendorMobileCTA';
 import ConsultationModal from '../../../../components/vendor/ConsultationModal';
 import Reveal from '../../../../components/ui/Reveal';
 
@@ -110,6 +111,7 @@ export default async function VendorProfilePage({ params }) {
   return (
     <main style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
       <VendorProfileTracker vendorId={String(vendor._id)} />
+      <VendorMobileCTA vendorId={String(vendor._id)} />
       <Link
         href="/vendors"
         className="back-link"
