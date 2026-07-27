@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, MessageCircle, User, CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
+import { isAuthenticated } from '@/lib/auth';
+import useAuthStore from '@/store/authStore';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Reveal from '@/components/ui/Reveal';
@@ -26,11 +28,22 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const { user, initFromCookies } = useAuthStore();
+
+  // The Zustand auth store is only hydrated from cookies by DashboardLayout,
+  // which this public page doesn't render — so a logged-in visitor landing
+  // here directly (rather than navigating from their dashboard) would
+  // otherwise show up as anonymous. Same isAuthenticated()/initFromCookies()
+  // pair DashboardLayout already uses, just triggered here too.
+  useEffect(() => {
+    if (isAuthenticated()) initFromCookies();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/public/support-tickets', { name, email, phone, subject, message });
+      await api.post('/public/support-tickets', { name, email, phone, subject, message, userId: user?.id || null });
       setSuccess(true);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send message. Please try again.');
