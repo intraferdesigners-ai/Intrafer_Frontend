@@ -3,7 +3,6 @@ import Link from 'next/link';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import WhatsAppButton from '../components/ui/WhatsAppButton';
-import OfferBanner from '../components/ui/OfferBanner';
 import StickyMobileCTA from '../components/ui/StickyMobileCTA';
 import BeforeAfterShowcase from '../components/public/BeforeAfterShowcase';
 import EMICalculator from '../components/ui/EMICalculator';
@@ -154,7 +153,6 @@ export default async function Home() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <OfferBanner />
       <Navbar />
       <StickySearch />
 
