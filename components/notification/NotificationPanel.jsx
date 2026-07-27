@@ -16,6 +16,8 @@ const NOTIFICATION_CONFIG = {
   payment_success:       { icon: Crown,         color: 'var(--primary)', bg: 'var(--primary-bg)' },
   subscription_expiring: { icon: AlertCircle,   color: 'var(--warning)', bg: 'var(--warning-bg)' },
   vendor_approved:       { icon: CheckCircle,   color: 'var(--success)', bg: 'var(--success-bg)' },
+  project_approved:      { icon: CheckCircle,   color: 'var(--success)', bg: 'var(--success-bg)' },
+  project_rejected:      { icon: XCircle,       color: 'var(--danger)',  bg: 'var(--danger-bg)'  },
   enquiry_created:       { icon: FileText,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
   appointment_confirmed: { icon: Calendar,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
   new_message:           { icon: MessageCircle, color: 'var(--primary)', bg: 'var(--primary-bg)' },
@@ -54,6 +56,8 @@ export default function NotificationPanel({ isOpen, onClose, anchorRect }) {
       payment_success:       '/vendor/dashboard/subscription',
       subscription_expiring: '/vendor/dashboard/subscription',
       vendor_approved:       '/vendor/dashboard/profile',
+      project_approved:      '/vendor/dashboard/projects',
+      project_rejected:      '/vendor/dashboard/projects',
       enquiry_created:       `/user/dashboard/enquiries/${leadId}`,
       // appointment_confirmed is only ever dispatched to the homeowner (see
       // notification.service.js's APPOINTMENT_CONFIRMED handler), so the path

@@ -14,6 +14,8 @@ export default function AdminPortfolioApprovalsPage() {
   const [page,       setPage]       = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [actingId,   setActingId]   = useState(null);
+  const [rejectingId,     setRejectingId]     = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -39,9 +41,7 @@ export default function AdminPortfolioApprovalsPage() {
     setActingId(null);
   };
 
-  const handleReject = async (project) => {
-    const rejectionReason = window.prompt(`Reason for rejecting "${project.title}"?`);
-    if (rejectionReason === null) return;
+  const handleSubmitReject = async (project) => {
     if (!rejectionReason.trim()) { toast.error('A rejection reason is required.'); return; }
 
     setActingId(project._id);
@@ -49,6 +49,8 @@ export default function AdminPortfolioApprovalsPage() {
       await api.put(`/admin/projects/${project._id}/moderate`, { approve: false, rejectionReason: rejectionReason.trim() });
       setProjects((prev) => prev.filter((p) => p._id !== project._id));
       toast.success('Project rejected.');
+      setRejectingId(null);
+      setRejectionReason('');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to reject project.');
     }
@@ -75,68 +77,117 @@ export default function AdminPortfolioApprovalsPage() {
       ) : (
         <>
           {projects.map((project) => (
-            <div
-              key={project._id}
-              className="admin-table-row"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 16,
-                background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-lg)', padding: 16, marginBottom: 8,
-                flexWrap: 'wrap',
-              }}
-            >
-              {/* Thumbnail */}
-              <div style={{
-                width: 72, height: 72, borderRadius: 'var(--radius-md)',
-                background: 'var(--color-surface-alt)', flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-              }}>
-                {project.images?.[0] ? (
-                  <img
-                    src={project.images[0]}
-                    alt={project.title}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            <div key={project._id} style={{ marginBottom: 8 }}>
+              <div
+                className="admin-table-row"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 16,
+                  background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)', padding: 16,
+                  flexWrap: 'wrap',
+                }}
+              >
+                {/* Thumbnail */}
+                <div style={{
+                  width: 72, height: 72, borderRadius: 'var(--radius-md)',
+                  background: 'var(--color-surface-alt)', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+                }}>
+                  {project.images?.[0] ? (
+                    <img
+                      src={project.images[0]}
+                      alt={project.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <Building2 size={24} color="var(--color-text-hint)" />
+                  )}
+                </div>
+
+                {/* Details */}
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', marginBottom: 4 }}>
+                    {project.title}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--color-text-sub)', marginBottom: 2 }}>
+                    {project.vendorId?.businessName || 'Unknown vendor'}
+                    {project.vendorId?.location?.city ? ` · ${project.vendorId.location.city}` : ''}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--color-text-hint)' }}>
+                    Submitted {formatDate(project.createdAt)}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    disabled={actingId === project._id}
+                    onClick={() => handleApprove(project)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Check size={14} /> Approve
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    disabled={actingId === project._id}
+                    onClick={() => {
+                      setRejectingId((id) => (id === project._id ? null : project._id));
+                      setRejectionReason('');
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <X size={14} /> Reject
+                  </Button>
+                </div>
+              </div>
+
+              {/* Inline reject-with-reason form — same pattern as the vendor
+                  approval detail page's reject form */}
+              {rejectingId === project._id && (
+                <div style={{
+                  background: 'var(--color-surface)', border: '1px solid var(--color-danger)',
+                  borderRadius: 'var(--radius-lg)', padding: 16, marginTop: 8,
+                }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.08em', color: 'var(--color-text-hint)', textTransform: 'uppercase', marginBottom: 10 }}>
+                    Reason for rejecting &quot;{project.title}&quot;
+                  </p>
+                  <textarea
+                    rows={3}
+                    autoFocus
+                    placeholder="Explain what needs to change before this project can be approved..."
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    style={{
+                      width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--color-border)', background: 'var(--color-surface-alt)',
+                      fontSize: 13, color: 'var(--color-text)', resize: 'vertical',
+                      fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+                      marginBottom: 14,
+                    }}
                   />
-                ) : (
-                  <Building2 size={24} color="var(--color-text-hint)" />
-                )}
-              </div>
-
-              {/* Details */}
-              <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', marginBottom: 4 }}>
-                  {project.title}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => { setRejectingId(null); setRejectionReason(''); }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      disabled={!rejectionReason.trim()}
+                      loading={actingId === project._id}
+                      onClick={() => handleSubmitReject(project)}
+                    >
+                      Send rejection
+                    </Button>
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--color-text-sub)', marginBottom: 2 }}>
-                  {project.vendorId?.businessName || 'Unknown vendor'}
-                  {project.vendorId?.location?.city ? ` · ${project.vendorId.location.city}` : ''}
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--color-text-hint)' }}>
-                  Submitted {formatDate(project.createdAt)}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                <Button
-                  variant="success"
-                  size="sm"
-                  disabled={actingId === project._id}
-                  onClick={() => handleApprove(project)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                >
-                  <Check size={14} /> Approve
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  disabled={actingId === project._id}
-                  onClick={() => handleReject(project)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                >
-                  <X size={14} /> Reject
-                </Button>
-              </div>
+              )}
             </div>
           ))}
 

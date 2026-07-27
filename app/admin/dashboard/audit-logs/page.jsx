@@ -20,20 +20,26 @@ function formatTime(dateString) {
 export default function AdminAuditLogsPage() {
   const [logs,       setLogs]       = useState([]);
   const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState(false);
   const [page,       setPage]       = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     setLoading(true);
+    setError(false);
     api.get(`/admin/audit-logs?limit=20&page=${page}`)
       .then(({ data }) => {
         const d = data.data;
         setLogs(d.logs || []);
         setTotalPages(d.totalPages || 1);
       })
-      .catch(() => setLogs([]))
+      .catch(() => {
+        setError(true);
+        setLogs([]);
+      })
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, retryToken]);
 
   return (
     <div>
@@ -48,6 +54,15 @@ export default function AdminAuditLogsPage() {
 
       {loading ? (
         <div style={{ padding: '48px 0' }}><Spinner size="md" /></div>
+      ) : error ? (
+        <div style={{ textAlign: 'center', padding: '48px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)' }}>
+          <p style={{ fontSize: 13, color: 'var(--color-danger)', margin: '0 0 16px' }}>
+            Couldn&apos;t load audit logs. Try again.
+          </p>
+          <Button variant="secondary" size="sm" onClick={() => setRetryToken((t) => t + 1)}>
+            Retry
+          </Button>
+        </div>
       ) : logs.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', fontSize: 13, color: 'var(--color-text-hint)' }}>
           No audit log entries yet.
