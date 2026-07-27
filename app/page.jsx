@@ -21,6 +21,8 @@ import HeroImageCollage from '../components/public/HeroImageCollage';
 import HomepageFAQ from '../components/public/HomepageFAQ';
 import Reveal from '../components/ui/Reveal';
 import HowItWorksCard from '../components/ui/HowItWorksCard';
+import StyleGallery from '../components/public/StyleGallery';
+import CostEstimatorTeaser from '../components/public/CostEstimatorTeaser';
 
 export const metadata = {
   title: 'Intrafer — Vetted Interior Designers Across India',
@@ -83,6 +85,17 @@ async function fetchSiteReviews() {
   } catch { return []; }
 }
 
+// Real per-style vendor counts (Vendor.countDocuments by specialization),
+// not a fabricated figure — see public.controller.js's getStyleCounts.
+async function fetchStyleCounts() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/style-counts`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const json = await res.json();
+    return json.data?.counts || {};
+  } catch { return {}; }
+}
+
 // Stock illustrative pairs — only one real Project document currently has
 // both beforeImage and afterImage set, well below the 3-4 needed to make
 // this section reflect real platform activity, so this stays illustrative
@@ -117,25 +130,27 @@ const WHY_ITEMS = [
   { Icon: Users,     title: 'You decide, we just introduce',        desc: 'Review two or three proposals, compare pricing and style, then choose who you want to work with.' },
 ];
 
-const STYLES_STRIP = [
-  { slug:'modern',       label:'Modern',       image: IMAGES.styles.modern       },
-  { slug:'scandinavian', label:'Scandinavian', image: IMAGES.styles.scandinavian },
-  { slug:'luxury',       label:'Luxury',       image: IMAGES.styles.luxury       },
-  { slug:'minimalist',   label:'Minimalist',   image: IMAGES.styles.minimalist   },
-  { slug:'bohemian',     label:'Bohemian',     image: IMAGES.styles.bohemian     },
-  { slug:'industrial',   label:'Industrial',   image: IMAGES.styles.industrial   },
-  { slug:'traditional',  label:'Traditional',  image: IMAGES.styles.traditional  },
-  { slug:'contemporary', label:'Contemporary', image: IMAGES.styles.contemporary },
+// Featured in the homepage's large-format style gallery — a curated 4 of 8,
+// using the higher-resolution *Hero image variants (1200×633 vs the 800×422
+// standard ones) since these cards render much larger than the old 200×160
+// strip. The remaining 4 stay reachable via the gallery's "View all styles"
+// link rather than being cropped down to fit here.
+const STYLES_FEATURED = [
+  { slug:'modern',       label:'Modern',       image: IMAGES.styles.modernHero       },
+  { slug:'scandinavian', label:'Scandinavian', image: IMAGES.styles.scandinavianHero },
+  { slug:'bohemian',     label:'Bohemian',     image: IMAGES.styles.bohemianHero     },
+  { slug:'luxury',       label:'Luxury',       image: IMAGES.styles.luxuryHero       },
 ];
 
 const FEATURED_BLOG_FALLBACK = BLOG_POSTS.slice(0, 3);
 
 export default async function Home() {
-  const [statsData, apiBlogPosts, featuredProjects, heroSubtitle, siteReviews] = await Promise.all([
-    fetchStats(), fetchFeaturedBlogPosts(), fetchFeaturedProjects(), fetchHomepageContent(), fetchSiteReviews(),
+  const [statsData, apiBlogPosts, featuredProjects, heroSubtitle, siteReviews, styleCounts] = await Promise.all([
+    fetchStats(), fetchFeaturedBlogPosts(), fetchFeaturedProjects(), fetchHomepageContent(), fetchSiteReviews(), fetchStyleCounts(),
   ]);
   const FEATURED_BLOG = apiBlogPosts.length > 0 ? apiBlogPosts : FEATURED_BLOG_FALLBACK;
   const REVIEWS = siteReviews.filter((r) => r.comment).slice(0, 3);
+  const styleGalleryData = STYLES_FEATURED.map((s) => ({ ...s, count: styleCounts[s.slug] || 0 }));
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -379,7 +394,7 @@ export default async function Home() {
 
       <div className="divider" />
 
-      {/* ── DESIGN STYLES STRIP ── */}
+      {/* ── DESIGN STYLES GALLERY ── */}
       <section style={{ background: 'var(--bg)', padding: 'clamp(48px,6vw,80px) clamp(16px,4vw,40px)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
@@ -387,18 +402,14 @@ export default async function Home() {
               <p className="caps-label-primary" style={{ marginBottom: '10px' }}>DESIGN STYLES</p>
               <h2 className="section-heading">Browse by design style</h2>
             </div>
-            <Link href="/design-styles" style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 500 }}>View all →</Link>
+            <Link href="/design-styles" style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 500, whiteSpace: 'nowrap' }}>View all styles →</Link>
           </div>
-          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
-            {STYLES_STRIP.map(({ slug, label, image }) => (
-              <Link key={slug} href={`/design-styles/${slug}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
-                <div style={{ position: 'relative', width: '200px', height: '160px', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }} className="card-hover">
-                  <Image src={image} alt={label} fill style={{ objectFit: 'cover' }} sizes="200px" />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 55%)' }} />
-                  <div style={{ position: 'absolute', bottom: '12px', left: '14px', fontSize: '14px', fontWeight: 500, color: '#fff' }}>{label}</div>
-                </div>
-              </Link>
-            ))}
+          <StyleGallery styles={styleGalleryData} />
+
+          <div style={{ marginTop: 'clamp(40px,5vw,56px)' }}>
+            <Reveal>
+              <CostEstimatorTeaser />
+            </Reveal>
           </div>
         </div>
       </section>

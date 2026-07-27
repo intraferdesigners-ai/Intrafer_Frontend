@@ -1,7 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import BeforeAfterSlider from '../ui/BeforeAfterSlider';
 
 // Crossfade keyed by activeIndex, mirroring PageTransition.jsx's pattern —
@@ -12,14 +12,25 @@ export default function BeforeAfterShowcase({ pairs }) {
   const shouldReduceMotion = useReducedMotion();
   const active = pairs[activeIndex];
 
+  // Subtle scroll-linked parallax — the slider (photo layer) drifts a few
+  // px slower than the page scroll while the caption overlay below (a
+  // sibling, not a child, of this wrapper) stays untransformed, same
+  // "photo moves, foreground UI doesn't" split used in HeroImageCollage
+  // and StyleGallery. Scoped to this section only via useScroll's target,
+  // not the global page scroll.
+  const sectionRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] });
+  const photoY = useTransform(scrollYProgress, [0, 1], shouldReduceMotion ? [0, 0] : [-16, 16]);
+
   return (
-    <div>
+    <div ref={sectionRef}>
       <div style={{ position: 'relative' }}>
         <motion.div
           key={activeIndex}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: shouldReduceMotion ? 0 : 0.3, ease: 'easeOut' }}
+          style={{ y: photoY }}
         >
           <BeforeAfterSlider
             before={active.before}
