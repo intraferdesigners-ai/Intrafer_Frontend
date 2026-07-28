@@ -482,22 +482,28 @@ export default async function Home() {
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'center' }} className="grid-mobile-1">
             <div>
-              <p className="caps-label-primary" style={{ marginBottom: '10px' }}>BUDGET PLANNING</p>
-              <h2 className="section-heading" style={{ marginBottom: '16px' }}>Plan your budget with EMI</h2>
-              <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.8, marginBottom: '24px' }}>
-                Renovation loans are available from most major banks at competitive rates — use the calculator to estimate your monthly EMI before setting a budget.
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {['SBI, HDFC, ICICI, Axis Bank EMI available', 'Loans from ₹1 Lakh to ₹50 Lakhs', 'Tenure up to 36 months', 'Quick approval for verified projects'].map((item) => (
-                  <li key={item} style={{ display: 'flex', gap: '10px', fontSize: '13px', color: 'var(--text-sub)', alignItems: 'center' }}>
-                    <span style={{ color: 'var(--primary)', fontWeight: 700 }}>✓</span>{item}
-                  </li>
+              <Reveal>
+                <p className="caps-label-primary" style={{ marginBottom: '10px' }}>BUDGET PLANNING</p>
+                <h2 className="section-heading" style={{ marginBottom: '16px' }}>Plan your budget with EMI</h2>
+              </Reveal>
+              <Reveal delay={0.15}>
+                <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.8, marginBottom: '24px' }}>
+                  Renovation loans are available from most major banks at competitive rates — use the calculator to estimate your monthly EMI before setting a budget.
+                </p>
+              </Reveal>
+              <div role="list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {['SBI, HDFC, ICICI, Axis Bank EMI available', 'Loans from ₹1 Lakh to ₹50 Lakhs', 'Tenure up to 36 months', 'Quick approval for verified projects'].map((item, i) => (
+                  <Reveal key={item} delay={0.28 + i * 0.08}>
+                    <div role="listitem" style={{ display: 'flex', gap: '10px', fontSize: '13px', color: 'var(--text-sub)', alignItems: 'center' }}>
+                      <span style={{ color: 'var(--primary)', fontWeight: 700 }}>✓</span>{item}
+                    </div>
+                  </Reveal>
                 ))}
-              </ul>
+              </div>
             </div>
-            <div>
+            <Reveal delay={0.15}>
               <EMICalculator />
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>

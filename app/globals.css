@@ -742,6 +742,69 @@ a { color: inherit; text-decoration: none; }
 /* Range inputs follow primary color */
 input[type="range"] { accent-color: var(--primary); }
 
+/* EMI budget slider — custom track/thumb via plain CSS (no slider library).
+   The filled portion of the track is a background gradient split at
+   --range-progress, a custom property set inline from JS on drag; this is
+   the standard trick for showing progress on a native <input type="range">
+   without layering extra DOM nodes on top of it. */
+.emi-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--primary) 0%, var(--primary) var(--range-progress, 0%),
+    var(--border) var(--range-progress, 0%), var(--border) 100%
+  );
+  outline: none;
+  cursor: pointer;
+}
+.emi-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--primary);
+  box-shadow: 0 2px 6px rgba(15,23,42,.25);
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.emi-range::-webkit-slider-thumb:hover,
+.emi-range::-webkit-slider-thumb:active {
+  transform: scale(1.15);
+  box-shadow: 0 3px 10px rgba(29,78,216,.35);
+}
+.emi-range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+}
+.emi-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+.emi-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--primary);
+  box-shadow: 0 2px 6px rgba(15,23,42,.25);
+  cursor: pointer;
+}
+.emi-range:focus-visible::-webkit-slider-thumb,
+.emi-range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px rgba(29,78,216,.25), 0 2px 6px rgba(15,23,42,.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .emi-range::-webkit-slider-thumb { transition: none; }
+}
+
 /* Force form inputs dark in dark mode */
 .dark input:not([type="range"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
 .dark select,
