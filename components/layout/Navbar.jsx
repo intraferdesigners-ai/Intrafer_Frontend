@@ -12,7 +12,6 @@ const NAV_LINKS = [
   { label: 'Find Designers',  href: '/vendors'         },
   { label: 'How It Works',    href: '/how-it-works'    },
   { label: 'Design Ideas',    href: '/gallery'         },
-  { label: 'Cost Calculator', href: '/cost-calculator' },
 ];
 
 const DRAWER_SECTIONS = [
@@ -22,7 +21,6 @@ const DRAWER_SECTIONS = [
       { href: '/vendors',         label: 'Find Designers'  },
       { href: '/how-it-works',    label: 'How It Works'    },
       { href: '/gallery',         label: 'Design Ideas'    },
-      { href: '/cost-calculator', label: 'Cost Calculator' },
     ],
   },
 ];
