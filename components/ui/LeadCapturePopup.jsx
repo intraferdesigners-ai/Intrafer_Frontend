@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { getSessionId, shouldShowPopup, markPopupFilled, markPopupDismissed, markPopupNotInterested, hasFilledPopup, recordFirstVisit, getSecondsSinceFirstVisit } from '@/lib/session';
+import { getSessionId, shouldShowPopup, markPopupFilled, markPopupDismissed, hasFilledPopup, recordFirstVisit, getSecondsSinceFirstVisit } from '@/lib/session';
 import CitySelect from './CitySelect';
 
 // Don't show the popup on auth or dashboard pages
@@ -63,11 +63,11 @@ export default function LeadCapturePopup() {
     };
   }, [isExcluded]);
 
-  // When popup closes, re-schedule if user said "later" (not submitted / not interested)
+  // When popup closes, re-schedule if user said "later" (not submitted)
   useEffect(() => {
     if (!visible && !isExcluded) {
       clearTimeout(rescheduleRef.current);
-      if (!hasFilledPopup() && !localStorage.getItem('intrafer_popup_not_interested')) {
+      if (!hasFilledPopup()) {
         rescheduleRef.current = setTimeout(() => {
           if (shouldShowPopup() && !isExcluded) setVisible(true);
         }, 300000); // 5 minutes
@@ -84,12 +84,6 @@ export default function LeadCapturePopup() {
 
   const handleDismiss = () => {
     markPopupDismissed();
-    setVisible(false);
-  };
-
-  const handleNotInterested = () => {
-    markPopupNotInterested();
-    clearTimeout(rescheduleRef.current);
     setVisible(false);
   };
 
@@ -202,7 +196,6 @@ export default function LeadCapturePopup() {
             loading={loading}
             onSubmit={handleSubmit}
             onDismiss={handleDismiss}
-            onNotInterested={handleNotInterested}
             isMobile={isMobile}
           />
         </div>
@@ -211,7 +204,7 @@ export default function LeadCapturePopup() {
   );
 }
 
-function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismiss, onNotInterested, isMobile }) {
+function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismiss, isMobile }) {
   if (step === 2) {
     return (
       <div style={{ padding: '48px 24px', textAlign: 'center' }}>
@@ -243,7 +236,7 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
   const formFields = (
     <FormFields
       form={form} setForm={setForm} errors={errors} loading={loading}
-      onSubmit={onSubmit} onDismiss={onDismiss} onNotInterested={onNotInterested}
+      onSubmit={onSubmit} onDismiss={onDismiss}
     />
   );
 
@@ -323,15 +316,6 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
           flex: 1, position: 'relative',
           padding: 'clamp(44px, 6vh, 56px) 28px clamp(16px, 3vh, 28px)',
         }}>
-          <button onClick={onDismiss} style={{
-            position: 'absolute', top: '16px', right: '16px',
-            width: '32px', height: '32px', borderRadius: '50%',
-            background: 'var(--bg-parchment)', border: '1px solid var(--border)',
-            color: 'var(--text-hint)', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '16px',
-          }}>✕</button>
-
           {formFields}
         </div>
       </div>
@@ -357,15 +341,6 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
           width: '80px', height: '80px', borderRadius: '50%',
           background: 'rgba(96,165,250,.1)',
         }} />
-
-        <button onClick={onDismiss} style={{
-          position: 'absolute', top: '16px', right: '16px',
-          width: '32px', height: '32px', borderRadius: '50%',
-          background: 'rgba(255,255,255,.15)', border: 'none',
-          color: 'rgba(255,255,255,.8)', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '16px',
-        }}>✕</button>
 
         <div style={{
           width: '52px', height: '52px', borderRadius: '16px',
@@ -416,7 +391,7 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
 
 const TRUST_LINES = ['Vetted designers', 'Free to enquire', 'No spam, ever'];
 
-function FormFields({ form, setForm, errors, loading, onSubmit, onDismiss, onNotInterested }) {
+function FormFields({ form, setForm, errors, loading, onSubmit, onDismiss }) {
   return (
     <>
       <Field label="Your city" error={errors.city}>
@@ -507,7 +482,6 @@ function FormFields({ form, setForm, errors, loading, onSubmit, onDismiss, onNot
       }}>
         {[
           { label: "I'll do it later", onClick: onDismiss },
-          { label: 'Not interested',   onClick: onNotInterested },
         ].map(({ label, onClick }) => (
           <button key={label} onClick={onClick} style={{
             background: 'none', border: 'none',
