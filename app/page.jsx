@@ -8,7 +8,6 @@ import BeforeAfterShowcase from '../components/public/BeforeAfterShowcase';
 import EMICalculator from '../components/ui/EMICalculator';
 import { IMAGES } from '../lib/images';
 import { BLOG_POSTS } from '../lib/blog-data';
-import { getInitials } from '../lib/utils';
 import {
   ArrowRight, Building2, Shield, Lock, Star,
   Clock, Users, ImageIcon,
@@ -22,6 +21,7 @@ import Reveal from '../components/ui/Reveal';
 import HowItWorksCard from '../components/ui/HowItWorksCard';
 import StyleGallery from '../components/public/StyleGallery';
 import CostEstimatorTeaser from '../components/public/CostEstimatorTeaser';
+import TestimonialCarousel from '../components/public/TestimonialCarousel';
 
 export const metadata = {
   title: 'Intrafer — Vetted Interior Designers Across India',
@@ -148,7 +148,7 @@ export default async function Home() {
     fetchStats(), fetchFeaturedBlogPosts(), fetchFeaturedProjects(), fetchHomepageContent(), fetchSiteReviews(), fetchStyleCounts(),
   ]);
   const FEATURED_BLOG = apiBlogPosts.length > 0 ? apiBlogPosts : FEATURED_BLOG_FALLBACK;
-  const REVIEWS = siteReviews.filter((r) => r.comment).slice(0, 3);
+  const REVIEWS = siteReviews.filter((r) => r.comment).slice(0, 8);
   const styleGalleryData = STYLES_FEATURED.map((s) => ({ ...s, count: styleCounts[s.slug] || 0 }));
 
   return (
@@ -419,23 +419,9 @@ export default async function Home() {
           {/* ── REVIEWS ── */}
           <section style={{ background: 'var(--bg)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
             <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-              <p className="caps-label-primary" style={{ marginBottom: '10px' }}>TESTIMONIALS</p>
-              <h2 className="section-heading">What homeowners say</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${REVIEWS.length}, 1fr)`, gap: '16px', marginTop: '44px' }} className="grid-mobile-1">
-                {REVIEWS.map((r) => (
-                  <div key={r.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '22px', boxShadow: 'var(--shadow-sm)' }}>
-                    <div style={{ color: 'var(--primary)', fontSize: '14px', letterSpacing: '2px', marginBottom: '12px' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</div>
-                    <p style={{ fontSize: '14px', color: 'var(--text-sub)', lineHeight: 1.75, fontStyle: 'italic', marginBottom: '16px' }}>&ldquo;{r.comment}&rdquo;</p>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary-bg)', color: 'var(--primary)', fontSize: '13px', fontWeight: 600, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getInitials(r.userName)}</div>
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)' }}>{r.userName}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-hint)' }}>{[r.vendorName, r.vendorCity, r.projectType].filter(Boolean).join(' · ')}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="caps-label-primary" style={{ marginBottom: '10px', textAlign: 'center' }}>TESTIMONIALS</p>
+              <h2 className="section-heading" style={{ textAlign: 'center', marginBottom: '44px' }}>What homeowners say</h2>
+              <TestimonialCarousel reviews={REVIEWS} />
             </div>
           </section>
         </>

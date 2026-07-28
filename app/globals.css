@@ -336,6 +336,13 @@ a { color: inherit; text-decoration: none; }
 .rating-link { text-decoration: none; cursor: pointer; }
 .rating-link:hover { text-decoration: underline; }
 
+.testimonial-nav-btn { transition: color 150ms, border-color 150ms; }
+.testimonial-nav-btn:hover,
+.testimonial-nav-btn:focus-visible {
+  color: var(--primary);
+  border-color: var(--border-emp);
+}
+
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
