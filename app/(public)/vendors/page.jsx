@@ -5,6 +5,7 @@ import VendorSearch from '../../../components/vendor/VendorSearch';
 import VendorBHKFilter from '../../../components/vendor/VendorBHKFilter';
 import CompareBar from '../../../components/vendor/CompareBar';
 import VendorResultsGrid from '../../../components/vendor/VendorResultsGrid';
+import AnimatedCounter from '../../../components/ui/AnimatedCounter';
 
 export const metadata = { title: 'Find Interior Designers | Intrafer' };
 
@@ -14,8 +15,11 @@ async function fetchVendors(searchParams) {
     if (searchParams.city)           q.set('city', searchParams.city);
     if (searchParams.specialization && searchParams.specialization !== 'All')
                                      q.set('specialization', searchParams.specialization);
+    // Own param, not merged into `specialization` — getVendors doesn't read
+    // `bhk` yet (no home-type field on the Vendor model), so this is a no-op
+    // filter-wise, but it no longer collides with the specialization filter.
     if (searchParams.bhk && searchParams.bhk !== 'All')
-                                     q.set('specialization', searchParams.bhk);
+                                     q.set('bhk', searchParams.bhk);
     if (searchParams.sort)           q.set('sort', searchParams.sort);
     if (searchParams.page)           q.set('page', searchParams.page);
     q.set('limit', '12');
@@ -44,14 +48,16 @@ function buildPageUrl(searchParams, p) {
 
 export default async function VendorsPage({ searchParams }) {
   const { vendors = [], total = 0, page = 1, totalPages = 1 } = await fetchVendors(searchParams);
+  const resultsKey = JSON.stringify(searchParams);
 
   return (
     <main style={{ padding: 'clamp(80px, 10vw, 108px) clamp(16px, 4vw, 40px) 60px', maxWidth: 1280, margin: '0 auto' }}>
+      <p className="caps-label-primary" style={{ margin: '0 0 8px' }}>Design directory</p>
       <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--text)', margin: '0 0 6px' }}>
         Interior designers
       </h1>
       <p style={{ fontSize: 14, color: 'var(--text-hint)', margin: '0 0 24px' }}>
-        {total} verified designer{total !== 1 ? 's' : ''}
+        <AnimatedCounter end={total} style={{ fontWeight: 600, color: 'var(--text)' }} /> verified designer{total !== 1 ? 's' : ''}
       </p>
 
       <Suspense fallback={null}>
@@ -65,7 +71,7 @@ export default async function VendorsPage({ searchParams }) {
 
       {vendors.length > 0 ? (
         <>
-          <VendorResultsGrid vendors={vendors} />
+          <VendorResultsGrid vendors={vendors} resultsKey={resultsKey} />
 
           {totalPages > 1 && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 48 }}>

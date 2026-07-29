@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
+import { motion, useReducedMotion } from 'framer-motion';
 import { MapPin, Building2, ShieldCheck, Heart, Scale } from 'lucide-react';
 import QuickEnquiryModal from './QuickEnquiryModal';
 import VendorTooltip from './VendorTooltip';
@@ -45,7 +46,9 @@ export default function VendorCard({ vendor }) {
   const [showModal,      setShowModal]      = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [isTouch,        setIsTouch]        = useState(false);
+  const [savePulse,      setSavePulse]      = useState(false);
   const tooltipTimeout = useRef(null);
+  const shouldReduceMotion = useReducedMotion();
 
   const { isSelected, addToCompare, removeFromCompare } = useCompare();
   const compared = isSelected(vendor._id);
@@ -68,6 +71,11 @@ export default function VendorCard({ vendor }) {
   const toggleSave = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!shouldReduceMotion) {
+      setSavePulse(true);
+      setTimeout(() => setSavePulse(false), 260);
+    }
 
     if (isAuthenticated()) {
       const next = !saved;
@@ -196,16 +204,23 @@ export default function VendorCard({ vendor }) {
                 }}
                 aria-label={saved ? 'Remove from saved' : 'Save designer'}
               >
-                <Heart
-                  size={16}
-                  fill={saved ? '#E24B4A' : 'none'}
-                  color={saved ? '#E24B4A' : '#666'}
-                />
+                <motion.span
+                  animate={{ scale: savePulse ? 1.35 : 1 }}
+                  transition={{ duration: 0.16, ease: 'easeOut' }}
+                  style={{ display: 'flex' }}
+                >
+                  <Heart
+                    size={16}
+                    fill={saved ? '#E24B4A' : 'none'}
+                    color={saved ? '#E24B4A' : '#666'}
+                  />
+                </motion.span>
               </button>
 
               {/* Compare toggle — pill shape, visually distinct from the round save button */}
-              <button
+              <motion.button
                 onClick={toggleCompare}
+                whileTap={{ scale: shouldReduceMotion ? 1 : 0.93 }}
                 style={{
                   position: 'absolute', top: '48px', right: '10px',
                   display: 'flex', alignItems: 'center', gap: '4px',
@@ -214,12 +229,13 @@ export default function VendorCard({ vendor }) {
                   color: compared ? '#fff' : '#444',
                   border: 'none', fontSize: '10px', fontWeight: 600,
                   cursor: 'pointer', zIndex: 2, letterSpacing: '.02em',
+                  transition: 'background 150ms ease, color 150ms ease',
                 }}
                 aria-label={compared ? 'Remove from compare' : 'Add to compare'}
               >
                 <Scale size={12} />
                 {compared ? 'Comparing' : 'Compare'}
-              </button>
+              </motion.button>
             </div>
 
             {/* Circular avatar — overlaps bottom of image into card body */}

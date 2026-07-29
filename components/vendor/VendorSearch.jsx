@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { Search, Tag, ArrowUpDown, MapPin } from 'lucide-react';
 import Button from '../ui/Button';
 import CitySelect from '../ui/CitySelect';
 import api from '../../lib/api';
@@ -30,7 +30,7 @@ const SELECT_STYLE = {
 };
 
 const LABEL_STYLE = {
-  display: 'block', fontSize: '12px', fontWeight: 500,
+  display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 500,
   color: 'var(--color-text-sub)', marginBottom: '6px', letterSpacing: '0.01em',
 };
 
@@ -76,6 +76,7 @@ export default function VendorSearch() {
       background: 'var(--color-surface)',
       border: '1px solid var(--color-border)',
       borderRadius: 'var(--radius-xl)',
+      boxShadow: 'var(--shadow-sm)',
       padding: 20, marginBottom: 32,
     }}>
       <p style={{
@@ -88,7 +89,7 @@ export default function VendorSearch() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
         {/* City */}
         <div style={{ flex: '1 1 160px' }}>
-          <label style={LABEL_STYLE}>City</label>
+          <label style={LABEL_STYLE}><MapPin size={12} />City</label>
           <CitySelect
             value={city}
             onChange={(val) => setCity(val)}
@@ -99,7 +100,7 @@ export default function VendorSearch() {
 
         {/* Specialization */}
         <div style={{ flex: '1 1 160px' }}>
-          <label style={LABEL_STYLE}>Specialization</label>
+          <label style={LABEL_STYLE}><Tag size={12} />Specialization</label>
           <select value={specialization} onChange={(e) => setSpecialization(e.target.value)} style={SELECT_STYLE}>
             {specOptions.map((s) => (
               <option key={s} value={s}>{s}</option>
@@ -109,7 +110,7 @@ export default function VendorSearch() {
 
         {/* Sort */}
         <div style={{ flex: '1 1 140px' }}>
-          <label style={LABEL_STYLE}>Sort by</label>
+          <label style={LABEL_STYLE}><ArrowUpDown size={12} />Sort by</label>
           <select value={sort} onChange={(e) => setSort(e.target.value)} style={SELECT_STYLE}>
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
