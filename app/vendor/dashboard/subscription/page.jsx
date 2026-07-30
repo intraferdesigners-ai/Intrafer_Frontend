@@ -7,6 +7,7 @@ import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
 import Spinner from '../../../../components/ui/Spinner';
 import { formatDate, formatINR } from '../../../../lib/utils';
+import useAuthStore from '../../../../store/authStore';
 
 const HISTORY_STATUS = {
   pending:   { label: 'Pending',   bg: 'var(--color-warning-bg)',  color: 'var(--color-warning)'   },
@@ -89,6 +90,7 @@ function loadRazorpay() {
 }
 
 export default function SubscriptionPage() {
+  const { user } = useAuthStore();
   const [currentPlan,     setCurrentPlan]     = useState(null);
   const [loading,         setLoading]         = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(null);
@@ -206,7 +208,21 @@ export default function SubscriptionPage() {
             toast.error('Payment verification failed. Contact support.');
           }
         },
-        prefill: {},
+        prefill: {
+          name:    user?.name  || undefined,
+          email:   user?.email || undefined,
+          // Stored as a bare 10-digit Indian number (see auth.validator.js) —
+          // Razorpay's prefill.contact expects the +<countrycode> form.
+          contact: user?.phone ? `+91${user.phone}` : undefined,
+        },
+        // Locks the prefilled fields so Razorpay can't ask the vendor to
+        // re-type details already verified at signup — only applied to
+        // fields we actually have a value for.
+        readonly: {
+          name:    Boolean(user?.name),
+          email:   Boolean(user?.email),
+          contact: Boolean(user?.phone),
+        },
         theme: { color: '#3B82F6' },
         modal: { ondismiss: () => setCheckoutLoading(null) },
       };

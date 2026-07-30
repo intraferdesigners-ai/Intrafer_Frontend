@@ -50,6 +50,7 @@ export default function VendorProfilePage() {
   const [saving,         setSaving]         = useState(false);
   const [savingAvailability, setSavingAvailability] = useState(false);
   const [uploadingPhoto, setUploadingPhoto]  = useState(false);
+  const [fieldErrors,    setFieldErrors]     = useState({});
   const [specOptions,    setSpecOptions]     = useState(SPECIALIZATION_OPTIONS);
 
   // Prefer admin-managed categories when available; silently keep the
@@ -129,6 +130,7 @@ export default function VendorProfilePage() {
 
   const handleSave = async () => {
     setSaving(true);
+    setFieldErrors({});
     try {
       await api.put('/vendor/profile', {
         businessName: form.businessName,
@@ -148,7 +150,15 @@ export default function VendorProfilePage() {
       });
       toast.success('Profile updated successfully.');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save profile.');
+      const errors = err.response?.data?.errors;
+      if (Array.isArray(errors) && errors.length > 0) {
+        const byField = {};
+        errors.forEach((e) => { byField[e.field] = e.message; });
+        setFieldErrors(byField);
+        toast.error(errors.length === 1 ? errors[0].message : `${errors.length} fields need attention — see highlighted fields below.`);
+      } else {
+        toast.error(err.response?.data?.message || 'Failed to save profile.');
+      }
     }
     setSaving(false);
   };
@@ -281,8 +291,9 @@ export default function VendorProfilePage() {
               label="Business name"
               icon={Building2}
               value={form.businessName}
-              onChange={(e) => setForm((p) => ({ ...p, businessName: e.target.value }))}
+              onChange={(e) => { setForm((p) => ({ ...p, businessName: e.target.value })); setFieldErrors((fe) => ({ ...fe, businessName: undefined })); }}
               placeholder="Your studio or business name"
+              error={fieldErrors.businessName}
             />
             <div>
               <label style={FIELD_LABEL}>Description</label>
@@ -320,18 +331,20 @@ export default function VendorProfilePage() {
             <Input
               label="State"
               value={form.state}
-              onChange={(e) => setForm((p) => ({ ...p, state: e.target.value }))}
+              onChange={(e) => { setForm((p) => ({ ...p, state: e.target.value })); setFieldErrors((fe) => ({ ...fe, 'location.state': undefined })); }}
               placeholder="e.g. Karnataka"
               disabled={Boolean(getStateForCity(form.city))}
               hint={getStateForCity(form.city) ? 'Auto-filled from city' : undefined}
+              error={fieldErrors['location.state']}
             />
             <Input
               label="Pincode"
               value={form.pincode}
-              onChange={(e) => setForm((p) => ({ ...p, pincode: e.target.value }))}
+              onChange={(e) => { setForm((p) => ({ ...p, pincode: e.target.value })); setFieldErrors((fe) => ({ ...fe, 'location.pincode': undefined })); }}
               placeholder="560001"
               inputMode="numeric"
               maxLength={6}
+              error={fieldErrors['location.pincode']}
             />
           </div>
         </div>
