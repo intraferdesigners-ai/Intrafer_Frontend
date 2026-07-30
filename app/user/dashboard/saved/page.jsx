@@ -64,7 +64,7 @@ export default function SavedDesignersPage() {
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
-          {vendors.map((v) => <VendorCard vendor={v} key={v._id} />)}
+          {vendors.map((v) => <VendorCard vendor={v} variant="compact" key={v._id} />)}
         </div>
       )}
     </div>

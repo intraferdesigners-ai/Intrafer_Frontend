@@ -25,7 +25,7 @@ export default function VendorResultsGrid({ vendors, resultsKey }) {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.98 }}
         transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: 'easeOut' }}
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}
       >
         {vendors.map((v, i) => (
           <RevealItem key={v._id} index={i % 6}>
