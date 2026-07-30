@@ -9,11 +9,13 @@ import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
 
 
+// TEMP test pricing for live Razorpay flow verification — real prices were
+// 799900 / 1499900 / 1999900. Revert once testing is done.
 const FALLBACK_PLANS = [
   {
     name: '3 Month',
     displayName: '3 Months',
-    price: 799900,
+    price: 100,
     period: '3 months',
     leadsPerMonth: 10,
     durationDays: 90,
@@ -27,7 +29,7 @@ const FALLBACK_PLANS = [
   {
     name: '6 Month',
     displayName: '6 Months',
-    price: 1499900,
+    price: 100,
     period: '6 months',
     leadsPerMonth: 10,
     durationDays: 180,
@@ -44,7 +46,7 @@ const FALLBACK_PLANS = [
   {
     name: '12 Month',
     displayName: '12 Months',
-    price: 1999900,
+    price: 100,
     period: '12 months',
     leadsPerMonth: 10,
     durationDays: 365,
@@ -75,7 +77,7 @@ const FAQS = [
   },
   {
     q: 'Is there a free trial?',
-    a: 'We don\'t offer a free trial, but the 3 Month plan at ₹7,999 is a low-risk way to evaluate the platform. Most designers recoup this within their first accepted project.',
+    a: 'We don\'t offer a free trial, but the 3 Month plan at ₹1 is a low-risk way to evaluate the platform. Most designers recoup this within their first accepted project.',
   },
   {
     q: 'How do I get paid — do you take a commission?',

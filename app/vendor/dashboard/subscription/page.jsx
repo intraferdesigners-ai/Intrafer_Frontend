@@ -18,11 +18,13 @@ const HISTORY_STATUS = {
 
 // name is also what's sent to /subscriptions/create-order and stored as
 // Subscription.planName — must match the backend PLANS array exactly.
+// TEMP test pricing for live Razorpay flow verification — real prices were
+// 799900 / 1499900 / 1999900. Revert once testing is done.
 const PLANS = [
   {
     name: '3 Month',
     displayName: '3 Months',
-    price: 799900,
+    price: 100,
     period: '3 months',
     leadsPerMonth: 10,
     durationDays: 90,
@@ -39,7 +41,7 @@ const PLANS = [
   {
     name: '6 Month',
     displayName: '6 Months',
-    price: 1499900,
+    price: 100,
     period: '6 months',
     leadsPerMonth: 10,
     durationDays: 180,
@@ -57,7 +59,7 @@ const PLANS = [
   {
     name: '12 Month',
     displayName: '12 Months',
-    price: 1999900,
+    price: 100,
     period: '12 months',
     leadsPerMonth: 10,
     durationDays: 365,

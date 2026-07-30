@@ -39,7 +39,7 @@ export const FAQ_GROUPS = [
     category: 'FOR DESIGNERS',
     items: [
       { q: 'How do I list my studio?', a: 'Register on Intrafer, complete your profile with portfolio photos and service details, and submit for verification. Our team reviews within 2–3 business days.' },
-      { q: 'What are the subscription plans?', a: 'Plans run for 3, 6, or 12 months — ₹7,999, ₹14,999, and ₹19,999 respectively — all with upto 10 leads/month. Higher tiers add priority placement, an analytics dashboard, and a dedicated account manager rather than more leads. See our plans page for the full feature breakdown.' },
+      { q: 'What are the subscription plans?', a: 'Plans run for 3, 6, or 12 months — ₹1, ₹1, and ₹1 respectively — all with upto 10 leads/month. Higher tiers add priority placement, an analytics dashboard, and a dedicated account manager rather than more leads. See our plans page for the full feature breakdown.' },
       { q: 'How many leads will I receive?', a: 'Lead volume depends on your city, plan tier, and how complete your profile is. Designers with full portfolios, good ratings, and quick response times receive significantly more leads.' },
       { q: 'What is the lead reveal process?', a: "When a homeowner submits an enquiry, you receive a notification with project details (but not their contact info). If you accept the lead, the homeowner's phone and email are instantly revealed so you can reach out." },
       { q: 'Can I cancel my subscription?', a: 'You can stop renewing at any time from your dashboard. Plans are prepaid for their full 3, 6, or 12-month term and are non-refundable, but your listing stays live for the term you’ve already paid for.' },

@@ -24,19 +24,21 @@ const STEPS = [
   { n: '03', title: 'Receive & convert leads',    desc: 'Accept leads that match your expertise. Client contact details revealed instantly on acceptance.' },
 ];
 
+// TEMP test pricing for live Razorpay flow verification — real prices were
+// ₹7,999 / ₹14,999 / ₹19,999. Revert once testing is done.
 const PLANS = [
   {
-    name: '3 Months', price: '₹7,999', period: ' for 3 months', highlight: false,
+    name: '3 Months', price: '₹1', period: ' for 3 months', highlight: false,
     desc: 'Perfect for designers just getting started.',
     features: ['Upto 10 leads/month', 'Profile listing', 'Portfolio showcase', 'Email support'],
   },
   {
-    name: '6 Months', price: '₹14,999', period: ' for 6 months', highlight: true,
+    name: '6 Months', price: '₹1', period: ' for 6 months', highlight: true,
     desc: 'For active designers who want to grow.',
     features: ['Upto 10 leads/month', 'Priority listing', 'WhatsApp + Email alerts', 'Analytics dashboard', 'Priority support'],
   },
   {
-    name: '12 Months', price: '₹19,999', period: ' for 12 months', highlight: false,
+    name: '12 Months', price: '₹1', period: ' for 12 months', highlight: false,
     desc: 'For established studios managing high volume.',
     features: ['Upto 10 leads/month', 'Top of search listing', 'Featured badge', 'Dedicated account manager', 'Custom portfolio pages'],
   },
