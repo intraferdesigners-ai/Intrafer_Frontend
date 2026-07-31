@@ -1,11 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckCircle, Circle, ChevronRight, XCircle, Lock } from 'lucide-react';
+import { CheckCircle, Circle, ChevronRight, Lock } from 'lucide-react';
 
 export default function OnboardingChecklist({ vendor, projects }) {
-  const approvalStatus = vendor?.approvalStatus || (vendor?.isApproved ? 'approved' : 'pending');
-  const isRejected = approvalStatus === 'rejected';
   // isListingEnabled (not a live Subscription query) is the canonical
   // "currently subscribed" signal used everywhere else in this app (and by
   // the backend gate on portfolio uploads) — some seeded demo vendors have
@@ -15,9 +13,10 @@ export default function OnboardingChecklist({ vendor, projects }) {
   const portfolioDone = (projects?.length || 0) >= 3;
   const photosDone = projects?.some((p) => p.images?.length > 0) || false;
 
-  // Build order: Profile -> Subscribe -> Portfolio -> admin approval. Portfolio
-  // (and its photos sub-step) stay locked until a subscription is active,
-  // since the backend now rejects project uploads without one.
+  // Build order: Profile -> Subscribe -> Portfolio. Going live has no admin
+  // review step — subscribing is the only gate. Portfolio (and its photos
+  // sub-step) stay locked until a subscription is active, since the backend
+  // rejects project uploads without one.
   const steps = [
     {
       id: 'profile',
@@ -61,20 +60,6 @@ export default function OnboardingChecklist({ vendor, projects }) {
       href: '/vendor/dashboard/projects',
       cta: 'Add photos',
       locked: !hasActiveSubscription && !photosDone,
-    },
-    {
-      id: 'approval',
-      label: isRejected ? 'Changes requested' : 'Awaiting admin approval',
-      desc: isRejected
-        ? (vendor?.rejectionReason
-            ? `${vendor.rejectionReason} — update your profile or portfolio and it will be re-reviewed.`
-            : 'Update your profile or portfolio and it will be re-reviewed.')
-        : 'Our team reviews profiles within 24–48 business hours.',
-      done: approvalStatus === 'approved',
-      rejected: isRejected,
-      pending: approvalStatus === 'pending',
-      href: isRejected ? '/vendor/dashboard/profile' : null,
-      cta: isRejected ? 'Update profile' : null,
     },
   ];
 
@@ -128,21 +113,6 @@ export default function OnboardingChecklist({ vendor, projects }) {
               <Lock size={16} color="var(--color-text-hint)" />
             ) : step.done ? (
               <CheckCircle size={18} color="var(--color-success)" fill="var(--color-success)" />
-            ) : step.rejected ? (
-              <XCircle size={18} color="var(--color-danger)" />
-            ) : step.pending ? (
-              <div style={{
-                width: 18, height: 18, borderRadius: '50%',
-                border: '2px solid var(--color-text-hint)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <div style={{
-                  width: 6, height: 6, borderRadius: '50%',
-                  border: '1.5px solid transparent',
-                  borderTopColor: 'var(--color-text-hint)',
-                  animation: 'spin 1s linear infinite',
-                }} />
-              </div>
             ) : (
               <Circle size={18} color="var(--color-text-hint)" />
             )}
@@ -152,13 +122,13 @@ export default function OnboardingChecklist({ vendor, projects }) {
           <div style={{ flex: 1 }}>
             <div style={{
               fontSize: 13, fontWeight: 500,
-              color: step.rejected ? 'var(--color-danger)' : 'var(--color-text)',
+              color: 'var(--color-text)',
               opacity: step.locked ? 0.6 : step.done ? 0.5 : 1,
               textDecoration: step.done ? 'line-through' : 'none',
             }}>
               {step.label}
             </div>
-            <div style={{ fontSize: 11, color: step.rejected ? 'var(--color-danger)' : 'var(--color-text-hint)', marginTop: 2, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 11, color: 'var(--color-text-hint)', marginTop: 2, lineHeight: 1.5 }}>
               {step.desc}
             </div>
           </div>

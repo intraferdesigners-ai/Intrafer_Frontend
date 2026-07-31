@@ -65,6 +65,24 @@ export default function VendorDashboard() {
         Dashboard
       </h1>
 
+      {/* Takedown banner — only shown if an admin has taken this listing down
+          after the fact (bad actor / policy violation). Not part of normal
+          onboarding, so it's separate from the getting-started checklist. */}
+      {!loading && vendor?.approvalStatus === 'rejected' && (
+        <div style={{
+          background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger)',
+          borderRadius: 'var(--radius-lg)', padding: '16px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 12, marginBottom: 20, flexWrap: 'wrap',
+        }}>
+          <div style={{ fontSize: 13, color: 'var(--color-danger)' }}>
+            <strong>Your listing has been taken down.</strong>
+            {vendor?.rejectionReason && <> {vendor.rejectionReason}</>}
+            {' '}Contact support if you believe this is a mistake.
+          </div>
+        </div>
+      )}
+
       {/* Subscription banner */}
       {!loading && (
         <>

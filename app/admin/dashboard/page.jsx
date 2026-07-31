@@ -15,7 +15,7 @@ const QUICK_ACTIONS = [
     href:    '/admin/dashboard/vendors',
     icon:    Building2,
     label:   'Manage vendors',
-    sub:     'Approve and review designer profiles',
+    sub:     'Review designer profiles, take down bad actors',
   },
   {
     href:    '/admin/dashboard/leads',
@@ -72,7 +72,9 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      {/* Pending items banner */}
+      {/* Pending items banner — informational only. Vendors and portfolio
+          projects go live automatically (subscription is the only gate), so
+          nothing here is blocking anyone; it's just a queue for oversight. */}
       {!loading && !dismissed && (stats?.pendingVendors > 0 || stats?.pendingPortfolio > 0) && (
         <div style={{
           background: 'var(--color-warning-bg)', border: '1px solid var(--color-accent-bg)',
@@ -87,7 +89,7 @@ export default function AdminDashboard() {
                 color: 'var(--color-warning)', textDecoration: 'none',
               }}>
                 <AlertCircle size={18} />
-                {stats.pendingVendors} vendor verification{stats.pendingVendors === 1 ? '' : 's'} awaiting review →
+                {stats.pendingVendors} vendor{stats.pendingVendors === 1 ? '' : 's'} not yet reviewed (already live) →
               </Link>
             )}
             {stats.pendingPortfolio > 0 && (
@@ -96,7 +98,7 @@ export default function AdminDashboard() {
                 color: 'var(--color-warning)', textDecoration: 'none',
               }}>
                 <AlertCircle size={18} />
-                {stats.pendingPortfolio} portfolio submission{stats.pendingPortfolio === 1 ? '' : 's'} awaiting review →
+                {stats.pendingPortfolio} portfolio item{stats.pendingPortfolio === 1 ? '' : 's'} flagged for review (already live) →
               </Link>
             )}
           </div>

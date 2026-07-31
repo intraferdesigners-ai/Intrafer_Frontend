@@ -64,7 +64,7 @@ export default function AdminPortfolioApprovalsPage() {
           Portfolio approvals
         </h1>
         <p style={{ fontSize: 14, color: 'var(--color-text-hint)', margin: 0 }}>
-          Review vendor portfolio projects before they go public.
+          Projects go public automatically on upload. This is a flagged queue for oversight — nothing here is blocking a vendor from being live.
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export default function AdminPortfolioApprovalsPage() {
         <div style={{ padding: '48px 0' }}><Spinner size="md" /></div>
       ) : projects.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', fontSize: 13, color: 'var(--color-text-hint)' }}>
-          No projects awaiting review.
+          Nothing flagged right now.
         </div>
       ) : (
         <>

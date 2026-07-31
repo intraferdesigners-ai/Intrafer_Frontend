@@ -13,9 +13,9 @@ import Spinner from '@/components/ui/Spinner';
 import { getInitials, formatDate } from '@/lib/utils';
 
 const STATUS_BADGE = {
-  pending:  { label: 'Pending',  Icon: Clock,       color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
-  approved: { label: 'Approved', Icon: CheckCircle, color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
-  rejected: { label: 'Rejected', Icon: XCircle,     color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'  },
+  pending:  { label: 'Not yet reviewed', Icon: Clock,       color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
+  approved: { label: 'Live',             Icon: CheckCircle, color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
+  rejected: { label: 'Taken down',       Icon: XCircle,     color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'  },
 };
 
 function getApprovalStatus(vendor) {
@@ -165,7 +165,7 @@ export default function AdminVendorDetailPage() {
             </>
           ) : (
             <Button variant="danger" size="sm" loading={updating} onClick={() => setShowRejectForm((s) => !s)}>
-              <ShieldX size={14} /> Revoke
+              <ShieldX size={14} /> Take down
             </Button>
           )}
         </div>
@@ -178,11 +178,11 @@ export default function AdminVendorDetailPage() {
           borderRadius: 'var(--radius-xl)', padding: '20px', marginBottom: '20px',
         }}>
           <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.08em', color: 'var(--color-text-hint)', textTransform: 'uppercase', marginBottom: '10px' }}>
-            Reason for rejection
+            Reason for takedown
           </p>
           <textarea
             rows={3}
-            placeholder="Explain what needs to change before this vendor can be approved..."
+            placeholder="Explain why this vendor's listing is being taken down..."
             value={rejectionReason}
             onChange={(e) => setRejectionReason(e.target.value)}
             style={{
@@ -198,7 +198,7 @@ export default function AdminVendorDetailPage() {
               Cancel
             </Button>
             <Button variant="danger" size="sm" loading={updating} onClick={() => handleApprove(false, rejectionReason)}>
-              Send rejection
+              Take down
             </Button>
           </div>
         </div>
@@ -214,7 +214,7 @@ export default function AdminVendorDetailPage() {
           {getApprovalStatus(vendor) === 'rejected' && vendor.rejectionReason && (
             <div style={{ background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-xl)', padding: '20px' }}>
               <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.08em', color: 'var(--color-danger)', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Rejected{vendor.reviewedAt ? ` · ${formatDate(vendor.reviewedAt)}` : ''}
+                Taken down{vendor.reviewedAt ? ` · ${formatDate(vendor.reviewedAt)}` : ''}
               </p>
               <p style={{ fontSize: '14px', lineHeight: 1.7, color: 'var(--color-text)', margin: 0 }}>
                 {vendor.rejectionReason}

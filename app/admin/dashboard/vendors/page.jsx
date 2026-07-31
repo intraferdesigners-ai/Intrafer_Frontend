@@ -11,29 +11,31 @@ import { formatDate, getInitials } from '../../../../lib/utils';
 import { downloadCSV } from '../../../../lib/csv';
 
 const FILTERS = [
-  { key: 'all',      label: 'All'             },
-  { key: 'pending',  label: 'Pending approval' },
-  { key: 'approved', label: 'Approved'         },
-  { key: 'rejected', label: 'Rejected'         },
+  { key: 'all',      label: 'All'          },
+  { key: 'pending',  label: 'Never reviewed' },
+  { key: 'approved', label: 'Live'         },
+  { key: 'rejected', label: 'Taken down'   },
 ];
 
 const STATUS_BADGE = {
-  pending:  { label: 'Pending',  Icon: Clock,      color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
-  approved: { label: 'Approved', Icon: CheckCircle, color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
-  rejected: { label: 'Rejected', Icon: XCircle,    color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'  },
+  pending:  { label: 'Not yet reviewed', Icon: Clock,      color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
+  approved: { label: 'Live',             Icon: CheckCircle, color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
+  rejected: { label: 'Taken down',       Icon: XCircle,    color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'  },
 };
 
 function getApprovalStatus(vendor) {
   return vendor.approvalStatus || (vendor.isApproved ? 'approved' : 'pending');
 }
 
+// Vendors go live automatically now (subscription is the only gate) — this
+// list is only ever shown when an admin takes down an already-live vendor,
+// so the options are takedown reasons, not pre-listing quality-gate reasons.
 const REJECTION_REASONS = [
-  'No portfolio photos uploaded',
-  'Portfolio images are low quality or stock photos',
-  'Business profile is incomplete',
-  'Phone number not verified',
-  'Specializations not selected',
-  'Business description too short (min 100 chars)',
+  'Fraudulent or fake business',
+  'Portfolio images are stolen or not the vendor\'s own work',
+  'Inappropriate or offensive content',
+  'Multiple verified customer complaints',
+  'Policy violation',
   'Other (specify below)',
 ];
 
@@ -379,7 +381,7 @@ function AdminVendorsPageContent() {
                     loading={updatingId === vendor._id}
                     onClick={() => openRejectModal(vendor)}
                   >
-                    Revoke
+                    Take down
                   </Button>
                 )}
                 <button
@@ -423,7 +425,7 @@ function AdminVendorsPageContent() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 300, color: 'var(--color-text)', marginBottom: 4 }}>
-                  Reject vendor application
+                  Take down vendor listing
                 </div>
                 {rejectingVendor && (
                   <div style={{ fontSize: 13, color: 'var(--color-text-hint)' }}>
@@ -441,7 +443,7 @@ function AdminVendorsPageContent() {
             </div>
 
             {/* Reason pills */}
-            <span style={CAPS_LABEL}>Reason for rejection</span>
+            <span style={CAPS_LABEL}>Reason for takedown</span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
               {REJECTION_REASONS.map((reason) => (
                 <button
@@ -489,7 +491,7 @@ function AdminVendorsPageContent() {
                 loading={updatingId === rejectingVendorId}
                 onClick={handleSendRejection}
               >
-                Send rejection
+                Take down
               </Button>
             </div>
           </div>
