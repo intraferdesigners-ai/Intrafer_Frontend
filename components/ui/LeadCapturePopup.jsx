@@ -316,13 +316,13 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
           flex: 1, position: 'relative',
           padding: 'clamp(44px, 6vh, 56px) 28px clamp(16px, 3vh, 28px)',
         }}>
-          <button onClick={onDismiss} style={{
+          <button onClick={onDismiss} aria-label="Close" style={{
             position: 'absolute', top: '16px', right: '16px',
-            width: '32px', height: '32px', borderRadius: '50%',
+            width: '44px', height: '44px', borderRadius: '50%',
             background: 'var(--bg-parchment)', border: '1px solid var(--border)',
             color: 'var(--text-hint)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '16px',
+            fontSize: '18px', lineHeight: 1, padding: 0,
           }}>✕</button>
 
           {formFields}
@@ -351,13 +351,13 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
           background: 'rgba(96,165,250,.1)',
         }} />
 
-        <button onClick={onDismiss} style={{
+        <button onClick={onDismiss} aria-label="Close" style={{
           position: 'absolute', top: '16px', right: '16px',
-          width: '32px', height: '32px', borderRadius: '50%',
+          width: '44px', height: '44px', borderRadius: '50%',
           background: 'rgba(255,255,255,.15)', border: 'none',
           color: 'rgba(255,255,255,.8)', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '16px',
+          fontSize: '18px', lineHeight: 1, padding: 0,
         }}>✕</button>
 
         <div style={{
