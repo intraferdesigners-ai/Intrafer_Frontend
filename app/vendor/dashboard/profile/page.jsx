@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Building2, Tag, Camera, Wrench, Plus, Trash2, CalendarClock } from 'lucide-react';
+import { Building2, Tag, Camera, Wrench, Plus, Trash2, CalendarClock, MapPin, Pencil, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
@@ -58,6 +58,14 @@ export default function VendorProfilePage() {
   // of the ~740 real cities that map doesn't cover, via onSelectPlace's
   // authoritative place.state. Either source locks the field the same way.
   const [stateAutoFilled, setStateAutoFilled] = useState(false);
+  // Read-only by default once there's an existing profile to show; a brand
+  // new vendor with nothing saved yet starts straight in edit mode (see the
+  // profile-fetch effect below), since there'd be nothing to view. Cancel
+  // restores from this snapshot rather than re-fetching, so it also discards
+  // an in-progress (unsaved) photo upload's effect on `form` — though the
+  // photo itself was already persisted server-side by handlePhotoChange.
+  const [editMode, setEditMode] = useState(false);
+  const savedFormRef = useRef(null);
 
   // Prefer admin-managed categories when available; silently keep the
   // hardcoded fallback list if the endpoint fails or returns nothing.
@@ -75,7 +83,7 @@ export default function VendorProfilePage() {
       .then(({ data }) => {
         const v = data.data?.vendor || data.vendor;
         if (!v) return;
-        setForm({
+        const loaded = {
           businessName:    v.businessName    || '',
           description:     v.description     || '',
           city:            v.location?.city  || '',
@@ -84,7 +92,12 @@ export default function VendorProfilePage() {
           specializations: v.specializations || [],
           profilePhoto:    v.profilePhoto     || '',
           services:        v.services         || [],
-        });
+        };
+        setForm(loaded);
+        savedFormRef.current = loaded;
+        // Nothing saved yet — go straight to the form instead of an empty
+        // read-only view with no obvious way in.
+        setEditMode(!v.businessName);
         if (v.availability) {
           setAvailability({
             startTime: v.availability.startTime || '10:00',
@@ -124,9 +137,13 @@ export default function VendorProfilePage() {
       });
       const url = data.data?.url || data.url;
       // Persist immediately so a photo change survives even if the user
-      // navigates away before hitting "Save changes" below.
+      // navigates away before hitting "Save changes" below. Also updates
+      // the saved-snapshot ref, since it's already committed server-side —
+      // hitting Cancel afterward shouldn't revert a photo that's already
+      // saved, only the other still-unsaved form fields.
       await api.put('/vendor/profile', { profilePhoto: url });
       setForm((p) => ({ ...p, profilePhoto: url }));
+      if (savedFormRef.current) savedFormRef.current = { ...savedFormRef.current, profilePhoto: url };
       toast.success('Profile photo updated.');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to upload photo.');
@@ -155,6 +172,8 @@ export default function VendorProfilePage() {
             startingPrice: s.startingPrice === '' || s.startingPrice == null ? undefined : Number(s.startingPrice),
           })),
       });
+      savedFormRef.current = form;
+      setEditMode(false);
       toast.success('Profile updated successfully.');
     } catch (err) {
       const errors = err.response?.data?.errors;
@@ -168,6 +187,12 @@ export default function VendorProfilePage() {
       }
     }
     setSaving(false);
+  };
+
+  const handleCancelEdit = () => {
+    if (savedFormRef.current) setForm(savedFormRef.current);
+    setFieldErrors({});
+    setEditMode(false);
   };
 
   const handleSaveAvailability = async () => {
@@ -234,13 +259,31 @@ export default function VendorProfilePage() {
 
   return (
     <div>
-      <h1 style={{
-        fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 300,
-        color: 'var(--color-text)', margin: '0 0 28px',
-      }}>
-        Business profile
-      </h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, gap: 12 }}>
+        <h1 style={{
+          fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 300,
+          color: 'var(--color-text)', margin: 0,
+        }}>
+          Business profile
+        </h1>
+        {editMode ? (
+          savedFormRef.current && (
+            <Button variant="secondary" size="sm" onClick={handleCancelEdit}>
+              <X size={14} /> Cancel
+            </Button>
+          )
+        ) : (
+          <Button variant="secondary" size="sm" onClick={() => setEditMode(true)}>
+            <Pencil size={14} /> Edit
+          </Button>
+        )}
+      </div>
 
+      {!editMode && (
+        <ProfileSummary form={form} availability={availability} />
+      )}
+
+      {editMode && (
       <div style={{
         background: 'var(--color-surface)', border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-xl)', padding: 28,
@@ -513,6 +556,120 @@ export default function VendorProfilePage() {
         <Button variant="primary" size="lg" loading={saving} onClick={handleSave} style={{ width: '100%' }}>
           Save changes
         </Button>
+      </div>
+      )}
+    </div>
+  );
+}
+
+function formatTime12h(hhmm) {
+  if (!hhmm) return '';
+  const [h, m] = hhmm.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 || 12;
+  return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+}
+
+const PRICE_UNIT_LABEL = { flat: 'flat rate', per_sqft: '/ sq. ft.', per_room: '/ room' };
+
+// Read-only counterpart to the form above — shown by default once a profile
+// exists, so the page reads as a finished business listing rather than a
+// permanently-open form. "Edit" (in the header) switches back to the form.
+function ProfileSummary({ form, availability }) {
+  return (
+    <div style={{
+      background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+      borderRadius: 'var(--radius-xl)', padding: 28,
+      display: 'flex', flexDirection: 'column', gap: 24,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+        <div style={{
+          width: 72, height: 72, borderRadius: '50%', overflow: 'hidden',
+          background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          {form.profilePhoto ? (
+            <img src={form.profilePhoto} alt={form.businessName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <Building2 size={26} color="var(--color-text-hint)" />
+          )}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <h2 style={{
+            fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 400,
+            color: 'var(--color-text)', margin: '0 0 4px',
+          }}>
+            {form.businessName}
+          </h2>
+          {(form.city || form.state) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-text-sub)' }}>
+              <MapPin size={13} />
+              {[form.city, form.state].filter(Boolean).join(', ')}
+              {form.pincode ? ` · ${form.pincode}` : ''}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {form.description && (
+        <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--color-text-sub)', margin: 0 }}>
+          {form.description}
+        </p>
+      )}
+
+      {form.specializations.length > 0 && (
+        <div>
+          <span style={SECTION_LABEL}>
+            <Tag size={10} style={{ display: 'inline', marginRight: 4 }} />
+            Specializations
+          </span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {form.specializations.map((spec) => (
+              <span key={spec} style={{
+                padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500,
+                background: 'var(--color-primary-bg)', color: 'var(--color-primary)',
+                border: '1px solid var(--color-accent)',
+              }}>
+                {spec}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {form.services.length > 0 && (
+        <div>
+          <span style={SECTION_LABEL}>
+            <Wrench size={10} style={{ display: 'inline', marginRight: 4 }} />
+            Services
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {form.services.map((service, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12,
+                padding: '10px 14px', borderRadius: 'var(--radius-md)',
+                background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)',
+              }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>{service.name}</span>
+                {service.startingPrice != null && service.startingPrice !== '' && (
+                  <span style={{ fontSize: 12, color: 'var(--color-text-hint)', whiteSpace: 'nowrap' }}>
+                    from ₹{Number(service.startingPrice).toLocaleString('en-IN')} {PRICE_UNIT_LABEL[service.priceUnit] || ''}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <span style={SECTION_LABEL}>
+          <CalendarClock size={10} style={{ display: 'inline', marginRight: 4 }} />
+          Availability
+        </span>
+        <p style={{ fontSize: 13, color: 'var(--color-text-sub)', margin: 0 }}>
+          {formatTime12h(availability.startTime)} – {formatTime12h(availability.endTime)} · {availability.slotDurationMinutes} min slots
+        </p>
       </div>
     </div>
   );

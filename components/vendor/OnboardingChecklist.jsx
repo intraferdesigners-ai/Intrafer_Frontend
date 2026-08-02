@@ -10,8 +10,16 @@ export default function OnboardingChecklist({ vendor, projects }) {
   // isListingEnabled: true with no Subscription document at all, so this
   // keeps the checklist consistent with what the backend actually enforces.
   const hasActiveSubscription = vendor?.isListingEnabled || false;
-  const portfolioDone = (projects?.length || 0) >= 3;
-  const photosDone = projects?.some((p) => p.images?.length > 0) || false;
+  // Scoped to *published* projects — a project saved as a draft (see the
+  // Visibility toggle on the add/edit project form) never shows on the
+  // public profile, so it shouldn't count as "done" here either. Without
+  // this, 3 draft projects would satisfy the checklist and make this whole
+  // banner vanish (percentage hits 100%) while the public listing still has
+  // zero visible work — exactly the "reliably gated on real completion
+  // state" gap this component needs to avoid.
+  const publishedProjects = projects?.filter((p) => p.isPublished) || [];
+  const portfolioDone = publishedProjects.length >= 3;
+  const photosDone = publishedProjects.some((p) => p.images?.length > 0);
 
   // Build order: Profile -> Subscribe -> Portfolio. Going live has no admin
   // review step — subscribing is the only gate. Portfolio (and its photos
