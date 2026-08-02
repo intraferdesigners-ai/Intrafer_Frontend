@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../../../../lib/api';
 import Button from '../../../../../components/ui/Button';
 import Input from '../../../../../components/ui/Input';
+import CitySelect from '../../../../../components/ui/CitySelect';
 
 const PROJECT_TYPES = [
   'Residential', 'Modular Kitchen', 'Living Room', 'Office Interiors',
@@ -52,7 +53,7 @@ export default function NewProjectPage() {
 
   const [form, setForm] = useState({
     title: '', description: '', projectType: 'Residential',
-    location: '', completedYear: new Date().getFullYear(), isPublished: false,
+    location: '', completedYear: new Date().getFullYear(), isPublished: true,
     budget: '', timeline: '',
   });
   const [imageFiles,      setImageFiles]      = useState([]);
@@ -172,12 +173,14 @@ export default function NewProjectPage() {
                 </select>
               </div>
               <div className="form-row" style={{ gap: 12 }}>
-                <Input
-                  label="Location"
-                  value={form.location}
-                  onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
-                  placeholder="e.g. Bangalore, Karnataka"
-                />
+                <div>
+                  <label style={FIELD_LABEL}>Location</label>
+                  <CitySelect
+                    value={form.location}
+                    onChange={(location) => setForm((p) => ({ ...p, location }))}
+                    placeholder="Search or type city..."
+                  />
+                </div>
                 <Input
                   label="Completed year"
                   type="number"

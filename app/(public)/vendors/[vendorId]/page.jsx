@@ -131,8 +131,17 @@ export default async function VendorProfilePage({ params }) {
         {/* ── LEFT COLUMN ── */}
         <div>
 
-          {/* ── COVER BANNER (avatar overlaps here, name never does) ── */}
-          <Reveal style={{ position: 'relative' }}>
+          {/* ── COVER BANNER (avatar overlaps here, name never does) ──
+              The banner + avatar pair get their own position:relative
+              wrapper, sized to just the 200px banner — not Reveal, which
+              also contains the name/meta section below. Anchoring the
+              avatar's `bottom: -40px` to Reveal (previously the nearest
+              positioned ancestor, since Reveal wraps this whole block) put
+              it 40px above Reveal's full bottom edge rather than the
+              banner's, so on taller name/meta content (longer business
+              names, more badges) the avatar drifted down and overlapped it. */}
+          <Reveal>
+          <div style={{ position: 'relative' }}>
             <div style={{
               height: '200px',
               background: 'linear-gradient(135deg, var(--primary-bg) 0%, var(--bg-cream) 100%)',
@@ -192,6 +201,7 @@ export default async function VendorProfilePage({ params }) {
                 </span>
               )}
             </div>
+          </div>
 
           {/* ── NAME + META — always below the cover, never overlaid on it ── */}
           <div style={{

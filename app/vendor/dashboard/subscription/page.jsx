@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Crown, CheckCircle, AlertCircle, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
@@ -90,6 +91,7 @@ function loadRazorpay() {
 }
 
 export default function SubscriptionPage() {
+  const router = useRouter();
   const { user } = useAuthStore();
   const [currentPlan,     setCurrentPlan]     = useState(null);
   const [loading,         setLoading]         = useState(true);
@@ -203,7 +205,13 @@ export default function SubscriptionPage() {
               razorpay_signature:  response.razorpay_signature,
             });
             toast.success('Subscription activated! Your listing is now live.');
-            window.location.reload();
+            // A full page reload here would re-run the entire auth bootstrap
+            // (cookie read -> /auth/me -> refresh-on-401 if the access token
+            // expired during a long checkout) for a page that only needs to
+            // show updated subscription data — needlessly fragile. A plain
+            // client-side navigation shows the same result without touching
+            // auth state at all.
+            router.push('/vendor/dashboard');
           } catch {
             toast.error('Payment verification failed. Contact support.');
           }
