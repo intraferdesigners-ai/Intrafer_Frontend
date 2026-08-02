@@ -13,6 +13,7 @@ async function fetchVendors(searchParams) {
   try {
     const q = new URLSearchParams();
     if (searchParams.city)           q.set('city', searchParams.city);
+    if (searchParams.locality)       q.set('locality', searchParams.locality);
     if (searchParams.specialization && searchParams.specialization !== 'All')
                                      q.set('specialization', searchParams.specialization);
     // Own param, not merged into `specialization` — getVendors doesn't read
@@ -39,6 +40,7 @@ async function fetchVendors(searchParams) {
 function buildPageUrl(searchParams, p) {
   const q = new URLSearchParams();
   if (searchParams.city)           q.set('city', searchParams.city);
+  if (searchParams.locality)       q.set('locality', searchParams.locality);
   if (searchParams.specialization) q.set('specialization', searchParams.specialization);
   if (searchParams.bhk)            q.set('bhk', searchParams.bhk);
   if (searchParams.sort)           q.set('sort', searchParams.sort);

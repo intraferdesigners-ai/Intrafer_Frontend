@@ -52,6 +52,12 @@ export default function VendorProfilePage() {
   const [uploadingPhoto, setUploadingPhoto]  = useState(false);
   const [fieldErrors,    setFieldErrors]     = useState({});
   const [specOptions,    setSpecOptions]     = useState(SPECIALIZATION_OPTIONS);
+  // True once the state field has been auto-filled from a CitySelect pick —
+  // via the legacy CITY_STATE_MAP (small hand-curated list, kept for the
+  // synchronous same-render lock the disabled prop below wants) or, for any
+  // of the ~740 real cities that map doesn't cover, via onSelectPlace's
+  // authoritative place.state. Either source locks the field the same way.
+  const [stateAutoFilled, setStateAutoFilled] = useState(false);
 
   // Prefer admin-managed categories when available; silently keep the
   // hardcoded fallback list if the endpoint fails or returns nothing.
@@ -101,6 +107,7 @@ export default function VendorProfilePage() {
     const mapped = getStateForCity(form.city);
     if (mapped) {
       setForm((p) => (p.state === mapped ? p : { ...p, state: mapped }));
+      setStateAutoFilled(true);
     }
   }, [form.city]);
 
@@ -324,7 +331,11 @@ export default function VendorProfilePage() {
               </label>
               <CitySelect
                 value={form.city}
-                onChange={(city) => setForm((p) => ({ ...p, city }))}
+                onChange={(city) => { setForm((p) => ({ ...p, city })); setStateAutoFilled(false); }}
+                onSelectPlace={(place) => {
+                  setForm((p) => ({ ...p, state: place.state }));
+                  setStateAutoFilled(true);
+                }}
                 placeholder="Search or type city..."
               />
             </div>
@@ -333,8 +344,8 @@ export default function VendorProfilePage() {
               value={form.state}
               onChange={(e) => { setForm((p) => ({ ...p, state: e.target.value })); setFieldErrors((fe) => ({ ...fe, 'location.state': undefined })); }}
               placeholder="e.g. Karnataka"
-              disabled={Boolean(getStateForCity(form.city))}
-              hint={getStateForCity(form.city) ? 'Auto-filled from city' : undefined}
+              disabled={stateAutoFilled}
+              hint={stateAutoFilled ? 'Auto-filled from city' : undefined}
               error={fieldErrors['location.state']}
             />
             <Input

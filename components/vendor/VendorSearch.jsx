@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Tag, ArrowUpDown, MapPin } from 'lucide-react';
+import { Search, Tag, ArrowUpDown, MapPin, Navigation } from 'lucide-react';
 import Button from '../ui/Button';
 import CitySelect from '../ui/CitySelect';
+import LocalitySelect from '../ui/LocalitySelect';
 import api from '../../lib/api';
 
 const SPECIALIZATIONS = [
@@ -39,11 +40,13 @@ export default function VendorSearch() {
   const searchParams = useSearchParams();
 
   const [city,           setCity]           = useState(searchParams.get('city')           || '');
+  const [cityPlaceId,    setCityPlaceId]    = useState(null);
+  const [locality,       setLocality]       = useState(searchParams.get('locality')        || '');
   const [specialization, setSpecialization] = useState(searchParams.get('specialization') || 'All');
   const [sort,           setSort]           = useState(searchParams.get('sort')           || 'rating');
   const [specOptions,    setSpecOptions]    = useState(SPECIALIZATIONS);
 
-  const hasFilters = !!(searchParams.get('city') || searchParams.get('specialization'));
+  const hasFilters = !!(searchParams.get('city') || searchParams.get('specialization') || searchParams.get('locality'));
 
   // Prefer admin-managed categories when available; silently keep the
   // hardcoded fallback list if the endpoint fails or returns nothing.
@@ -59,6 +62,7 @@ export default function VendorSearch() {
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (city.trim())                                params.set('city', city.trim());
+    if (locality.trim())                            params.set('locality', locality.trim());
     if (specialization && specialization !== 'All') params.set('specialization', specialization);
     if (sort && sort !== 'rating')                  params.set('sort', sort);
     router.push('/vendors' + (params.toString() ? '?' + params.toString() : ''));
@@ -66,6 +70,8 @@ export default function VendorSearch() {
 
   const handleClear = () => {
     setCity('');
+    setCityPlaceId(null);
+    setLocality('');
     setSpecialization('All');
     setSort('rating');
     router.push('/vendors');
@@ -92,9 +98,22 @@ export default function VendorSearch() {
           <label style={LABEL_STYLE}><MapPin size={12} />City</label>
           <CitySelect
             value={city}
-            onChange={(val) => setCity(val)}
+            onChange={(val) => { setCity(val); setCityPlaceId(null); }}
+            onSelectPlace={(place) => setCityPlaceId(place._id)}
             placeholder="Search city..."
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          />
+        </div>
+
+        {/* Locality — optional, appears once a city has been picked from
+            the dropdown (a typed-but-unselected city has no known placeId
+            to scope the locality search to). */}
+        <div style={{ flex: '1 1 160px' }}>
+          <label style={LABEL_STYLE}><Navigation size={12} />Locality <span style={{ fontWeight: 400, color: 'var(--color-text-hint)' }}>(optional)</span></label>
+          <LocalitySelect
+            placeId={cityPlaceId}
+            value={locality}
+            onChange={(val) => setLocality(val)}
           />
         </div>
 

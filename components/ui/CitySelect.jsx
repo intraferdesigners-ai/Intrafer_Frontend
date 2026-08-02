@@ -3,38 +3,19 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import api from '../../lib/api';
 
-const INDIAN_CITIES = [
-  'Agra', 'Ahmedabad', 'Ajmer', 'Aligarh', 'Allahabad',
-  'Amravati', 'Amritsar', 'Aurangabad',
-  'Bangalore', 'Bareilly', 'Bhopal', 'Bhubaneswar',
-  'Chandigarh', 'Chennai', 'Coimbatore',
-  'Dehradun', 'Delhi NCR',
-  'Faridabad', 'Ghaziabad', 'Goa', 'Gurugram',
-  'Guwahati', 'Gwalior',
-  'Howrah', 'Hubli', 'Hyderabad',
-  'Indore', 'Jabalpur', 'Jaipur', 'Jalandhar',
-  'Jammu', 'Jodhpur',
-  'Kanpur', 'Kochi', 'Kolkata', 'Kozhikode',
-  'Lucknow', 'Ludhiana',
-  'Madurai', 'Mangalore', 'Meerut', 'Mumbai', 'Mysore',
-  'Nagpur', 'Nashik', 'Navi Mumbai', 'Noida',
-  'Patna', 'Pune',
-  'Raipur', 'Rajkot', 'Ranchi',
-  'Srinagar', 'Surat',
-  'Thane', 'Thiruvananthapuram', 'Tiruchirappalli',
-  'Udaipur',
-  'Vadodara', 'Varanasi', 'Vijayawada', 'Visakhapatnam',
-  'Other',
-];
+const DEBOUNCE_MS = 300;
 
-export default function CitySelect({ value, onChange, placeholder, onKeyDown, compact = false }) {
+export default function CitySelect({ value, onChange, onSelectPlace, placeholder, onKeyDown, compact = false }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [inputVal, setInputVal] = useState(value || '');
-  const [cities, setCities] = useState(INDIAN_CITIES);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState(null);
   const wrapRef = useRef(null);
   const dropdownRef = useRef(null);
+  const debounceRef = useRef(null);
+  const requestIdRef = useRef(0);
 
   // Close on outside click — check both the input wrapper and the portaled
   // dropdown, since the dropdown no longer lives inside wrapRef in the DOM.
@@ -85,32 +66,39 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown, co
     };
   }, [open]);
 
-  // Prefer admin-managed cities when available; silently keep the hardcoded
-  // fallback list if the endpoint fails or returns nothing.
+  // Server-side search-as-you-type against the full ~740-place dataset
+  // (debounced, with stale-response protection since requests can resolve
+  // out of order).
   useEffect(() => {
-    api.get('/public/cities')
-      .then(({ data }) => {
-        const names = (data.data?.cities || []).map((c) => c.name);
-        if (names.length > 0) setCities(names);
-      })
-      .catch(() => {});
-  }, []);
+    if (!open) return;
+
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const thisRequestId = ++requestIdRef.current;
+      setLoading(true);
+      api.get('/public/places', { params: { q: search, limit: 8 } })
+        .then(({ data }) => {
+          if (thisRequestId !== requestIdRef.current) return; // stale
+          setResults(data.data?.places || []);
+        })
+        .catch(() => {
+          if (thisRequestId === requestIdRef.current) setResults([]);
+        })
+        .finally(() => {
+          if (thisRequestId === requestIdRef.current) setLoading(false);
+        });
+    }, DEBOUNCE_MS);
+
+    return () => clearTimeout(debounceRef.current);
+  }, [search, open]);
 
   // Sync with parent value
   useEffect(() => { setInputVal(value || ''); }, [value]);
 
-  const filtered = cities.filter(c =>
-    c.toLowerCase().startsWith(search.toLowerCase())
-  ).concat(
-    cities.filter(c =>
-      !c.toLowerCase().startsWith(search.toLowerCase()) &&
-      c.toLowerCase().includes(search.toLowerCase())
-    )
-  ).slice(0, 8);
-
-  const handleSelect = (city) => {
-    setInputVal(city);
-    onChange(city);
+  const handleSelect = (place) => {
+    setInputVal(place.name);
+    onChange(place.name);
+    onSelectPlace?.(place);
     setSearch('');
     setOpen(false);
   };
@@ -185,7 +173,7 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown, co
 
       {/* Dropdown — portaled to document.body so it can't be clipped by an
           ancestor's overflow:hidden (e.g. the rounded search-widget pill) */}
-      {open && filtered.length > 0 && dropdownStyle && createPortal(
+      {open && dropdownStyle && (results.length > 0 || loading) && createPortal(
         <div ref={dropdownRef} style={{
           ...dropdownStyle,
           background: 'var(--surface)',
@@ -195,17 +183,22 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown, co
           zIndex: 1000,
           overflowY: 'auto',
         }}>
-          {filtered.map(city => (
+          {loading && results.length === 0 && (
+            <div style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-hint)' }}>
+              Searching...
+            </div>
+          )}
+          {results.map(place => (
             <div
-              key={city}
-              onMouseDown={() => handleSelect(city)}
+              key={place._id}
+              onMouseDown={() => handleSelect(place)}
               style={{
                 padding: '10px 16px',
                 cursor: 'pointer',
                 fontSize: '14px',
-                color: city === inputVal ? 'var(--primary)' : 'var(--text)',
-                fontWeight: city === inputVal ? 600 : 400,
-                background: city === inputVal
+                color: place.name === inputVal ? 'var(--primary)' : 'var(--text)',
+                fontWeight: place.name === inputVal ? 600 : 400,
+                background: place.name === inputVal
                   ? 'var(--primary-bg)' : 'transparent',
                 borderBottom: '1px solid var(--border)',
                 display: 'flex', alignItems: 'center',
@@ -213,21 +206,24 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown, co
                 transition: 'background 100ms',
               }}
               onMouseEnter={e => {
-                if (city !== inputVal)
+                if (place.name !== inputVal)
                   e.currentTarget.style.background = 'var(--bg-parchment)';
               }}
               onMouseLeave={e => {
-                if (city !== inputVal)
+                if (place.name !== inputVal)
                   e.currentTarget.style.background = 'transparent';
               }}
             >
-              {city === inputVal && (
+              {place.name === inputVal && (
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                   stroke="var(--primary)" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               )}
-              {city}
+              <span style={{ flex: 1 }}>{place.name}</span>
+              {place.state && (
+                <span style={{ fontSize: '12px', color: 'var(--text-hint)' }}>{place.state}</span>
+              )}
             </div>
           ))}
         </div>,
