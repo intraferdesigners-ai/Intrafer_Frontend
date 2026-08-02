@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../lib/api';
 
 const INDIAN_CITIES = [
@@ -31,17 +32,58 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown, co
   const [search, setSearch] = useState('');
   const [inputVal, setInputVal] = useState(value || '');
   const [cities, setCities] = useState(INDIAN_CITIES);
+  const [dropdownStyle, setDropdownStyle] = useState(null);
   const wrapRef = useRef(null);
+  const dropdownRef = useRef(null);
 
-  // Close on outside click
+  // Close on outside click — check both the input wrapper and the portaled
+  // dropdown, since the dropdown no longer lives inside wrapRef in the DOM.
   useEffect(() => {
     const handler = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target))
-        setOpen(false);
+      if (
+        wrapRef.current && !wrapRef.current.contains(e.target) &&
+        (!dropdownRef.current || !dropdownRef.current.contains(e.target))
+      ) setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // Position the dropdown (rendered in a portal so it can't be clipped by an
+  // ancestor's overflow:hidden) against the input's live viewport position,
+  // flipping upward when there isn't room below.
+  useEffect(() => {
+    if (!open) return;
+
+    const updatePosition = () => {
+      if (!wrapRef.current) return;
+      const rect = wrapRef.current.getBoundingClientRect();
+      const maxListHeight = 220;
+      const gap = 4;
+      const margin = 8;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const openUp = spaceBelow < maxListHeight + gap && spaceAbove > spaceBelow;
+
+      setDropdownStyle({
+        position: 'fixed',
+        left: rect.left,
+        width: rect.width,
+        maxHeight: Math.max(0, Math.min(maxListHeight, (openUp ? spaceAbove : spaceBelow) - gap - margin)),
+        ...(openUp
+          ? { bottom: window.innerHeight - rect.top + gap }
+          : { top: rect.bottom + gap }),
+      });
+    };
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [open]);
 
   // Prefer admin-managed cities when available; silently keep the hardcoded
   // fallback list if the endpoint fails or returns nothing.
@@ -141,17 +183,16 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown, co
         </div>
       </div>
 
-      {/* Dropdown */}
-      {open && filtered.length > 0 && (
-        <div style={{
-          position: 'absolute', top: 'calc(100% + 4px)',
-          left: 0, right: 0,
+      {/* Dropdown — portaled to document.body so it can't be clipped by an
+          ancestor's overflow:hidden (e.g. the rounded search-widget pill) */}
+      {open && filtered.length > 0 && dropdownStyle && createPortal(
+        <div ref={dropdownRef} style={{
+          ...dropdownStyle,
           background: 'var(--surface)',
           border: '1px solid var(--border)',
           borderRadius: 'var(--r-md)',
           boxShadow: 'var(--shadow-lg)',
           zIndex: 1000,
-          maxHeight: '220px',
           overflowY: 'auto',
         }}>
           {filtered.map(city => (
@@ -189,7 +230,8 @@ export default function CitySelect({ value, onChange, placeholder, onKeyDown, co
               {city}
             </div>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
