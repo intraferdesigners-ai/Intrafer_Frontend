@@ -59,15 +59,20 @@ const CAPS_LABEL = {
 };
 
 function getCompletenessPct(vendor) {
+  // isPhoneVerified dropped from this list — there's no real phone
+  // verification mechanism in the app today (the only OTP flow that ever
+  // sets it is email-only and sets isEmailVerified alongside it as a side
+  // effect), so it was almost never true and silently capped every real
+  // vendor's score near 80%. Remaining 4 criteria reweighted to 25% each
+  // so a genuinely complete profile can still read as 100%.
   const criteria = [
     !!vendor.profilePhoto,
     (vendor.portfolioImages?.length || 0) > 0,
     (vendor.description?.length || 0) >= 100,
     (vendor.specializations?.length || 0) > 0,
-    vendor.userId?.isPhoneVerified === true,
   ];
   const metCount = criteria.filter(Boolean).length;
-  return metCount * 20;
+  return metCount * 25;
 }
 
 function AdminVendorsPageContent() {

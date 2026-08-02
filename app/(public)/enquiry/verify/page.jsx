@@ -145,7 +145,7 @@ function VerifyContent() {
           Verify your identity
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--text-hint)', margin: '0 0 32px', lineHeight: 1.6 }}>
-          Enter the 6-digit code sent to your email and phone.
+          Enter the 6-digit code sent to your email.
         </p>
 
         {/* OTP inputs */}
