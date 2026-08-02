@@ -37,7 +37,7 @@ export default function HowItWorksCard({ step, index }) {
         y: shouldReduceMotion ? 0 : -4,
         transition: { duration: shouldReduceMotion ? 0 : 0.18, ease: 'easeOut' },
       }}
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: true, amount: 0, margin: '0px 0px 120px 0px' }}
     >
       {/* Photo strip — outer wrapper lets the numeral chip overlap below it */}
       <div style={{ position: 'relative', flexShrink: 0 }}>

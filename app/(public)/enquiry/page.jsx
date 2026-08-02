@@ -309,7 +309,7 @@ function EnquiryForm() {
                 {/* Personal details */}
                 <div>
                   <p className="caps-label-primary" style={{ marginBottom: '12px' }}>YOUR DETAILS</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px' }}>
+                  <div className="grid-responsive-2" style={{ gap: '12px' }}>
                     <Input label="Full name" placeholder="Your name" icon={User} value={name} onChange={(e) => setName(e.target.value)} />
                     <Input label="Phone" placeholder="10-digit mobile" icon={Phone} value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="numeric" maxLength={10} />
                   </div>
@@ -337,7 +337,7 @@ function EnquiryForm() {
                     </select>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px', marginBottom: '12px' }}>
+                  <div className="grid-responsive-2" style={{ gap: '12px', marginBottom: '12px' }}>
                     <div>
                       <label style={optionalLabelStyle}>
                         <span>Budget range</span>

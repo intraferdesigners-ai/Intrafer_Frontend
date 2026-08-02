@@ -1215,6 +1215,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   /* Vendor profile */
   .vendor-profile-layout { grid-template-columns: 1fr; gap: 24px; }
   .vendor-profile-sticky { position: static !important; }
+  /* Reserves clearance under the fixed WhatsAppButton (bottom-right, ~72px
+     wide incl. its pulse ring) so long About descriptions don't wrap their
+     last line or two underneath it — only needed on mobile, where this
+     section runs edge-to-edge instead of sitting in a wide desktop column. */
+  .vendor-about-block { padding-right: 90px; }
 
   /* Lead detail */
   .lead-detail-layout { grid-template-columns: 1fr; gap: 20px; }

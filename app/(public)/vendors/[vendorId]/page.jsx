@@ -292,7 +292,7 @@ export default async function VendorProfilePage({ params }) {
 
           {/* About */}
           {vendor.description && (
-            <div style={{ paddingLeft: '24px', marginBottom: '28px' }}>
+            <div className="vendor-about-block" style={{ paddingLeft: '24px', marginBottom: '28px' }}>
               <span style={LABEL}>ABOUT</span>
               <p style={{ fontSize: '15px', color: 'var(--text-sub)', lineHeight: 1.75, margin: 0 }}>
                 {vendor.description}

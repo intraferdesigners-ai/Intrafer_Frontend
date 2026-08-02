@@ -21,7 +21,11 @@ export default function Reveal({ children, delay = 0, className, style, id }) {
       style={style}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
+      // amount:0 + a bottom margin (not the old amount:0.2) — sections here can be
+      // taller than a mobile viewport, so requiring 20% visible before firing meant
+      // most of a tall section was already scrolled into view, still at opacity 0,
+      // during a normal-speed scroll. That read as a blank gap, not a fade-in.
+      viewport={{ once: true, amount: 0, margin: '0px 0px 120px 0px' }}
       transition={{ duration: shouldReduceMotion ? 0 : 0.45, ease: 'easeOut', delay: shouldReduceMotion ? 0 : delay }}
     >
       {children}

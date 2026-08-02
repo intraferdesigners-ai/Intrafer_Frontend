@@ -24,7 +24,7 @@ export default function RevealItem({ children, index = 0, className, style, hove
         opacity: 1, y: 0,
         transition: { duration: shouldReduceMotion ? 0 : 0.45, ease: 'easeOut', delay: shouldReduceMotion ? 0 : index * 0.08 },
       }}
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: true, amount: 0, margin: '0px 0px 120px 0px' }}
       {...hoverProps}
     >
       {children}
