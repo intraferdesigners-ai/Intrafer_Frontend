@@ -686,6 +686,11 @@ a { color: inherit; text-decoration: none; }
   .search-btn-text { display: none; }
 }
 
+/* Hero search — inverse of the above: hidden by default (desktop shows an
+   icon-only circle), revealed only inside the mobile .search-widget-grid
+   treatment below where the button goes full-width. */
+.search-btn-label { display: none; }
+
 /* Masonry grid for gallery */
 .masonry-grid { column-count: 3; column-gap: 16px; }
 @media (max-width: 768px) { .masonry-grid { column-count: 2 !important; column-gap: 12px !important; } }
@@ -1022,6 +1027,8 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  transition: transform 280ms cubic-bezier(.4,0,.2,1);
+  z-index: 60;
 }
 .dashboard-content {
   flex: 1;
@@ -1029,6 +1036,16 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   padding: 32px;
   overflow: hidden;
 }
+.dashboard-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 59;
+  opacity: 0;
+  transition: opacity 200ms;
+}
+.dashboard-sidebar-overlay.open { opacity: 1; }
 
 /* Bottom tab bar (mobile dashboard nav) */
 .bottom-tab-bar {
@@ -1168,11 +1185,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .grid-cards        { grid-template-columns: 1fr; gap: 12px; }
 
   /* Dashboard: slide-in sidebar drawer.
-     !important on position/transform/display: a later, unconditional
-     .dashboard-sidebar / .dashboard-sidebar-overlay redeclaration further
-     down this file (same specificity, later source order) would otherwise
-     win the cascade at every viewport and silently undo this mobile
-     off-canvas behavior. */
+     !important on position/transform/display guards against the base
+     (non-media-query) .dashboard-sidebar rule above — same selector
+     specificity, so without !important a future edit to source order
+     could silently undo this mobile off-canvas behavior. */
   .dashboard-sidebar {
     position: fixed !important;
     top: 0; left: 0; bottom: 0;
@@ -1259,45 +1275,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* Safe area utilities */
 .safe-bottom { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 .safe-top    { padding-top:    max(16px, env(safe-area-inset-top)); }
-
-/* ── DASHBOARD LAYOUT ──
-   Duplicates .dashboard-layout/.dashboard-sidebar/.dashboard-content
-   declared above (~line 790) — this later block wins the cascade for any
-   property it redeclares. The mobile off-canvas behavior for
-   .dashboard-sidebar / .dashboard-sidebar-overlay lives in the
-   @media (max-width: 768px) block above and uses !important specifically
-   to survive being overridden by this block. Don't remove those
-   !important flags without also removing this duplication. */
-.dashboard-layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg);
-}
-.dashboard-sidebar {
-  width: 240px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  transition: transform 280ms cubic-bezier(.4,0,.2,1);
-  z-index: 60;
-}
-.dashboard-content {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-}
-.dashboard-sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.5);
-  z-index: 59;
-  opacity: 0;
-  transition: opacity 200ms;
-}
-.dashboard-sidebar-overlay.open { opacity: 1; }
 
 /* ── MOBILE TAB BAR ── */
 .mobile-tab-bar {
@@ -1495,10 +1472,21 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
   }
   .search-widget-grid > div { border-right: none !important; border-bottom: 1px solid var(--border); }
   .search-widget-grid > div:nth-child(2n) { border-bottom: 1px solid var(--border); }
+  /* .search-btn is the <button> itself (not a wrapper around one) — sizing
+     it directly, not `.search-btn button` (which matched nothing, since
+     there's no nested button, silently leaving the 44px circle in place
+     and making it look like a disconnected element floating under the
+     fields instead of part of one cohesive search bar). !important is
+     needed to beat the inline width/height/border-radius HeroSearch.jsx
+     sets for the desktop icon-only circle. */
   .search-widget-grid > .search-btn {
     grid-column: 1 / -1;
+    width: 100% !important;
+    height: 44px !important;
+    border-radius: var(--r-md) !important;
+    gap: 8px;
   }
-  .search-widget-grid > .search-btn button { width: 100%; }
+  .search-widget-grid .search-btn-label { display: inline; }
 }
 
 /* ── DASHBOARD RESPONSIVE OVERHAUL ── */

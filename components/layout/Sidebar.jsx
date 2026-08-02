@@ -118,14 +118,20 @@ export default function Sidebar({ onClose }) {
     router.push(loginHref);
   };
 
+  // Sizing/position/sticky/scroll all live on the parent .dashboard-sidebar
+  // (see DashboardLayout.jsx + globals.css) — this just fills it and handles
+  // its own internal visual styling and vertical layout, rather than
+  // redeclaring width/height/position a second time on a second, redundant
+  // <aside>.
   return (
-    <aside style={{
-      width: '240px', minHeight: '100vh', flexShrink: 0,
+    <div style={{
+      height: '100%', width: '100%',
       background: 'var(--surface)',
       borderRight: '1px solid var(--border)',
       display: 'flex', flexDirection: 'column',
-      padding: '20px 0', position: 'sticky', top: 0,
+      padding: '20px 0',
       boxShadow: 'var(--shadow-sm)',
+      boxSizing: 'border-box',
     }}>
       {/* Logo + mobile close */}
       <div style={{
@@ -273,6 +279,6 @@ export default function Sidebar({ onClose }) {
           Log out
         </button>
       </div>
-    </aside>
+    </div>
   );
 }

@@ -80,6 +80,11 @@ export default function HeroSearch() {
         onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
       >
+        {/* Hidden on desktop (icon-only circle); shown on mobile once the
+            button goes full-width below the city/style fields — see the
+            .search-widget-grid media query in globals.css — so it reads as
+            a clear "Search" bar action instead of a stretched bare icon. */}
+        <span className="search-btn-label">Search designers</span>
         <ArrowRight size={18} />
       </button>
     </div>
