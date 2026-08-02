@@ -316,6 +316,15 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
           flex: 1, position: 'relative',
           padding: 'clamp(44px, 6vh, 56px) 28px clamp(16px, 3vh, 28px)',
         }}>
+          <button onClick={onDismiss} style={{
+            position: 'absolute', top: '16px', right: '16px',
+            width: '32px', height: '32px', borderRadius: '50%',
+            background: 'var(--bg-parchment)', border: '1px solid var(--border)',
+            color: 'var(--text-hint)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '16px',
+          }}>✕</button>
+
           {formFields}
         </div>
       </div>
@@ -341,6 +350,15 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
           width: '80px', height: '80px', borderRadius: '50%',
           background: 'rgba(96,165,250,.1)',
         }} />
+
+        <button onClick={onDismiss} style={{
+          position: 'absolute', top: '16px', right: '16px',
+          width: '32px', height: '32px', borderRadius: '50%',
+          background: 'rgba(255,255,255,.15)', border: 'none',
+          color: 'rgba(255,255,255,.8)', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '16px',
+        }}>✕</button>
 
         <div style={{
           width: '52px', height: '52px', borderRadius: '16px',
@@ -485,7 +503,7 @@ function FormFields({ form, setForm, errors, loading, onSubmit, onDismiss }) {
         ].map(({ label, onClick }) => (
           <button key={label} onClick={onClick} style={{
             background: 'none', border: 'none',
-            fontSize: '12px', color: 'var(--text-hint)',
+            fontSize: '14px', fontWeight: 600, color: 'var(--text-mid)',
             cursor: 'pointer', padding: '4px 8px',
             borderRadius: '6px',
             textDecoration: 'underline',
