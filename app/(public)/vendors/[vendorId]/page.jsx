@@ -8,7 +8,6 @@ import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
 import { getInitials, formatDate } from '../../../../lib/utils';
 import VendorProfileTracker from '../../../../components/vendor/VendorProfileTracker';
 import VendorMobileCTA from '../../../../components/vendor/VendorMobileCTA';
-import ConsultationModal from '../../../../components/vendor/ConsultationModal';
 import Reveal from '../../../../components/ui/Reveal';
 
 const PRICE_UNIT_LABEL = {
@@ -444,8 +443,6 @@ export default async function VendorProfilePage({ params }) {
                 Submit enquiry →
               </Button>
             </Link>
-
-            <ConsultationModal vendor={vendor} />
 
             <a
               href={`https://wa.me/919876500000?text=${encodeURIComponent(

@@ -5,7 +5,7 @@ import api from '../../lib/api';
 import useNotificationStore from '../../store/notificationStore';
 import useAuthStore from '../../store/authStore';
 import { formatRelativeTime } from '../../lib/utils';
-import { Bell, X, FileText, CheckCircle, XCircle, Crown, AlertCircle, Calendar, MessageCircle } from 'lucide-react';
+import { Bell, X, FileText, CheckCircle, XCircle, Crown, AlertCircle, MessageCircle } from 'lucide-react';
 import Spinner from '../ui/Spinner';
 import HoverLift from '../ui/HoverLift';
 
@@ -19,7 +19,6 @@ const NOTIFICATION_CONFIG = {
   project_approved:      { icon: CheckCircle,   color: 'var(--success)', bg: 'var(--success-bg)' },
   project_rejected:      { icon: XCircle,       color: 'var(--danger)',  bg: 'var(--danger-bg)'  },
   enquiry_created:       { icon: FileText,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
-  appointment_confirmed: { icon: Calendar,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
   new_message:           { icon: MessageCircle, color: 'var(--primary)', bg: 'var(--primary-bg)' },
 };
 
@@ -59,11 +58,6 @@ export default function NotificationPanel({ isOpen, onClose, anchorRect }) {
       project_approved:      '/vendor/dashboard/projects',
       project_rejected:      '/vendor/dashboard/projects',
       enquiry_created:       `/user/dashboard/enquiries/${leadId}`,
-      // appointment_confirmed is only ever dispatched to the homeowner (see
-      // notification.service.js's APPOINTMENT_CONFIRMED handler), so the path
-      // is fixed — unlike new_message, which goes to whichever party didn't
-      // send it, so it has to follow the current viewer's role.
-      appointment_confirmed: `/user/dashboard/enquiries/${leadId}`,
       new_message:           role === 'vendor' ? `/vendor/dashboard/leads/${leadId}` : `/user/dashboard/enquiries/${leadId}`,
     };
     const href = deepLinks[notification.type];

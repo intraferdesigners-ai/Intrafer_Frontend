@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Building2, Tag, Camera, Wrench, Plus, Trash2, CalendarClock, MapPin, MapPinned, Pencil, X } from 'lucide-react';
+import { Building2, Tag, Camera, Wrench, Plus, Trash2, MapPin, MapPinned, Pencil, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
@@ -45,12 +45,8 @@ export default function VendorProfilePage() {
     services: [],
     serviceLocations: [],
   });
-  const [availability, setAvailability] = useState({
-    startTime: '10:00', endTime: '18:00', slotDurationMinutes: 60,
-  });
   const [loading,        setLoading]        = useState(true);
   const [saving,         setSaving]         = useState(false);
-  const [savingAvailability, setSavingAvailability] = useState(false);
   const [uploadingPhoto, setUploadingPhoto]  = useState(false);
   const [fieldErrors,    setFieldErrors]     = useState({});
   const [specOptions,    setSpecOptions]     = useState(SPECIALIZATION_OPTIONS);
@@ -106,13 +102,6 @@ export default function VendorProfilePage() {
         // than the read-only view first.
         const forceEdit = new URLSearchParams(window.location.search).get('edit') === 'true';
         setEditMode(forceEdit || !v.businessName);
-        if (v.availability) {
-          setAvailability({
-            startTime: v.availability.startTime || '10:00',
-            endTime: v.availability.endTime || '18:00',
-            slotDurationMinutes: v.availability.slotDurationMinutes || 60,
-          });
-        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -203,17 +192,6 @@ export default function VendorProfilePage() {
     if (savedFormRef.current) setForm(savedFormRef.current);
     setFieldErrors({});
     setEditMode(false);
-  };
-
-  const handleSaveAvailability = async () => {
-    setSavingAvailability(true);
-    try {
-      await api.put('/vendor/availability', availability);
-      toast.success('Availability updated.');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save availability.');
-    }
-    setSavingAvailability(false);
   };
 
   const toggleSpec = (spec) => {
@@ -336,7 +314,7 @@ export default function VendorProfilePage() {
       </div>
 
       {!editMode && (
-        <ProfileSummary form={form} availability={availability} />
+        <ProfileSummary form={form} />
       )}
 
       {editMode && (
@@ -635,58 +613,6 @@ export default function VendorProfilePage() {
 
         <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 0 }} />
 
-        {/* Availability */}
-        <div>
-          <span style={SECTION_LABEL}>
-            <CalendarClock size={10} style={{ display: 'inline', marginRight: 4 }} />
-            Availability
-          </span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div className="form-row-3" style={{ gap: 12 }}>
-              <div>
-                <label style={FIELD_LABEL}>Start time</label>
-                <input
-                  type="time"
-                  className="form-input-styled"
-                  value={availability.startTime}
-                  onChange={(e) => setAvailability((p) => ({ ...p, startTime: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label style={FIELD_LABEL}>End time</label>
-                <input
-                  type="time"
-                  className="form-input-styled"
-                  value={availability.endTime}
-                  onChange={(e) => setAvailability((p) => ({ ...p, endTime: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label style={FIELD_LABEL}>Slot duration</label>
-                <select
-                  className="form-input-styled"
-                  value={availability.slotDurationMinutes}
-                  onChange={(e) => setAvailability((p) => ({ ...p, slotDurationMinutes: Number(e.target.value) }))}
-                >
-                  <option value={30}>30 min</option>
-                  <option value={60}>60 min</option>
-                  <option value={90}>90 min</option>
-                </select>
-              </div>
-            </div>
-
-            <Button
-              variant="secondary" size="sm" type="button"
-              loading={savingAvailability} onClick={handleSaveAvailability}
-              style={{ alignSelf: 'flex-start' }}
-            >
-              Save availability
-            </Button>
-          </div>
-        </div>
-
-        <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 0 }} />
-
         {/* Save */}
         <Button variant="primary" size="lg" loading={saving} onClick={handleSave} style={{ width: '100%' }}>
           Save changes
@@ -697,20 +623,12 @@ export default function VendorProfilePage() {
   );
 }
 
-function formatTime12h(hhmm) {
-  if (!hhmm) return '';
-  const [h, m] = hhmm.split(':').map(Number);
-  const period = h >= 12 ? 'PM' : 'AM';
-  const hour12 = h % 12 || 12;
-  return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
-}
-
 const PRICE_UNIT_LABEL = { flat: 'flat rate', per_sqft: '/ sq. ft.', per_room: '/ room' };
 
 // Read-only counterpart to the form above — shown by default once a profile
 // exists, so the page reads as a finished business listing rather than a
 // permanently-open form. "Edit" (in the header) switches back to the form.
-function ProfileSummary({ form, availability }) {
+function ProfileSummary({ form }) {
   return (
     <div style={{
       background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -821,16 +739,6 @@ function ProfileSummary({ form, availability }) {
           </div>
         </div>
       )}
-
-      <div>
-        <span style={SECTION_LABEL}>
-          <CalendarClock size={10} style={{ display: 'inline', marginRight: 4 }} />
-          Availability
-        </span>
-        <p style={{ fontSize: 13, color: 'var(--color-text-sub)', margin: 0 }}>
-          {formatTime12h(availability.startTime)} – {formatTime12h(availability.endTime)} · {availability.slotDurationMinutes} min slots
-        </p>
-      </div>
     </div>
   );
 }

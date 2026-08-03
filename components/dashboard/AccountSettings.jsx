@@ -21,12 +21,11 @@ const CARD = {
 const EVENT_LABELS = {
   leadAssigned:          'New lead notifications',
   leadAccepted:          'Lead accepted notifications',
-  appointmentConfirmed:  'Appointment confirmed notifications',
   paymentSuccess:        'Payment confirmation notifications',
 };
 
 const VENDOR_EVENT_KEYS = ['leadAssigned', 'paymentSuccess'];
-const USER_EVENT_KEYS   = ['leadAccepted', 'appointmentConfirmed'];
+const USER_EVENT_KEYS   = ['leadAccepted'];
 
 function ToggleSwitch({ on, onClick, disabled }) {
   return (
@@ -191,7 +190,7 @@ export default function AccountSettings() {
               Email notifications
             </div>
             <div style={{ fontSize: 12, color: 'var(--color-text-hint)', marginTop: 2 }}>
-              Receive email updates about your leads, appointments, and account activity.
+              Receive email updates about your leads and account activity.
             </div>
           </div>
           <ToggleSwitch on={emailNotifications} onClick={handleToggleEmailNotifications} disabled={togglingEmail} />

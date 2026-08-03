@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
-  User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Heart, Calendar, Newspaper, Tag, LifeBuoy, Mail, Shield, Star,
+  User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Heart, Newspaper, Tag, LifeBuoy, Mail, Shield, Star,
   MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck, Scale, Kanban,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
@@ -40,7 +40,6 @@ const NAV = {
   user: [
     { label: 'Dashboard',       href: '/user/dashboard',                icon: LayoutDashboard, group: 'OVERVIEW' },
     { label: 'My enquiries',    href: '/user/dashboard/enquiries',      icon: FileText,        group: 'ACTIVITY' },
-    { label: 'Appointments',    href: '/user/dashboard/appointments',   icon: Calendar,        group: 'ACTIVITY' },
     { label: 'Saved Designers', href: '/user/dashboard/saved',          icon: Heart,           group: 'ACTIVITY' },
     { label: 'Compare',         href: '/compare',                       icon: Scale,           group: 'ACTIVITY' },
     { label: 'Profile',         href: '/user/dashboard/profile',        icon: User,            group: 'ACCOUNT'  },
@@ -50,7 +49,6 @@ const NAV = {
     { label: 'Dashboard',    href: '/vendor/dashboard',              icon: LayoutDashboard, group: 'OVERVIEW' },
     { label: 'Leads',        href: '/vendor/dashboard/leads',        icon: FileText,        group: 'BUSINESS' },
     { label: 'Pipeline',     href: '/vendor/dashboard/pipeline',     icon: Kanban,          group: 'BUSINESS' },
-    { label: 'Appointments', href: '/vendor/dashboard/appointments', icon: Calendar,        group: 'BUSINESS' },
     { label: 'Portfolio',    href: '/vendor/dashboard/projects',     icon: Building2,       group: 'BUSINESS' },
     { label: 'Reviews',      href: '/vendor/dashboard/reviews',      icon: Star,            group: 'GROWTH'   },
     { label: 'Subscription', href: '/vendor/dashboard/subscription', icon: Crown,           group: 'GROWTH'   },

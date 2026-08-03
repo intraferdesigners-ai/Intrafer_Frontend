@@ -6,8 +6,8 @@ import RevealItem from '../ui/RevealItem';
 
 // Client island so the (public)/vendors Server Component page can keep doing
 // its async data fetch — only this grid needs 'use client' for the
-// stagger-reveal motion, same pattern as VendorSearch/ConsultationModal on
-// this same page. VendorCard's own CSS hover-lift (.vendor-card-hover) is
+// stagger-reveal motion, same pattern as VendorSearch on this same page.
+// VendorCard's own CSS hover-lift (.vendor-card-hover) is
 // left untouched — no hoverLift here.
 //
 // resultsKey changes whenever the server refetches for new filters/sort/page

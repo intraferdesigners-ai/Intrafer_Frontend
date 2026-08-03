@@ -14,8 +14,7 @@ function VerifyContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const userId       = searchParams.get('userId');
-  const isConsultation = searchParams.get('type') === 'consultation';
-  const draftKey     = isConsultation ? 'intrafer_consultation_draft' : 'intrafer_enquiry_draft';
+  const draftKey     = 'intrafer_enquiry_draft';
   const { setAuth }  = useAuthStore();
 
   const [otp,           setOtp]           = useState(['', '', '', '', '', '']);
@@ -95,7 +94,6 @@ function VerifyContent() {
         budget:       draft.budget,
         city:         draft.city,
         requirements: draft.requirements,
-        ...(isConsultation ? { isConsultation: true, preferredDate: draft.preferredDate } : {}),
       });
 
       const lead = leadRes.data?.data?.lead;
