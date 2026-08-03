@@ -26,6 +26,21 @@ const ROLE_LABELS = { user: 'homeowner', vendor: 'vendor', admin: 'admin' };
 const roleLabel = (r) => ROLE_LABELS[r] || r;
 const articleFor = (label) => (/^[aeiou]/i.test(label) ? 'an' : 'a');
 
+// Same {user, vendor, admin} -> path mapping middleware.js and Navbar.jsx
+// keep, duplicated rather than imported since middleware.js runs in the Edge
+// runtime and can't share a module with client-only code anyway.
+const ROLE_DASHBOARDS = {
+  user:   '/user/dashboard',
+  vendor: '/vendor/dashboard',
+  admin:  '/admin/dashboard',
+};
+
+// A `redirect` query param is only safe to send the browser to if it's a
+// same-site relative path — anything else (a bare "//evil.com" or an
+// absolute "https://evil.com" URL, both of which the browser still honors
+// as a redirect target) would turn this into an open redirect.
+const isSafeRedirect = (path) => !!path && path.startsWith('/') && !path.startsWith('//');
+
 // Only vendor/admin get tailored copy — 'user' and no-param both fall
 // through to the original "Welcome back" default, unchanged.
 const ROLE_COPY = {
@@ -40,6 +55,7 @@ function LoginContent() {
 
   const roleParam = searchParams.get('role');
   const hasRoleParam = searchParams.has('role');
+  const redirectParam = searchParams.get('redirect');
 
   // Preserves vendor context across the login -> register hop, so a visitor
   // who arrived via a vendor-specific entry point (e.g. VendorNavbar's
@@ -116,9 +132,8 @@ function LoginContent() {
     setAuthTokens(accessToken, user.role);
     setAuth(user, accessToken);
     toast.success('Welcome back, ' + user.name + '!');
-    if (user.role === 'admin')       router.push('/admin/dashboard');
-    else if (user.role === 'vendor') router.push('/vendor/dashboard');
-    else                             router.push('/user/dashboard');
+    const dest = isSafeRedirect(redirectParam) ? redirectParam : (ROLE_DASHBOARDS[user.role] || '/');
+    router.push(dest);
   };
 
   const handleSubmit = async (e) => {
