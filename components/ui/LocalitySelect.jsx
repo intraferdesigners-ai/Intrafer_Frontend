@@ -92,8 +92,22 @@ export default function LocalitySelect({ placeId, value, onChange, placeholder, 
   useEffect(() => { setInputVal(value || ''); }, [value]);
 
   // Selecting a new city invalidates whatever locality was picked for the
-  // previous one.
-  useEffect(() => { setInputVal(''); onChange?.(''); }, [placeId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // previous one — but only a genuine *switch* (a real placeId giving way to
+  // a different one, or to none). A placeId going from null to a real value
+  // is city being established for the *first* time, not a switch: while
+  // placeId was null this input was disabled, so nothing could have set
+  // `value` interactively — the only way it's non-empty at that point is a
+  // pre-filled value from the parent (e.g. hydrating from a ?locality= URL
+  // param once the city's placeId resolves), which must not be wiped out
+  // here right as it becomes usable.
+  const prevPlaceIdRef = useRef(placeId);
+  useEffect(() => {
+    if (prevPlaceIdRef.current) {
+      setInputVal('');
+      onChange?.('');
+    }
+    prevPlaceIdRef.current = placeId;
+  }, [placeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelect = (locality) => {
     setInputVal(locality.name);

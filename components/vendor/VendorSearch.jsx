@@ -59,6 +59,35 @@ export default function VendorSearch() {
       .catch(() => {});
   }, []);
 
+  // A `city` query param on initial load is just a name, not a placeId —
+  // CitySelect only ever learns a placeId via its onSelectPlace callback,
+  // which fires from user interaction, never from a URL. Without this,
+  // loading /vendors?city=X&locality=Y shows the city name but leaves
+  // LocalitySelect permanently disabled (no placeId to scope its search to)
+  // even though the locality filter itself is already applied server-side.
+  // Resolved once on mount only — not kept in sync with `city` afterwards,
+  // since that would re-resolve on every keystroke as the user types.
+  useEffect(() => {
+    const initialCity = searchParams.get('city');
+    if (!initialCity) return;
+    let cancelled = false;
+    api.get('/public/places', { params: { q: initialCity, limit: 8 } })
+      .then(({ data }) => {
+        if (cancelled) return;
+        // Exclude locality-fallback pseudo-places (isLocality: true) — their
+        // _id refers to a Locality document, not a Place, so using one here
+        // would 404 against /public/places/:placeId/localities.
+        const places = (data.data?.places || []).filter((p) => !p.isLocality);
+        const match = places.find((p) => p.name.toLowerCase() === initialCity.toLowerCase()) || places[0];
+        if (match) setCityPlaceId(match._id);
+        // No match (bad/stale URL) — leave cityPlaceId null; city/locality
+        // text stays as-is and LocalitySelect simply stays disabled.
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (city.trim())                                params.set('city', city.trim());
