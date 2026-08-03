@@ -65,6 +65,12 @@ function LoginContent() {
   const [error,    setError]    = useState('');
   const [roleMismatch, setRoleMismatch] = useState(null); // { actual } | null
 
+  // Set when login() rejects with 403 — a registered account that never
+  // completed the OTP step (see backend register()/login()). Offers a way
+  // back into that same verification step rather than a dead end.
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendingVerify,   setResendingVerify]   = useState(false);
+
   // Email-code sign-in state
   const [otpUserId,     setOtpUserId]     = useState('');
   const [otpSent,       setOtpSent]       = useState(false);
@@ -120,13 +126,27 @@ function LoginContent() {
     setLoading(true);
     setError('');
     setRoleMismatch(null);
+    setNeedsVerification(false);
     try {
       const { data } = await api.post('/auth/login', { email, password });
       completeLogin(data.data.user, data.data.accessToken);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
+      setNeedsVerification(err.response?.status === 403);
     }
     setLoading(false);
+  };
+
+  const handleResendVerification = async () => {
+    setResendingVerify(true);
+    try {
+      const { data } = await api.post('/auth/send-otp', { email });
+      const { userId, role } = data.data;
+      router.push(`/auth/register/verify?userId=${userId}&role=${role}&email=${encodeURIComponent(email)}`);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to resend. Try again.');
+    }
+    setResendingVerify(false);
   };
 
   const startCountdown = (from = 60) => {
@@ -272,6 +292,13 @@ function LoginContent() {
           marginBottom: '16px',
         }}>
           {error}
+          {needsVerification && (
+            <div style={{ marginTop: '8px' }}>
+              <Button variant="ghost" size="sm" loading={resendingVerify} onClick={handleResendVerification}>
+                Resend verification email
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
