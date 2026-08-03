@@ -8,16 +8,6 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { X, User, Phone, Mail, Lock, Clock, BadgeCheck } from 'lucide-react';
 
-const PROJECT_TYPES = [
-  'Residential', 'Modular Kitchen', 'Full Home Interior',
-  'Living Room', 'Bedroom', 'Bathroom', 'Office Interiors', 'Other',
-];
-
-const BUDGET_RANGES = [
-  'Below ₹3 Lakhs', '₹3–5 Lakhs', '₹5–10 Lakhs',
-  '₹10–15 Lakhs', '₹15–25 Lakhs', '₹25–50 Lakhs', 'Above ₹50 Lakhs',
-];
-
 export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(false);
@@ -25,8 +15,6 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
   const [name,         setName]         = useState('');
   const [email,        setEmail]        = useState('');
   const [phone,        setPhone]        = useState('');
-  const [projectType,  setProjectType]  = useState('');
-  const [budget,       setBudget]       = useState('');
   const [requirements, setRequirements] = useState('');
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
@@ -58,8 +46,6 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
       sessionStorage.setItem('intrafer_enquiry_draft', JSON.stringify({
         name, email, phone,
         vendorId:     vendor._id,
-        projectType,
-        budget,
         city:         vendor.location?.city || '',
         requirements,
       }));
@@ -74,14 +60,6 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
   const specs  = vendor.specializations || [];
   const imgSrc = vendor.portfolioImages?.[0];
   const city   = vendor.location?.city || '';
-
-  const selectStyle = {
-    width: '100%', padding: '12px',
-    border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
-    background: 'var(--surface)', color: 'var(--text)',
-    fontSize: '16px', cursor: 'pointer',
-    minHeight: '48px',
-  };
 
   const fieldLabelStyle = {
     display: 'flex', justifyContent: 'space-between',
@@ -151,30 +129,6 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
 
       <Input label="Email" icon={Mail} value={email}
         onChange={e => setEmail(e.target.value)} placeholder="you@email.com" />
-
-      {/* Project type + Budget */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px' }}>
-        <div>
-          <label style={fieldLabelStyle}>
-            <span>Project type</span>
-            <span style={optionalBadgeStyle}>Optional</span>
-          </label>
-          <select value={projectType} onChange={e => setProjectType(e.target.value)} style={selectStyle}>
-            <option value="">No preference</option>
-            {PROJECT_TYPES.map(t => <option key={t}>{t}</option>)}
-          </select>
-        </div>
-        <div>
-          <label style={fieldLabelStyle}>
-            <span>Budget range</span>
-            <span style={optionalBadgeStyle}>Optional</span>
-          </label>
-          <select value={budget} onChange={e => setBudget(e.target.value)} style={selectStyle}>
-            <option value="">No preference</option>
-            {BUDGET_RANGES.map(b => <option key={b}>{b}</option>)}
-          </select>
-        </div>
-      </div>
 
       <div>
         <label style={fieldLabelStyle}>

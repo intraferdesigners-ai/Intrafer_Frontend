@@ -10,16 +10,6 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import CitySelect from '../../../components/ui/CitySelect';
 
-const PROJECT_TYPES = [
-  'Residential', 'Modular Kitchen', 'Living Room', 'Office Interiors',
-  'Commercial', 'Bedroom', 'Bathroom', 'Full Home Interior',
-];
-
-const BUDGET_RANGES = [
-  'Below ₹3 Lakhs', '₹3–5 Lakhs', '₹5–10 Lakhs', '₹10–15 Lakhs',
-  '₹15–25 Lakhs', '₹25–50 Lakhs', 'Above ₹50 Lakhs',
-];
-
 const STEPS = [
   { n: 1, label: 'Submit your project' },
   { n: 2, label: 'Verify with a code' },
@@ -55,8 +45,6 @@ function EnquiryForm() {
   const [name,         setName]         = useState('');
   const [email,        setEmail]        = useState('');
   const [phone,        setPhone]        = useState('');
-  const [projectType,  setProjectType]  = useState('');
-  const [budget,       setBudget]       = useState('');
   const [city,         setCity]         = useState('');
   const [requirements, setRequirements] = useState('');
   const [loading,      setLoading]      = useState(false);
@@ -99,7 +87,7 @@ function EnquiryForm() {
 
       sessionStorage.setItem('intrafer_enquiry_draft', JSON.stringify({
         name: name.trim(), email: email.trim(), phone: phone.trim(),
-        projectType, budget, city: city.trim(), requirements: requirements.trim(),
+        city: city.trim(), requirements: requirements.trim(),
         vendorId,
       }));
 
@@ -323,46 +311,15 @@ function EnquiryForm() {
                   <p className="caps-label-primary" style={{ marginBottom: '12px' }}>PROJECT DETAILS</p>
 
                   <div style={{ marginBottom: '12px' }}>
-                    <label style={optionalLabelStyle}>
-                      <span>Project type</span>
-                      <span style={optionalBadgeStyle}>Optional</span>
-                    </label>
-                    <select
-                      value={projectType}
-                      onChange={(e) => setProjectType(e.target.value)}
-                      className="form-select-styled"
-                    >
-                      <option value="">No preference</option>
-                      {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-
-                  <div className="grid-responsive-2" style={{ gap: '12px', marginBottom: '12px' }}>
-                    <div>
+                    {vendorId ? (
                       <label style={optionalLabelStyle}>
-                        <span>Budget range</span>
+                        <span>City</span>
                         <span style={optionalBadgeStyle}>Optional</span>
                       </label>
-                      <select
-                        value={budget}
-                        onChange={(e) => setBudget(e.target.value)}
-                        className="form-select-styled"
-                      >
-                        <option value="">No preference</option>
-                        {BUDGET_RANGES.map((b) => <option key={b} value={b}>{b}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      {vendorId ? (
-                        <label style={optionalLabelStyle}>
-                          <span>City</span>
-                          <span style={optionalBadgeStyle}>Optional</span>
-                        </label>
-                      ) : (
-                        <label style={labelStyle}>City</label>
-                      )}
-                      <CitySelect value={city} onChange={(val) => setCity(val)} placeholder="e.g. Bangalore" />
-                    </div>
+                    ) : (
+                      <label style={labelStyle}>City</label>
+                    )}
+                    <CitySelect value={city} onChange={(val) => setCity(val)} placeholder="e.g. Bangalore" />
                   </div>
 
                   <div>
