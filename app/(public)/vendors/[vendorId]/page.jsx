@@ -267,6 +267,7 @@ export default async function VendorProfilePage({ params }) {
                 { label: 'Projects', value: projects.length || 0 },
                 { label: 'Reviews',  value: vendor.reviewCount || 0 },
                 { label: 'Rating',   value: vendor.rating > 0 ? `${Number(vendor.rating).toFixed(1)}★` : '—' },
+                ...(vendor.experienceYears ? [{ label: 'Experience', value: `${vendor.experienceYears} yr${vendor.experienceYears !== 1 ? 's' : ''}` }] : []),
               ].map(stat => (
                 <div key={stat.label} style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: 'clamp(14px, 4vw, 18px)', fontWeight: 700, color: 'var(--text)', lineHeight: 1 }}>

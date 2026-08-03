@@ -41,6 +41,7 @@ export default function VendorProfilePage() {
     businessName: '', description: '',
     city: '', state: '', pincode: '',
     specializations: [], profilePhoto: '',
+    experienceYears: '',
     services: [],
     serviceLocations: [],
   });
@@ -92,14 +93,19 @@ export default function VendorProfilePage() {
           pincode:         v.location?.pincode || '',
           specializations: v.specializations || [],
           profilePhoto:    v.profilePhoto     || '',
+          experienceYears: v.experienceYears ?? '',
           services:        v.services         || [],
           serviceLocations: v.serviceLocations || [],
         };
         setForm(loaded);
         savedFormRef.current = loaded;
         // Nothing saved yet — go straight to the form instead of an empty
-        // read-only view with no obvious way in.
-        setEditMode(!v.businessName);
+        // read-only view with no obvious way in. `?edit=true` (e.g. the
+        // dashboard's "Complete your profile" link) forces the same thing
+        // for an existing profile, so it lands directly in the form rather
+        // than the read-only view first.
+        const forceEdit = new URLSearchParams(window.location.search).get('edit') === 'true';
+        setEditMode(forceEdit || !v.businessName);
         if (v.availability) {
           setAvailability({
             startTime: v.availability.startTime || '10:00',
@@ -167,6 +173,7 @@ export default function VendorProfilePage() {
           pincode: form.pincode,
         },
         specializations: form.specializations,
+        experienceYears: form.experienceYears === '' ? '' : Number(form.experienceYears),
         services: form.services
           .filter((s) => s.name.trim())
           .map((s) => ({
@@ -367,7 +374,7 @@ export default function VendorProfilePage() {
                 <Camera size={14} /> {form.profilePhoto ? 'Change photo' : 'Upload photo'}
               </Button>
               <p style={{ fontSize: 11, color: 'var(--color-text-hint)', margin: '8px 0 0' }}>
-                JPEG, PNG, or WebP · up to 5MB
+                JPEG, PNG, or WebP · up to 10MB
               </p>
             </div>
             <input
@@ -405,6 +412,16 @@ export default function VendorProfilePage() {
                 style={TEXTAREA_STYLE}
               />
             </div>
+            <Input
+              label="Years of experience"
+              type="number"
+              min="0"
+              max="80"
+              value={form.experienceYears}
+              onChange={(e) => setForm((p) => ({ ...p, experienceYears: e.target.value }))}
+              placeholder="e.g. 5"
+              error={fieldErrors.experienceYears}
+            />
           </div>
         </div>
 
@@ -724,6 +741,11 @@ function ProfileSummary({ form, availability }) {
               <MapPin size={13} />
               {[form.city, form.state].filter(Boolean).join(', ')}
               {form.pincode ? ` · ${form.pincode}` : ''}
+            </div>
+          )}
+          {form.experienceYears !== '' && form.experienceYears != null && (
+            <div style={{ fontSize: 13, color: 'var(--color-text-sub)', marginTop: 4 }}>
+              {form.experienceYears} {Number(form.experienceYears) === 1 ? 'year' : 'years'} of experience
             </div>
           )}
         </div>

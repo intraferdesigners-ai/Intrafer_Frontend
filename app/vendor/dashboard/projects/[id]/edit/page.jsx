@@ -344,7 +344,7 @@ export default function EditProjectPage() {
                 Click to upload more photos
               </p>
               <p style={{ fontSize: 11, color: 'var(--color-text-hint)', margin: 0 }}>
-                10 max total · JPEG, PNG, WebP · 5MB each
+                10 max total · JPEG, PNG, WebP · 10MB each
               </p>
             </div>
             <input

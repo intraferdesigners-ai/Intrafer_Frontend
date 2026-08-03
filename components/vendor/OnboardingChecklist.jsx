@@ -36,7 +36,7 @@ export default function OnboardingChecklist({ vendor, projects }) {
         vendor?.location?.city &&
         vendor?.specializations?.length > 0
       ),
-      href: '/vendor/dashboard/profile',
+      href: '/vendor/dashboard/profile?edit=true',
       cta: 'Complete profile',
     },
     {
