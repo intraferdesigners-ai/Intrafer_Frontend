@@ -63,7 +63,7 @@ const NAV = {
     { label: 'Leads',        href: '/admin/dashboard/leads',         icon: FileText,        group: 'OPERATIONS' },
     { label: 'Users',        href: '/admin/dashboard/users',         icon: Users,           group: 'OPERATIONS' },
     { label: 'All Projects', href: '/admin/dashboard/projects',      icon: Building2,       group: 'OPERATIONS' },
-    { label: 'Portfolio Approvals', href: '/admin/dashboard/portfolio-approvals', icon: ClipboardCheck, group: 'OPERATIONS' },
+    { label: 'Portfolio moderation', href: '/admin/dashboard/portfolio-approvals', icon: ClipboardCheck, group: 'OPERATIONS' },
 
     { label: 'Subscriptions', href: '/admin/dashboard/subscriptions', icon: Crown,          group: 'FINANCIAL' },
     { label: 'Coupons',      href: '/admin/dashboard/coupons',       icon: Tag,             group: 'FINANCIAL' },

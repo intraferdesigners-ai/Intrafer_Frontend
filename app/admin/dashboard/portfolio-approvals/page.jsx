@@ -61,10 +61,10 @@ export default function AdminPortfolioApprovalsPage() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 300, color: 'var(--color-text)', margin: '0 0 6px' }}>
-          Portfolio approvals
+          Portfolio moderation
         </h1>
         <p style={{ fontSize: 14, color: 'var(--color-text-hint)', margin: 0 }}>
-          Projects go public automatically on upload. This is a flagged queue for oversight — nothing here is blocking a vendor from being live.
+          Projects go public automatically on upload. This is a flagged queue for oversight, not a gate — use it to review or take down inappropriate content after the fact.
         </p>
       </div>
 
@@ -157,7 +157,7 @@ export default function AdminPortfolioApprovalsPage() {
                   <textarea
                     rows={3}
                     autoFocus
-                    placeholder="Explain what needs to change before this project can be approved..."
+                    placeholder="Explain why this project is being taken down..."
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
                     style={{
