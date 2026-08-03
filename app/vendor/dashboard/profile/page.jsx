@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Building2, Tag, Camera, Wrench, Plus, Trash2, MapPin, MapPinned, Pencil, X } from 'lucide-react';
+import { Building2, Tag, Camera, Plus, Trash2, MapPin, MapPinned, Pencil, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
@@ -200,27 +200,6 @@ export default function VendorProfilePage() {
       specializations: prev.specializations.includes(spec)
         ? prev.specializations.filter((s) => s !== spec)
         : [...prev.specializations, spec],
-    }));
-  };
-
-  const addService = () => {
-    setForm((prev) => ({
-      ...prev,
-      services: [...prev.services, { name: '', description: '', startingPrice: '', priceUnit: 'flat' }],
-    }));
-  };
-
-  const updateService = (index, field, value) => {
-    setForm((prev) => ({
-      ...prev,
-      services: prev.services.map((s, i) => (i === index ? { ...s, [field]: value } : s)),
-    }));
-  };
-
-  const removeService = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      services: prev.services.filter((_, i) => i !== index),
     }));
   };
 
@@ -535,84 +514,6 @@ export default function VendorProfilePage() {
 
         <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 0 }} />
 
-        {/* Services */}
-        <div>
-          <span style={SECTION_LABEL}>
-            <Wrench size={10} style={{ display: 'inline', marginRight: 4 }} />
-            Services
-          </span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {form.services.map((service, i) => (
-              <div key={i} style={{
-                border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
-                padding: 14, display: 'flex', flexDirection: 'column', gap: 10,
-                background: 'var(--color-surface-alt)',
-              }}>
-                <div className="form-row" style={{ gap: 10 }}>
-                  <Input
-                    label="Service name"
-                    value={service.name}
-                    onChange={(e) => updateService(i, 'name', e.target.value)}
-                    placeholder="e.g. Modular Kitchen Design"
-                  />
-                  <Input
-                    label="Starting price (₹)"
-                    type="number"
-                    value={service.startingPrice}
-                    onChange={(e) => updateService(i, 'startingPrice', e.target.value)}
-                    placeholder="50000"
-                  />
-                </div>
-
-                <div>
-                  <label style={FIELD_LABEL}>Price unit</label>
-                  <select
-                    className="form-input-styled"
-                    value={service.priceUnit}
-                    onChange={(e) => updateService(i, 'priceUnit', e.target.value)}
-                  >
-                    <option value="flat">Flat rate</option>
-                    <option value="per_sqft">Per sq. ft.</option>
-                    <option value="per_room">Per room</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={FIELD_LABEL}>Description (optional)</label>
-                  <textarea
-                    className="form-textarea"
-                    rows={2}
-                    value={service.description}
-                    onChange={(e) => updateService(i, 'description', e.target.value)}
-                    placeholder="Briefly describe what's included…"
-                    style={TEXTAREA_STYLE}
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => removeService(i)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    fontSize: 12, fontWeight: 500, padding: '4px 8px',
-                    borderRadius: 'var(--radius-sm)', marginLeft: 'auto',
-                    color: 'var(--color-danger)',
-                  }}
-                >
-                  <Trash2 size={14} /> Remove
-                </button>
-              </div>
-            ))}
-
-            <Button variant="secondary" size="sm" type="button" onClick={addService} style={{ alignSelf: 'flex-start' }}>
-              <Plus size={14} /> Add service
-            </Button>
-          </div>
-        </div>
-
-        <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 0 }} />
-
         {/* Save */}
         <Button variant="primary" size="lg" loading={saving} onClick={handleSave} style={{ width: '100%' }}>
           Save changes
@@ -622,8 +523,6 @@ export default function VendorProfilePage() {
     </div>
   );
 }
-
-const PRICE_UNIT_LABEL = { flat: 'flat rate', per_sqft: '/ sq. ft.', per_room: '/ room' };
 
 // Read-only counterpart to the form above — shown by default once a profile
 // exists, so the page reads as a finished business listing rather than a
@@ -690,31 +589,6 @@ function ProfileSummary({ form }) {
               }}>
                 {spec}
               </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {form.services.length > 0 && (
-        <div>
-          <span style={SECTION_LABEL}>
-            <Wrench size={10} style={{ display: 'inline', marginRight: 4 }} />
-            Services
-          </span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {form.services.map((service, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12,
-                padding: '10px 14px', borderRadius: 'var(--radius-md)',
-                background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)',
-              }}>
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>{service.name}</span>
-                {service.startingPrice != null && service.startingPrice !== '' && (
-                  <span style={{ fontSize: 12, color: 'var(--color-text-hint)', whiteSpace: 'nowrap' }}>
-                    from ₹{Number(service.startingPrice).toLocaleString('en-IN')} {PRICE_UNIT_LABEL[service.priceUnit] || ''}
-                  </span>
-                )}
-              </div>
             ))}
           </div>
         </div>
