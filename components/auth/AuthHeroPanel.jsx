@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import api from '@/lib/api';
 import { IMAGES } from '@/lib/images';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
@@ -34,8 +33,13 @@ export default function AuthHeroPanel() {
   return (
     <div className="hide-mobile" style={{
       position: 'relative', overflow: 'hidden',
-      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-      padding: 'clamp(28px, 4vw, 40px)', minHeight: '100dvh',
+      display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '24px',
+      // The site's real Navbar (with its own logo/home-link) now renders
+      // above every /auth/* page — see app/auth/layout.jsx — so this panel
+      // no longer needs its own separate logo-as-home-link, and its height
+      // is trimmed by the navbar's fixed 64px rather than filling the
+      // entire viewport.
+      padding: 'clamp(28px, 4vw, 40px)', minHeight: 'calc(100dvh - 64px)',
     }}>
       <Image
         src={IMAGES.hero.main}
@@ -45,20 +49,6 @@ export default function AuthHeroPanel() {
         sizes="(max-width: 768px) 0px, 45vw"
       />
       <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: OVERLAY, zIndex: 1 }} />
-
-      <div style={{ position: 'relative', zIndex: 2 }}>
-        {/* No site navbar renders on /auth/* routes, so this doubles as the
-            page's only way back home. */}
-        <Link href="/" style={{ display: 'inline-flex' }}>
-          <div style={{
-            width: '38px', height: '38px', borderRadius: '8px',
-            background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,.2)',
-          }}>
-            <Image src="/images/logo/logo.png" alt="Intrafer" width={30} height={30} style={{ objectFit: 'contain' }} />
-          </div>
-        </Link>
-      </div>
 
       <div style={{ position: 'relative', zIndex: 2 }}>
         <h2 style={{

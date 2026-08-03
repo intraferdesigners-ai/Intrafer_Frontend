@@ -7,12 +7,21 @@ import { X } from 'lucide-react';
 import ThemeToggle from '../ui/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
 import Button from '../ui/Button';
+import useAuthStore from '../../store/authStore';
 
 const NAV_LINKS = [
   { label: 'Find Designers',  href: '/vendors'         },
   { label: 'How It Works',    href: '/how-it-works'    },
   { label: 'Design Ideas',    href: '/gallery'         },
 ];
+
+// Same three-way role->dashboard mapping already used by middleware.js (route
+// protection) and the login page's post-login redirect — kept as its own
+// small local copy rather than a shared import, matching how those two
+// existing spots already each define it independently (middleware.js runs
+// in the Edge runtime, so it can't share a module with client-only code
+// like this one anyway).
+const ROLE_DASHBOARDS = { user: '/user/dashboard', vendor: '/vendor/dashboard', admin: '/admin/dashboard' };
 
 const DRAWER_SECTIONS = [
   {
@@ -30,6 +39,18 @@ export default function Navbar() {
   const [drawerOpen,  setDrawerOpen]  = useState(false);
   const pathname  = usePathname();
   const { theme } = useTheme();
+  const { role, initFromCookies } = useAuthStore();
+
+  // Public pages never mount DashboardLayout (the only other place that
+  // currently calls this), so without it here, a returning logged-in user's
+  // role/token would stay unhydrated (null) on any page load that starts
+  // from a public route — including a hard refresh of the homepage — and
+  // the header would wrongly show "Login" until they happened to navigate
+  // through a dashboard first. Same call DashboardLayout already makes.
+  useEffect(() => { initFromCookies(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const dashboardHref = ROLE_DASHBOARDS[role] || '/auth/portal';
+  const isLoggedIn = !!role;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -100,10 +121,15 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Desktop right actions — public site always shows logged-out state */}
+          {/* Desktop right actions — swaps Login for Dashboard once
+              role/token has hydrated from cookies (see the initFromCookies
+              effect above), so a returning logged-in visitor lands on their
+              own dashboard in one click instead of the login form. */}
           <div className="nav-desktop-links hide-mobile" style={{ gap: '10px', alignItems: 'center' }}>
             <ThemeToggle />
-            <Link href="/auth/portal"><Button variant="outline" size="sm">Login</Button></Link>
+            <Link href={isLoggedIn ? dashboardHref : '/auth/portal'}>
+              <Button variant="outline" size="sm">{isLoggedIn ? 'Dashboard' : 'Login'}</Button>
+            </Link>
             <Link href="/for-designers">
               <Button variant="primary" size="sm">For designers →</Button>
             </Link>
@@ -185,11 +211,11 @@ export default function Navbar() {
 
         {/* Bottom CTA */}
         <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <Link href="/auth/portal" onClick={() => setDrawerOpen(false)} style={{ textDecoration: 'none' }}>
+          <Link href={isLoggedIn ? dashboardHref : '/auth/portal'} onClick={() => setDrawerOpen(false)} style={{ textDecoration: 'none' }}>
             <button style={{ width: '100%', height: '50px', borderRadius: 'var(--r-md)',
               background: 'var(--bg-parchment)', border: '1px solid var(--border)',
               fontSize: '15px', fontWeight: 500, color: 'var(--text)', cursor: 'pointer' }}>
-              Log in
+              {isLoggedIn ? 'Dashboard' : 'Log in'}
             </button>
           </Link>
           <Link href="/for-designers" onClick={() => setDrawerOpen(false)} style={{ textDecoration: 'none' }}>
