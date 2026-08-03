@@ -4,13 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import CitySelect from '../ui/CitySelect';
-import LocalitySelect from '../ui/LocalitySelect';
 
 export default function StickySearch() {
   const router = useRouter();
   const [city,        setCity]        = useState('');
-  const [cityPlaceId, setCityPlaceId] = useState(null);
-  const [locality,    setLocality]    = useState('');
   const [isStuck,     setIsStuck]     = useState(false);
 
   useEffect(() => {
@@ -23,8 +20,7 @@ export default function StickySearch() {
 
   const handleSearch = () => {
     const params = new URLSearchParams();
-    if (city)     params.set('city', city);
-    if (locality) params.set('locality', locality);
+    if (city) params.set('city', city);
     router.push('/vendors' + (params.toString() ? `?${params.toString()}` : ''));
   };
 
@@ -48,30 +44,13 @@ export default function StickySearch() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <CitySelect
               value={city}
-              onChange={(val) => { setCity(val); setCityPlaceId(null); }}
-              onSelectPlace={(place) => setCityPlaceId(place._id)}
+              onChange={(val) => setCity(val)}
               placeholder="City — e.g. Bangalore"
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
               compact={true}
               endpoint="/public/vendor-cities"
             />
           </div>
-          {/* Area — optional, only shown once a real Place has been resolved
-              (cityPlaceId). Kept inline here (unlike the hero widget's
-              second row) since this bar's own row is already the whole
-              widget — a second fixed row would need its own height/offset
-              bookkeeping for no real benefit at this width. */}
-          {cityPlaceId && (
-            <div className="fade-in-up" style={{ flex: 1, minWidth: 0 }}>
-              <LocalitySelect
-                placeId={cityPlaceId}
-                value={locality}
-                onChange={setLocality}
-                placeholder="Area (optional)..."
-                compact={true}
-              />
-            </div>
-          )}
           <button
             onClick={handleSearch}
             style={{

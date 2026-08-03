@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import CitySelect from '../ui/CitySelect';
-import LocalitySelect from '../ui/LocalitySelect';
 
 const LABEL_STYLE = {
   fontSize: '9px', letterSpacing: '.1em', color: 'var(--text-hint)', marginBottom: '3px',
@@ -13,14 +12,11 @@ const LABEL_STYLE = {
 export default function HeroSearch() {
   const router = useRouter();
   const [city,        setCity]        = useState('');
-  const [cityPlaceId, setCityPlaceId] = useState(null);
-  const [locality,    setLocality]    = useState('');
   const [focused,     setFocused]     = useState(false);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
-    if (city)     params.set('city', city);
-    if (locality) params.set('locality', locality);
+    if (city) params.set('city', city);
     router.push(`/vendors?${params.toString()}`);
   };
 
@@ -49,8 +45,7 @@ export default function HeroSearch() {
           <div style={LABEL_STYLE}>CITY</div>
           <CitySelect
             value={city}
-            onChange={(val) => { setCity(val); setCityPlaceId(null); }}
-            onSelectPlace={(place) => setCityPlaceId(place._id)}
+            onChange={(val) => setCity(val)}
             placeholder="Any city"
             endpoint="/public/vendor-cities"
           />
@@ -77,31 +72,6 @@ export default function HeroSearch() {
           <ArrowRight size={18} />
         </button>
       </div>
-
-      {/* Area — optional second step, only surfaced once a real Place has
-          been resolved (cityPlaceId), since a typed-but-unselected city has
-          nothing to scope the locality search to. Rendered as its own row
-          below the pill rather than squeezed inline, since the pill's three
-          existing slots (city/style/button) are already sized for exactly
-          three items on the compact hero widget. */}
-      {cityPlaceId && (
-        <div
-          className="fade-in-up"
-          style={{
-            marginTop: '10px', background: 'var(--surface)',
-            border: '1px solid var(--border-sub)', borderRadius: 'var(--r-md)',
-            padding: '9px 18px', boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          <div style={LABEL_STYLE}>AREA <span style={{ opacity: 0.7 }}>(optional)</span></div>
-          <LocalitySelect
-            placeId={cityPlaceId}
-            value={locality}
-            onChange={setLocality}
-            placeholder="e.g. Indiranagar, Koramangala..."
-          />
-        </div>
-      )}
     </div>
   );
 }
