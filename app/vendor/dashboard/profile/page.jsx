@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Building2, Tag, Camera, Wrench, Plus, Trash2, CalendarClock, MapPin, Pencil, X } from 'lucide-react';
+import { Building2, Tag, Camera, Wrench, Plus, Trash2, CalendarClock, MapPin, MapPinned, Pencil, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
@@ -42,6 +42,7 @@ export default function VendorProfilePage() {
     city: '', state: '', pincode: '',
     specializations: [], profilePhoto: '',
     services: [],
+    serviceLocations: [],
   });
   const [availability, setAvailability] = useState({
     startTime: '10:00', endTime: '18:00', slotDurationMinutes: 60,
@@ -92,6 +93,7 @@ export default function VendorProfilePage() {
           specializations: v.specializations || [],
           profilePhoto:    v.profilePhoto     || '',
           services:        v.services         || [],
+          serviceLocations: v.serviceLocations || [],
         };
         setForm(loaded);
         savedFormRef.current = loaded;
@@ -171,6 +173,7 @@ export default function VendorProfilePage() {
             ...s,
             startingPrice: s.startingPrice === '' || s.startingPrice == null ? undefined : Number(s.startingPrice),
           })),
+        serviceLocations: form.serviceLocations.filter((l) => l.city.trim() && l.state.trim()),
       });
       savedFormRef.current = form;
       setEditMode(false);
@@ -234,6 +237,52 @@ export default function VendorProfilePage() {
       ...prev,
       services: prev.services.filter((_, i) => i !== index),
     }));
+  };
+
+  const addServiceLocation = () => {
+    setForm((prev) => ({
+      ...prev,
+      serviceLocations: [...prev.serviceLocations, { city: '', state: '', pincode: '', placeId: null }],
+    }));
+  };
+
+  const updateServiceLocation = (index, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      serviceLocations: prev.serviceLocations.map((l, i) => (i === index ? { ...l, [field]: value } : l)),
+    }));
+  };
+
+  const removeServiceLocation = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      serviceLocations: prev.serviceLocations.filter((_, i) => i !== index),
+    }));
+  };
+
+  // Pincode is exactly 6 digits, so there's no ambiguity about when it's
+  // "done" — the lookup fires the moment the 6th digit lands, no debounce
+  // timer needed. A miss (no matching Locality) is silent: city/state just
+  // stay whatever they already were, editable as normal, rather than
+  // blocking entry for a pincode our India Post-derived dataset doesn't
+  // happen to cover.
+  const handlePincodeChange = async (index, rawValue) => {
+    const digits = rawValue.replace(/\D/g, '').slice(0, 6);
+    updateServiceLocation(index, 'pincode', digits);
+    if (digits.length !== 6) return;
+
+    try {
+      const { data } = await api.get(`/public/pincode/${digits}`);
+      const { city, state, placeId } = data.data;
+      setForm((prev) => ({
+        ...prev,
+        serviceLocations: prev.serviceLocations.map((l, i) =>
+          i === index ? { ...l, city, state, placeId } : l
+        ),
+      }));
+    } catch {
+      // No matching pincode in the dataset — leave city/state as-is.
+    }
   };
 
   const specPillStyle = (spec) => {
@@ -400,6 +449,75 @@ export default function VendorProfilePage() {
               maxLength={6}
               error={fieldErrors['location.pincode']}
             />
+          </div>
+        </div>
+
+        <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 0 }} />
+
+        {/* Service locations — cities/areas served beyond the business
+            address above (e.g. a Bengaluru-based studio that also takes
+            projects in Mysuru). Entering a pincode looks up its city/state
+            from the same India Post-derived dataset CitySelect searches, but
+            the fields stay fully editable afterward — the lookup is a
+            starting point, not a lock. */}
+        <div>
+          <span style={SECTION_LABEL}>
+            <MapPinned size={10} style={{ display: 'inline', marginRight: 4 }} />
+            Service locations <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+          </span>
+          <p style={{ fontSize: 12, color: 'var(--color-text-hint)', margin: '-6px 0 12px' }}>
+            Other cities or areas you take on projects in, beyond your business address above.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {form.serviceLocations.map((loc, i) => (
+              <div key={i} style={{
+                border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
+                padding: 14, display: 'flex', flexDirection: 'column', gap: 10,
+                background: 'var(--color-surface-alt)',
+              }}>
+                <div className="form-row-3" style={{ gap: 10 }}>
+                  <Input
+                    label="Pincode"
+                    value={loc.pincode}
+                    onChange={(e) => handlePincodeChange(i, e.target.value)}
+                    placeholder="560034"
+                    inputMode="numeric"
+                    maxLength={6}
+                    hint="Type to auto-fill city/state"
+                  />
+                  <Input
+                    label="City"
+                    value={loc.city}
+                    onChange={(e) => updateServiceLocation(i, 'city', e.target.value)}
+                    placeholder="e.g. Mysuru"
+                  />
+                  <Input
+                    label="State"
+                    value={loc.state}
+                    onChange={(e) => updateServiceLocation(i, 'state', e.target.value)}
+                    placeholder="e.g. Karnataka"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => removeServiceLocation(i)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: 12, fontWeight: 500, padding: '4px 8px',
+                    borderRadius: 'var(--radius-sm)', marginLeft: 'auto',
+                    color: 'var(--color-danger)',
+                  }}
+                >
+                  <Trash2 size={14} /> Remove
+                </button>
+              </div>
+            ))}
+
+            <Button variant="secondary" size="sm" type="button" onClick={addServiceLocation} style={{ alignSelf: 'flex-start' }}>
+              <Plus size={14} /> Add service location
+            </Button>
           </div>
         </div>
 
@@ -657,6 +775,26 @@ function ProfileSummary({ form, availability }) {
                   </span>
                 )}
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {form.serviceLocations.length > 0 && (
+        <div>
+          <span style={SECTION_LABEL}>
+            <MapPinned size={10} style={{ display: 'inline', marginRight: 4 }} />
+            Service locations
+          </span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {form.serviceLocations.map((loc, i) => (
+              <span key={i} style={{
+                padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500,
+                background: 'var(--color-surface-alt)', color: 'var(--color-text-sub)',
+                border: '1px solid var(--color-border)',
+              }}>
+                {[loc.city, loc.state].filter(Boolean).join(', ')}
+              </span>
             ))}
           </div>
         </div>

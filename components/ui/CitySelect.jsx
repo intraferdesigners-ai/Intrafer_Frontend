@@ -5,7 +5,15 @@ import api from '../../lib/api';
 
 const DEBOUNCE_MS = 300;
 
-export default function CitySelect({ value, onChange, onSelectPlace, placeholder, onKeyDown, compact = false }) {
+// `endpoint` defaults to the full ~740-place taxonomy (/public/places) — the
+// vendors-page filter and the vendor-profile location picker both rely on
+// searching that complete dataset. The homepage/sticky search widgets pass
+// `/public/vendor-cities` instead, which returns only cities at least one
+// live vendor actually serves (see place.controller.js's searchVendorCities)
+// — the "no zero-result cities suggested at the door" pivot. Both endpoints
+// return the same { places: [{_id, name, state}] } shape, so this is a
+// drop-in swap with no other changes needed here.
+export default function CitySelect({ value, onChange, onSelectPlace, placeholder, onKeyDown, compact = false, endpoint = '/public/places' }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [inputVal, setInputVal] = useState(value || '');
@@ -66,9 +74,8 @@ export default function CitySelect({ value, onChange, onSelectPlace, placeholder
     };
   }, [open]);
 
-  // Server-side search-as-you-type against the full ~740-place dataset
-  // (debounced, with stale-response protection since requests can resolve
-  // out of order).
+  // Server-side search-as-you-type against `endpoint` (debounced, with
+  // stale-response protection since requests can resolve out of order).
   useEffect(() => {
     if (!open) return;
 
@@ -76,7 +83,7 @@ export default function CitySelect({ value, onChange, onSelectPlace, placeholder
     debounceRef.current = setTimeout(() => {
       const thisRequestId = ++requestIdRef.current;
       setLoading(true);
-      api.get('/public/places', { params: { q: search, limit: 8 } })
+      api.get(endpoint, { params: { q: search, limit: 8 } })
         .then(({ data }) => {
           if (thisRequestId !== requestIdRef.current) return; // stale
           setResults(data.data?.places || []);
@@ -90,7 +97,7 @@ export default function CitySelect({ value, onChange, onSelectPlace, placeholder
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(debounceRef.current);
-  }, [search, open]);
+  }, [search, open, endpoint]);
 
   // Sync with parent value
   useEffect(() => { setInputVal(value || ''); }, [value]);

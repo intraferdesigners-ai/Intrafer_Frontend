@@ -1470,13 +1470,15 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
 }
 
 /* ── LANDING SEARCH WIDGET ── */
+/* Single-field layout (just City, since the Style dropdown was removed) —
+   a plain flex column stacking City above the full-width search button is
+   all that's needed now; this used to be a 2-column grid for City+Style. */
 @media (max-width: 640px) {
   .search-widget-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex !important;
+    flex-direction: column !important;
   }
   .search-widget-grid > div { border-right: none !important; border-bottom: 1px solid var(--border); }
-  .search-widget-grid > div:nth-child(2n) { border-bottom: 1px solid var(--border); }
   /* .search-btn is the <button> itself (not a wrapper around one) — sizing
      it directly, not `.search-btn button` (which matched nothing, since
      there's no nested button, silently leaving the 44px circle in place
@@ -1485,7 +1487,6 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
      needed to beat the inline width/height/border-radius HeroSearch.jsx
      sets for the desktop icon-only circle. */
   .search-widget-grid > .search-btn {
-    grid-column: 1 / -1;
     width: 100% !important;
     height: 44px !important;
     border-radius: var(--r-md) !important;

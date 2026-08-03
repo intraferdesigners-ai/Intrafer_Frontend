@@ -53,6 +53,7 @@ export default function StickySearch() {
               placeholder="City — e.g. Bangalore"
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
               compact={true}
+              endpoint="/public/vendor-cities"
             />
           </div>
           {/* Area — optional, only shown once a real Place has been resolved
