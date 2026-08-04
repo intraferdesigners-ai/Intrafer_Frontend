@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Building2, Tag, Camera, Plus, Trash2, MapPin, MapPinned, Pencil, X } from 'lucide-react';
+import { Building2, Tag, Camera, Plus, Trash2, MapPin, MapPinned, Pencil, X, Phone, Mail } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
@@ -44,6 +44,7 @@ export default function VendorProfilePage() {
     experienceYears: '',
     services: [],
     serviceLocations: [],
+    businessPhone: '', businessEmail: '',
   });
   const [loading,        setLoading]        = useState(true);
   const [saving,         setSaving]         = useState(false);
@@ -92,6 +93,13 @@ export default function VendorProfilePage() {
           experienceYears: v.experienceYears ?? '',
           services:        v.services         || [],
           serviceLocations: v.serviceLocations || [],
+          // Prefilled from the login account's own email/phone whenever the
+          // vendor hasn't set a distinct business contact — a vendor may
+          // want customers reaching a different number/inbox than the one
+          // they log in with, so these stay separately editable rather than
+          // just displaying the account values read-only.
+          businessPhone: v.businessPhone || v.userId?.phone || '',
+          businessEmail: v.businessEmail || v.userId?.email || '',
         };
         setForm(loaded);
         savedFormRef.current = loaded;
@@ -162,6 +170,8 @@ export default function VendorProfilePage() {
           pincode: form.pincode,
         },
         specializations: form.specializations,
+        businessPhone: form.businessPhone,
+        businessEmail: form.businessEmail,
         experienceYears: form.experienceYears === '' ? '' : Number(form.experienceYears),
         services: form.services
           .filter((s) => s.name.trim())
@@ -384,6 +394,37 @@ export default function VendorProfilePage() {
 
         <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 0 }} />
 
+        {/* Business contact — shown to customers (e.g. the WhatsApp button on
+            your public profile), separate from your login email/phone. */}
+        <div>
+          <span style={SECTION_LABEL}>Business contact</span>
+          <p style={{ fontSize: 12, color: 'var(--color-text-hint)', margin: '-6px 0 12px' }}>
+            Shown to customers on your public profile. Defaults to your account email/phone — edit if you'd rather they reach a different number or inbox.
+          </p>
+          <div className="form-row-3" style={{ gap: 12 }}>
+            <Input
+              label="Business phone"
+              icon={Phone}
+              value={form.businessPhone}
+              onChange={(e) => { setForm((p) => ({ ...p, businessPhone: e.target.value })); setFieldErrors((fe) => ({ ...fe, businessPhone: undefined })); }}
+              placeholder="10-digit mobile number"
+              inputMode="numeric"
+              maxLength={10}
+              error={fieldErrors.businessPhone}
+            />
+            <Input
+              label="Business email"
+              icon={Mail}
+              value={form.businessEmail}
+              onChange={(e) => { setForm((p) => ({ ...p, businessEmail: e.target.value })); setFieldErrors((fe) => ({ ...fe, businessEmail: undefined })); }}
+              placeholder="you@yourbusiness.com"
+              error={fieldErrors.businessEmail}
+            />
+          </div>
+        </div>
+
+        <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 0 }} />
+
         {/* Location */}
         <div>
           <span style={SECTION_LABEL}>Location</span>
@@ -563,6 +604,20 @@ function ProfileSummary({ form }) {
           {form.experienceYears !== '' && form.experienceYears != null && (
             <div style={{ fontSize: 13, color: 'var(--color-text-sub)', marginTop: 4 }}>
               {form.experienceYears} {Number(form.experienceYears) === 1 ? 'year' : 'years'} of experience
+            </div>
+          )}
+          {(form.businessPhone || form.businessEmail) && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 14px', fontSize: 13, color: 'var(--color-text-sub)', marginTop: 4 }}>
+              {form.businessPhone && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Phone size={13} /> {form.businessPhone}
+                </span>
+              )}
+              {form.businessEmail && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Mail size={13} /> {form.businessEmail}
+                </span>
+              )}
             </div>
           )}
         </div>

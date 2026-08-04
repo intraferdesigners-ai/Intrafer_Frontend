@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Star, Building2, ChevronLeft } from 'lucide-react';
+import { MapPin, Star, Building2, ChevronLeft, Phone, Mail } from 'lucide-react';
 import Button from '../../../../components/ui/Button';
 import VendorCard from '../../../../components/vendor/VendorCard';
 import ProjectsSection from '../../../../components/vendor/ProjectsSection';
@@ -106,6 +106,15 @@ export default async function VendorProfilePage({ params }) {
   const specs    = vendor.specializations || [];
   const location = [vendor.location?.city, vendor.location?.state].filter(Boolean).join(', ') || 'India';
   const coverImg = vendor.portfolioImages?.[0] || null;
+  const vendorWhatsappNumber = vendor.businessPhone || vendor.userId?.phone || '';
+  // Public business-level contact info, distinct from the homeowner-specific
+  // contact-reveal-after-acceptance flow on individual leads (Lead.model.js /
+  // lead.controller.js's CONTACT_REVEALED_STATUSES) — that gate protects a
+  // homeowner's own contact details from a vendor until they've accepted that
+  // homeowner's enquiry, and is untouched by this. This is just the vendor's
+  // own published business phone/email, same tier as businessName/location
+  // already shown unconditionally on this page.
+  const vendorContactEmail = vendor.businessEmail || vendor.userId?.email || '';
 
   return (
     <main style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
@@ -444,8 +453,14 @@ export default async function VendorProfilePage({ params }) {
               </Button>
             </Link>
 
+            {/* This vendor's own WhatsApp-reachable number — their business
+                phone (see the vendor profile's "Business contact" section)
+                if they've set one, else the account phone every vendor has
+                from registration. Never the site's own support number: a
+                homeowner chatting here should reach this designer directly. */}
+            {vendorWhatsappNumber && (
             <a
-              href={`https://wa.me/919876500000?text=${encodeURIComponent(
+              href={`https://wa.me/91${vendorWhatsappNumber}?text=${encodeURIComponent(
                 `Hi! I found ${vendor.businessName} on Intrafer and I'm interested in discussing my interior design project. Could we connect?`
               )}`}
               target="_blank"
@@ -464,6 +479,34 @@ export default async function VendorProfilePage({ params }) {
               </svg>
               Chat on WhatsApp
             </a>
+            )}
+
+            {(vendorWhatsappNumber || vendorContactEmail) && (
+              <div style={{
+                display: 'flex', flexDirection: 'column', gap: 8,
+                marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)',
+              }}>
+                {vendorWhatsappNumber && (
+                  <a href={`tel:+91${vendorWhatsappNumber}`} style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    fontSize: 13, color: 'var(--text-sub)', textDecoration: 'none',
+                  }}>
+                    <Phone size={14} style={{ flexShrink: 0, color: 'var(--text-hint)' }} />
+                    {vendorWhatsappNumber}
+                  </a>
+                )}
+                {vendorContactEmail && (
+                  <a href={`mailto:${vendorContactEmail}`} style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    fontSize: 13, color: 'var(--text-sub)', textDecoration: 'none',
+                    wordBreak: 'break-all',
+                  }}>
+                    <Mail size={14} style={{ flexShrink: 0, color: 'var(--text-hint)' }} />
+                    {vendorContactEmail}
+                  </a>
+                )}
+              </div>
+            )}
 
             <p style={{
               fontSize: 11, color: 'var(--text-hint)',
