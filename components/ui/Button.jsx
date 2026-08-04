@@ -69,7 +69,9 @@ export default function Button({
         <span style={{
           width: '14px', height: '14px', borderRadius: '50%',
           border: '2px solid currentColor', borderTopColor: 'transparent',
-          animation: 'spin .7s linear infinite', flexShrink: 0,
+          animation: shouldReduceMotion ? 'none' : 'spin .7s linear infinite',
+          opacity: shouldReduceMotion ? 0.6 : 1,
+          flexShrink: 0,
           display: 'inline-block',
         }} />
       )}

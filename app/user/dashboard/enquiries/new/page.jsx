@@ -131,7 +131,7 @@ export default function NewEnquiryPage() {
                   {specOptions.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
-              <Button variant="primary" size="md" onClick={runSearch} style={{ flexShrink: 0 }}>
+              <Button variant="primary" size="md" loading={searchLoading} onClick={runSearch} style={{ flexShrink: 0 }}>
                 <Search size={14} /> Search
               </Button>
             </div>

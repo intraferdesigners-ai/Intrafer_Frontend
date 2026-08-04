@@ -123,7 +123,7 @@ export default function AdminPortfolioApprovalsPage() {
                   <Button
                     variant="success"
                     size="sm"
-                    disabled={actingId === project._id}
+                    loading={actingId === project._id}
                     onClick={() => handleApprove(project)}
                     style={{ display: 'flex', alignItems: 'center', gap: 6 }}
                   >

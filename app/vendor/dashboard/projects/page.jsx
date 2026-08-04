@@ -19,6 +19,7 @@ export default function VendorProjectsPage() {
   const [vendor,        setVendor]        = useState(null);
   const [loading,       setLoading]       = useState(true);
   const [deletingId,    setDeletingId]    = useState(null);
+  const [togglingId,    setTogglingId]    = useState(null);
   const [dragIndex,     setDragIndex]     = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [deleteModal,   setDeleteModal]   = useState(null);
@@ -53,6 +54,7 @@ export default function VendorProjectsPage() {
     }
 
     const next = !project.isPublished;
+    setTogglingId(project._id);
     setProjects((prev) => prev.map((p) => p._id === project._id ? { ...p, isPublished: next } : p));
     try {
       await api.put(`/vendor/projects/${project._id}`, { isPublished: next });
@@ -61,6 +63,7 @@ export default function VendorProjectsPage() {
       setProjects((prev) => prev.map((p) => p._id === project._id ? { ...p, isPublished: project.isPublished } : p));
       toast.error('Failed to update project.');
     }
+    setTogglingId(null);
   };
 
   const handleDelete = async (projectId) => {
@@ -298,9 +301,12 @@ export default function VendorProjectsPage() {
                   <button
                     type="button"
                     onClick={() => handleTogglePublish(project)}
+                    disabled={togglingId === project._id}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 6,
-                      background: 'none', border: 'none', cursor: 'pointer',
+                      background: 'none', border: 'none',
+                      cursor: togglingId === project._id ? 'not-allowed' : 'pointer',
+                      opacity: togglingId === project._id ? 0.5 : 1,
                       fontSize: 12, fontWeight: 500, padding: '4px 8px',
                       borderRadius: 'var(--radius-sm)',
                       color: project.isPublished ? 'var(--color-success)' : 'var(--color-text-hint)',
@@ -409,13 +415,16 @@ export default function VendorProjectsPage() {
             <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 onClick={() => setDeleteModal(null)}
+                disabled={deletingId === deleteModal.id}
                 style={{
                   flex: 1, height: '44px',
                   background: 'var(--color-surface-alt)',
                   border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-md)',
                   fontSize: '14px', fontWeight: 500,
-                  color: 'var(--color-text)', cursor: 'pointer',
+                  color: 'var(--color-text)',
+                  cursor: deletingId === deleteModal.id ? 'not-allowed' : 'pointer',
+                  opacity: deletingId === deleteModal.id ? 0.6 : 1,
                 }}
               >
                 Cancel
@@ -425,16 +434,27 @@ export default function VendorProjectsPage() {
                   await handleDelete(deleteModal.id);
                   setDeleteModal(null);
                 }}
+                disabled={deletingId === deleteModal.id}
                 style={{
                   flex: 1, height: '44px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
                   background: 'var(--color-danger)',
                   border: 'none',
                   borderRadius: 'var(--radius-md)',
                   fontSize: '14px', fontWeight: 600,
-                  color: '#fff', cursor: 'pointer',
+                  color: '#fff',
+                  cursor: deletingId === deleteModal.id ? 'not-allowed' : 'pointer',
+                  opacity: deletingId === deleteModal.id ? 0.7 : 1,
                   boxShadow: '0 2px 8px rgba(220,38,38,.3)',
                 }}
               >
+                {deletingId === deleteModal.id && (
+                  <span style={{
+                    width: '13px', height: '13px', borderRadius: '50%',
+                    border: '2px solid currentColor', borderTopColor: 'transparent',
+                    animation: 'spin .7s linear infinite', flexShrink: 0,
+                  }} />
+                )}
                 Delete project
               </button>
             </div>

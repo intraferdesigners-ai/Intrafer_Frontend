@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
   User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Heart, Newspaper, Tag, LifeBuoy, Mail, Shield, Star,
-  MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck, Scale, Kanban,
+  MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck, Scale, Kanban, Sparkles,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { clearAuthTokens } from '../../lib/auth';
@@ -34,6 +34,7 @@ const ADMIN_NAV_PERMISSIONS = {
   '/admin/dashboard/portfolio-approvals': 'manage_portfolio',
   '/admin/dashboard/projects':        'manage_portfolio',
   '/admin/dashboard/subscriptions':   'view_analytics',
+  '/admin/dashboard/cms':             'manage_settings',
 };
 
 const NAV = {
@@ -68,6 +69,7 @@ const NAV = {
     { label: 'Subscriptions', href: '/admin/dashboard/subscriptions', icon: Crown,          group: 'FINANCIAL' },
     { label: 'Coupons',      href: '/admin/dashboard/coupons',       icon: Tag,             group: 'FINANCIAL' },
 
+    { label: 'CMS',          href: '/admin/dashboard/cms',           icon: Sparkles,        group: 'CONTENT' },
     { label: 'Blog',         href: '/admin/dashboard/blog',          icon: Newspaper,       group: 'CONTENT' },
     { label: 'Cities',       href: '/admin/dashboard/cities',        icon: MapPin,          group: 'CONTENT' },
     { label: 'Categories',   href: '/admin/dashboard/categories',    icon: LayoutGrid,      group: 'CONTENT' },

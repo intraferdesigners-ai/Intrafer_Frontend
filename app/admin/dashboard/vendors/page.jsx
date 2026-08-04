@@ -83,6 +83,7 @@ function AdminVendorsPageContent() {
   const [loading,            setLoading]            = useState(true);
   const [filter,             setFilter]             = useState(searchParams.get('filter') || 'all');
   const [updatingId,         setUpdatingId]         = useState(null);
+  const [togglingFeaturedId, setTogglingFeaturedId] = useState(null);
 
   // Rejection modal state
   const [showRejectModal,    setShowRejectModal]    = useState(false);
@@ -145,6 +146,7 @@ function AdminVendorsPageContent() {
 
   const handleToggleFeatured = async (vendorId) => {
     const vendor = vendors.find((v) => v._id === vendorId);
+    setTogglingFeaturedId(vendorId);
     try {
       await api.put(`/admin/vendors/${vendorId}/feature`);
       setVendors((prev) =>
@@ -154,6 +156,7 @@ function AdminVendorsPageContent() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed.');
     }
+    setTogglingFeaturedId(null);
   };
 
   const handleExportCSV = () => {
@@ -346,18 +349,29 @@ function AdminVendorsPageContent() {
                   type="button"
                   title={vendor.isFeatured ? 'Remove featured' : 'Set as featured'}
                   onClick={() => handleToggleFeatured(vendor._id)}
+                  disabled={togglingFeaturedId === vendor._id}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     width: 28, height: 28, borderRadius: 'var(--radius-sm)',
                     background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)',
-                    cursor: 'pointer',
+                    cursor: togglingFeaturedId === vendor._id ? 'not-allowed' : 'pointer',
+                    opacity: togglingFeaturedId === vendor._id ? 0.5 : 1,
                   }}
                 >
-                  <Star
-                    size={14}
-                    fill={vendor.isFeatured ? '#F59E0B' : 'none'}
-                    color={vendor.isFeatured ? '#F59E0B' : 'var(--color-text-hint)'}
-                  />
+                  {togglingFeaturedId === vendor._id ? (
+                    <span style={{
+                      width: '12px', height: '12px', borderRadius: '50%',
+                      border: '2px solid currentColor', borderTopColor: 'transparent',
+                      animation: 'spin .7s linear infinite', flexShrink: 0,
+                      color: 'var(--color-text-hint)',
+                    }} />
+                  ) : (
+                    <Star
+                      size={14}
+                      fill={vendor.isFeatured ? '#F59E0B' : 'none'}
+                      color={vendor.isFeatured ? '#F59E0B' : 'var(--color-text-hint)'}
+                    />
+                  )}
                 </button>
 
                 {!vendor.isApproved ? (
