@@ -47,7 +47,22 @@ export default function Navbar() {
   // from a public route — including a hard refresh of the homepage — and
   // the header would wrongly show "Login" until they happened to navigate
   // through a dashboard first. Same call DashboardLayout already makes.
-  useEffect(() => { initFromCookies(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  //
+  // Skipped on /auth/* specifically: this hydration can carry a stale
+  // leftover token cookie from a previous/expired session, which silently
+  // triggers a background 401 -> refresh-token attempt. If that refresh
+  // fails (e.g. the account has since logged in elsewhere and its single-slot
+  // refresh token was rotated out from under it), the interceptor hard-wipes
+  // auth cookies and force-redirects to /auth/login — which can land *after*
+  // the user has just completed a fresh, legitimate login on this same page,
+  // clobbering it and bouncing them right back to the login form. Already-
+  // authenticated visitors to /auth/login are sent to their dashboard by
+  // middleware.js before this even mounts, so there's nothing for this call
+  // to usefully hydrate here anyway.
+  useEffect(() => {
+    if (pathname.startsWith('/auth')) return;
+    initFromCookies();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dashboardHref = ROLE_DASHBOARDS[role] || '/auth/portal';
   const isLoggedIn = !!role;

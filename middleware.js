@@ -19,7 +19,12 @@ export function middleware(request) {
 
   for (const [path, requiredRole] of Object.entries(PROTECTED)) {
     if (pathname.startsWith(path)) {
-      if (!token) {
+      if (!token || !role) {
+        // A token with no role cookie is a desynced/incomplete session (e.g.
+        // the role cookie expired or was never re-synced by a silent token
+        // refresh) rather than a legitimate "wrong role" — sending it through
+        // login forces a clean re-auth instead of silently bouncing an
+        // apparently-logged-in user to '/' with no way back into their portal.
         const url = new URL('/auth/login', request.url);
         url.searchParams.set('redirect', pathname);
         return NextResponse.redirect(url);
