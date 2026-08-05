@@ -57,6 +57,16 @@ function LoginContent() {
   const hasRoleParam = searchParams.has('role');
   const redirectParam = searchParams.get('redirect');
 
+  // Registration never creates admin accounts (see auth.controller.js's
+  // register() — role is always clamped to user/vendor server-side); real
+  // admin accounts only ever come from scripts/createAdmin.js or an existing
+  // super admin. Offering "Sign up" here would just lead an admin-context
+  // visitor to a dead end. Covers both ways someone lands here as an admin:
+  // picking the Admin card on /auth/portal (?role=admin) and middleware.js
+  // bouncing an unauthenticated visit to a protected /admin/* route back to
+  // login with ?redirect=/admin/....
+  const isAdminContext = roleParam === 'admin' || (!!redirectParam && redirectParam.startsWith('/admin'));
+
   // Preserves vendor context across the login -> register hop, so a visitor
   // who arrived via a vendor-specific entry point (e.g. VendorNavbar's
   // "Vendor login") doesn't land on a neutral homeowner/designer toggle.
@@ -475,12 +485,14 @@ function LoginContent() {
         Continue with Google
       </button>
 
-      <p style={{ fontSize: '13px', textAlign: 'center', color: 'var(--text-sub)', marginTop: '24px' }}>
-        Don&apos;t have an account?{' '}
-        <Link href={signUpHref} style={{ color: 'var(--primary)', fontWeight: 500 }}>
-          Sign up
-        </Link>
-      </p>
+      {!isAdminContext && (
+        <p style={{ fontSize: '13px', textAlign: 'center', color: 'var(--text-sub)', marginTop: '24px' }}>
+          Don&apos;t have an account?{' '}
+          <Link href={signUpHref} style={{ color: 'var(--primary)', fontWeight: 500 }}>
+            Sign up
+          </Link>
+        </p>
+      )}
     </AuthSplitCard>
   );
 }
