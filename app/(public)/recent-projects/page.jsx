@@ -1,7 +1,9 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import Reveal from '../../../components/ui/Reveal';
 import RevealItem from '../../../components/ui/RevealItem';
+import ProjectImageSlider from '../../../components/vendor/ProjectImageSlider';
+
+const normalizeSrc = (src) => (src.startsWith('/') || src.startsWith('http') ? src : `/${src}`);
 
 export const metadata = {
   title: 'Recent Projects | Interior Design Work | Intrafer',
@@ -33,7 +35,8 @@ export default async function RecentProjectsPage() {
       {projects.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }} className="grid-mobile-1">
           {projects.map((project, i) => {
-            const img = project.images?.[0] || project.coverImage;
+            const imgs = (project.images?.length ? project.images : project.coverImage ? [project.coverImage] : [])
+              .map(normalizeSrc);
             return (
               <RevealItem key={project._id} index={i % 6}>
               <Link
@@ -45,8 +48,8 @@ export default async function RecentProjectsPage() {
                   borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-sm)',
                 }} className="card-hover">
                   <div style={{ position: 'relative', height: '220px', overflow: 'hidden' }}>
-                    {img ? (
-                      <Image src={img.startsWith('/') || img.startsWith('http') ? img : `/${img}`} alt={project.title || 'Project'} fill className="blog-card-img" style={{ objectFit: 'cover' }} sizes="(max-width:768px) 100vw, 33vw" />
+                    {imgs.length ? (
+                      <ProjectImageSlider images={imgs} alt={project.title || 'Project'} />
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-hint)', fontSize: '13px' }}>No image</div>
                     )}

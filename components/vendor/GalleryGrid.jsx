@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import RevealItem from '../ui/RevealItem';
+import ProjectImageSlider from './ProjectImageSlider';
 
-const ROOMS  = ['All', 'Residential', 'Modular Kitchen', 'Living Room', 'Bedroom', 'Bathroom', 'Office Interiors', 'Full Home Interior'];
+const ROOMS  = ['All', 'Residential', 'Commercial', 'Personalised'];
 const STYLES = ['All', 'Modern', 'Scandinavian', 'Traditional', 'Minimalist', 'Bohemian', 'Industrial', 'Luxury', 'Contemporary'];
 
 const HEIGHTS = [240, 300, 260, 320, 280, 340, 250, 310, 270, 290, 330];
@@ -108,16 +108,7 @@ export default function GalleryGrid({ projects }) {
                     marginBottom: '16px', height: `${h}px`,
                   }}
                 >
-                  {item.images?.[0] && (
-                    <Image
-                      src={item.images[0]}
-                      alt={item.title || 'Project'}
-                      fill
-                      className="blog-card-img"
-                      style={{ objectFit: 'cover' }}
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                  )}
+                  <ProjectImageSlider images={item.images} alt={item.title} />
                   <div
                     className="gallery-overlay"
                     style={{

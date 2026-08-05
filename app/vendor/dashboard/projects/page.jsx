@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
 import Spinner from '../../../../components/ui/Spinner';
+import ProjectImageSlider from '../../../../components/vendor/ProjectImageSlider';
 
 const MODERATION_BADGE = {
   pending:  { label: 'Pending review', icon: Clock,       color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
@@ -205,12 +206,8 @@ export default function VendorProjectsPage() {
               >
                 {/* Image area */}
                 <div style={{ height: 160, background: 'var(--color-surface-alt)', position: 'relative' }}>
-                  {project.images?.[0] ? (
-                    <img
-                      src={project.images[0]}
-                      alt={project.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+                  {project.images?.length ? (
+                    <ProjectImageSlider images={project.images} alt={project.title} />
                   ) : (
                     <div style={{
                       width: '100%', height: '100%',

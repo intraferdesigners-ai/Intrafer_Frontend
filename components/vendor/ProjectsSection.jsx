@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Building2, MapPin, Calendar } from 'lucide-react';
+import ProjectImageSlider from './ProjectImageSlider';
 
 export default function ProjectsSection({ projects }) {
   if (projects.length === 0) {
@@ -31,12 +32,8 @@ export default function ProjectsSection({ projects }) {
             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
-            {project.images?.[0] ? (
-              <img
-                src={project.images[0]}
-                alt={project.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              />
+            {project.images?.length ? (
+              <ProjectImageSlider images={project.images} alt={project.title} />
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Building2 size={24} color="var(--color-text-hint)" />
