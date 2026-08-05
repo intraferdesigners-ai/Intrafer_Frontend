@@ -32,7 +32,7 @@ export default function WhatsAppButton() {
           }}
         />
         <a
-          href="https://wa.me/919876500000"
+          href="https://wa.me/919217211408"
           target="_blank"
           rel="noopener noreferrer"
           className="wa-btn"

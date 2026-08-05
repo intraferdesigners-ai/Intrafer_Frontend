@@ -119,7 +119,7 @@ export default function SuccessContent() {
             While you wait, you can also reach out directly:
           </p>
           <a
-            href={`https://wa.me/919876500000?text=${encodeURIComponent(
+            href={`https://wa.me/919217211408?text=${encodeURIComponent(
               `Hi ${vendor.businessName}! I just submitted an enquiry on Intrafer (${shortId}). Would love to discuss my project.`
             )}`}
             target="_blank"
