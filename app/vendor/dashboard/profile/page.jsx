@@ -36,11 +36,12 @@ const FIELD_LABEL = {
 
 export default function VendorProfilePage() {
   const fileInputRef = useRef(null);
+  const bannerInputRef = useRef(null);
 
   const [form,    setForm]    = useState({
     businessName: '', description: '',
     city: '', state: '', pincode: '',
-    specializations: [], profilePhoto: '',
+    specializations: [], profilePhoto: '', bannerImage: '',
     experienceYears: '',
     services: [],
     serviceLocations: [],
@@ -49,6 +50,7 @@ export default function VendorProfilePage() {
   const [loading,        setLoading]        = useState(true);
   const [saving,         setSaving]         = useState(false);
   const [uploadingPhoto, setUploadingPhoto]  = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [fieldErrors,    setFieldErrors]     = useState({});
   const [specOptions,    setSpecOptions]     = useState(SPECIALIZATION_OPTIONS);
   // True once the state field has been auto-filled from a CitySelect pick —
@@ -90,6 +92,7 @@ export default function VendorProfilePage() {
           pincode:         v.location?.pincode || '',
           specializations: v.specializations || [],
           profilePhoto:    v.profilePhoto     || '',
+          bannerImage:     v.bannerImage      || '',
           experienceYears: v.experienceYears ?? '',
           services:        v.services         || [],
           serviceLocations: v.serviceLocations || [],
@@ -154,6 +157,32 @@ export default function VendorProfilePage() {
       toast.error(err.response?.data?.message || 'Failed to upload photo.');
     }
     setUploadingPhoto(false);
+    e.target.value = '';
+  };
+
+  // Same upload-then-PUT convention as handlePhotoChange above, against the
+  // separate /upload/banner + bannerImage field — this is the wide cover
+  // image at the top of the public profile, not the circular avatar.
+  const handleBannerChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingBanner(true);
+    try {
+      const fd = new FormData();
+      fd.append('banner', file);
+      const { data } = await api.post('/upload/banner', fd, {
+        headers: { 'Content-Type': undefined },
+      });
+      const url = data.data?.url || data.url;
+      await api.put('/vendor/profile', { bannerImage: url });
+      setForm((p) => ({ ...p, bannerImage: url }));
+      if (savedFormRef.current) savedFormRef.current = { ...savedFormRef.current, bannerImage: url };
+      toast.success('Banner image updated.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to upload banner.');
+    }
+    setUploadingBanner(false);
     e.target.value = '';
   };
 
@@ -352,6 +381,45 @@ export default function VendorProfilePage() {
               onChange={handlePhotoChange}
             />
           </div>
+        </div>
+
+        {/* Banner image — the wide cover photo at the top of the public
+            profile, separate from the circular avatar above. */}
+        <div>
+          <span style={SECTION_LABEL}>Banner image</span>
+          <div
+            onClick={() => !uploadingBanner && bannerInputRef.current?.click()}
+            style={{
+              width: '100%', maxWidth: 420, height: 110, borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden', background: 'var(--color-surface-alt)',
+              border: '1px solid var(--color-border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: uploadingBanner ? 'wait' : 'pointer',
+              opacity: uploadingBanner ? 0.6 : 1, marginBottom: 12,
+            }}
+          >
+            {form.bannerImage ? (
+              <img src={form.bannerImage} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <Camera size={22} color="var(--color-text-hint)" />
+            )}
+          </div>
+          <Button
+            variant="secondary" size="sm" loading={uploadingBanner}
+            onClick={() => bannerInputRef.current?.click()}
+          >
+            <Camera size={14} /> {form.bannerImage ? 'Change banner' : 'Upload banner'}
+          </Button>
+          <p style={{ fontSize: 11, color: 'var(--color-text-hint)', margin: '8px 0 0' }}>
+            JPEG, PNG, or WebP · up to 10MB · wide image recommended (e.g. 1600×400)
+          </p>
+          <input
+            ref={bannerInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            style={{ display: 'none' }}
+            onChange={handleBannerChange}
+          />
         </div>
 
         <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: 0 }} />

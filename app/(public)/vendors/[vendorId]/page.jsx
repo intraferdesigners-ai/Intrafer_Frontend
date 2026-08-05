@@ -105,7 +105,12 @@ export default async function VendorProfilePage({ params }) {
 
   const specs    = vendor.specializations || [];
   const location = [vendor.location?.city, vendor.location?.state].filter(Boolean).join(', ') || 'India';
-  const coverImg = vendor.portfolioImages?.[0] || null;
+  // An explicitly-uploaded banner (see the vendor dashboard's Profile page)
+  // is shown at full strength since the vendor picked it deliberately;
+  // falling back to a portfolio photo is just a decorative placeholder, so
+  // it stays dimmed under the gradient the way it always has.
+  const bannerImg = vendor.bannerImage || null;
+  const coverImg = bannerImg || vendor.portfolioImages?.[0] || null;
   const vendorWhatsappNumber = vendor.businessPhone || vendor.userId?.phone || '';
   // Public business-level contact info, distinct from the homeowner-specific
   // contact-reveal-after-acceptance flow on individual leads (Lead.model.js /
@@ -162,7 +167,7 @@ export default async function VendorProfilePage({ params }) {
                   src={coverImg}
                   alt=""
                   fill
-                  style={{ objectFit: 'cover', opacity: 0.45 }}
+                  style={{ objectFit: 'cover', opacity: bannerImg ? 1 : 0.45 }}
                   sizes="(max-width: 768px) 100vw, 860px"
                 />
               )}
