@@ -11,10 +11,7 @@ import Input from '../../../../../../components/ui/Input';
 import Spinner from '../../../../../../components/ui/Spinner';
 import CitySelect from '../../../../../../components/ui/CitySelect';
 
-const PROJECT_TYPES = [
-  'Residential', 'Modular Kitchen', 'Living Room', 'Office Interiors',
-  'Commercial', 'Bedroom', 'Bathroom', 'Full Home Interior',
-];
+const PROJECT_TYPES = ['Residential', 'Commercial', 'Personalised'];
 
 const BUDGET_RANGES = [
   'Below ₹3 Lakhs', '₹3–5 Lakhs', '₹5–10 Lakhs', '₹10–15 Lakhs',
@@ -236,6 +233,13 @@ export default function EditProjectPage() {
                   onChange={(e) => setForm((p) => ({ ...p, projectType: e.target.value }))}
                   style={SELECT_STYLE}
                 >
+                  {/* A project saved under an older, now-retired type (e.g. before
+                      the option list was narrowed to these 3) still needs to show
+                      its actual value here instead of silently jumping to
+                      "Residential" the moment this form loads. */}
+                  {!PROJECT_TYPES.includes(form.projectType) && form.projectType && (
+                    <option value={form.projectType}>{form.projectType}</option>
+                  )}
                   {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
