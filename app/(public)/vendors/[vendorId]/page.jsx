@@ -314,6 +314,30 @@ export default async function VendorProfilePage({ params }) {
             </div>
           )}
 
+          {/* We work in — serviceLocations if the vendor has set any (the
+              cities they actually take projects in, which can differ from
+              their single business address below); falls back to that
+              business address only when serviceLocations is empty, and
+              omits the section entirely rather than showing it blank if
+              neither is set. */}
+          {vendor.serviceLocations?.length > 0 ? (
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', marginBottom: '28px' }}>
+              <span style={LABEL}>WE WORK IN</span>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {vendor.serviceLocations.map((loc, i) => (
+                  <span key={loc._id || i} className="spec-pill">
+                    {loc.city}{loc.state ? `, ${loc.state}` : ''}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : vendor.location?.city ? (
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', marginBottom: '28px' }}>
+              <span style={LABEL}>WE WORK IN</span>
+              <span className="spec-pill">{location}</span>
+            </div>
+          ) : null}
+
           {/* Services */}
           {vendor.services?.length > 0 && (
             <div style={{ paddingLeft: '24px', paddingRight: '24px', marginBottom: '28px' }}>
