@@ -69,8 +69,13 @@ export default function ForDesignersPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
       {/* ── HERO ── */}
+      {/* .vendor-page-offset's padding-top is !important (shared with
+          terms/privacy/plans, clears VendorNavbar's fixed header+promo
+          strip exactly) — extra breathing room below that has to come from
+          this wrapper's own marginTop instead of fighting that specificity,
+          same clamp() used by the CTA section further down this page. */}
       <section className="vendor-page-offset" style={{ background: 'var(--bg-parchment)', paddingLeft: '40px', paddingRight: '40px', paddingBottom: '80px' }}>
-        <Reveal style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '64px', alignItems: 'center' }} className="grid-mobile-1">
+        <Reveal style={{ maxWidth: '1280px', margin: 'clamp(40px, 5vw, 60px) auto 0', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '64px', alignItems: 'center' }} className="grid-mobile-1">
           <div>
             <p className="caps-label-primary" style={{ marginBottom: '12px' }}>FOR INTERIOR DESIGNERS</p>
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(38px,4vw,52px)', fontWeight: 400, color: 'var(--text)', lineHeight: 1.1, letterSpacing: '-.025em', marginBottom: '18px' }}>
