@@ -342,13 +342,24 @@ export default function ForDesignersPage() {
                 Free to list. No commission. Just a flat subscription and direct access to clients who want to work with you.
               </p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <Link href="/auth/register?role=vendor" style={{
-                  background: 'var(--primary)', color: '#fff',
-                  padding: '14px 32px', borderRadius: 'var(--r-md)',
-                  fontSize: '14px', fontWeight: 500, textDecoration: 'none',
-                  boxShadow: '0 4px 14px rgba(181,84,30,.4)',
-                }}>
-                  List your studio free
+                {/* Wrapped in <button>, not styled directly on the <a>, because
+                    .cta-always-dark's `a { color: #60A5FA !important }` carve-out
+                    (globals.css) overrides any inline color set on the Link
+                    itself — that carve-out is meant for plain text links, and
+                    a solid-background button using it renders invisible text
+                    in dark mode where --primary is also #60A5FA. Wrapping in
+                    <button> sidesteps the `a` rule (falls to `* { #F0F6FF }`
+                    instead), same pattern already used by this exact CTA on
+                    /plans and the homepage. */}
+                <Link href="/auth/register?role=vendor">
+                  <button style={{
+                    background: 'var(--primary)', color: '#fff',
+                    padding: '14px 32px', borderRadius: 'var(--r-md)',
+                    fontSize: '14px', fontWeight: 500, border: 'none', cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(181,84,30,.4)',
+                  }}>
+                    List your studio free
+                  </button>
                 </Link>
                 <Link href="/plans" style={{
                   background: 'transparent', color: 'rgba(255,255,255,.5)',
