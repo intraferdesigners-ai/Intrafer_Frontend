@@ -46,6 +46,12 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
   const visible = specs.slice(0, 2);
   const extra   = specs.length - 2;
   const city    = vendor.location?.city || vendor.city || 'India';
+  // vendor.cardImages (see attachCardImages, public.controller.js) already
+  // resolves the full fallback chain server-side — project photos, then
+  // bannerImage/profilePhoto for vendors with no published projects yet.
+  // portfolioImages is a legacy Vendor field nothing writes to anymore,
+  // kept only as a last-resort safety net for any caller that skipped
+  // attachCardImages.
   const cardImages = vendor.cardImages?.length ? vendor.cardImages : (vendor.portfolioImages || []);
 
   const [saved,          setSaved]          = useState(false);
@@ -136,6 +142,7 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
   const hideTooltip = () => { tooltipTimeout.current = setTimeout(() => setTooltipVisible(false), 120); };
 
   if (variant === 'compact') {
+    const compactImage = vendor.portfolioImages?.[0] || vendor.bannerImage || vendor.profilePhoto || null;
     return (
       <>
         <div className="vendor-card-hover" style={{
@@ -163,9 +170,14 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                {vendor.portfolioImages?.[0] ? (
+                {/* /auth/saved-vendors doesn't run project photos through
+                    attachCardImages (see public.controller.js) — the same
+                    portfolioImages dead-field issue as the editorial variant,
+                    so fall back to bannerImage/profilePhoto here too rather
+                    than dropping straight to the placeholder icon. */}
+                {compactImage ? (
                   <Image
-                    src={vendor.portfolioImages[0]}
+                    src={compactImage}
                     alt={vendor.businessName}
                     fill
                     className="blog-card-img"
@@ -408,10 +420,11 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
         }}
       >
         {/* Photo layer — zooms on hover, same whileHover pattern as StyleGallery.
-            cardImages (one representative photo per published project, see
-            attachCardImages in public.controller.js) is what actually has
-            data; portfolioImages is a legacy Vendor field nothing writes to
-            anymore, kept only as a fallback for safety. */}
+            cardImages (see attachCardImages in public.controller.js) pools
+            published-project photos, falling back to bannerImage/profilePhoto
+            for vendors with no published projects yet — the placeholder icon
+            below is now truly a last resort, for vendors with nothing
+            uploaded at all. */}
         <motion.div
           whileHover={{ scale: shouldReduceMotion ? 1 : 1.06 }}
           transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: 'easeOut' }}
