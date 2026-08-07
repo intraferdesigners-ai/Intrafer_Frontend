@@ -8,6 +8,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { MapPin, Building2, ShieldCheck, Heart, Scale, Star, ArrowRight } from 'lucide-react';
 import QuickEnquiryModal from './QuickEnquiryModal';
 import VendorTooltip from './VendorTooltip';
+import ProjectImageSlider from './ProjectImageSlider';
 import { getPriceRange } from '@/lib/utils';
 import { trackVendorInterest } from '@/lib/trackInterest';
 import { isAuthenticated } from '@/lib/auth';
@@ -46,6 +47,7 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
   const visible = specs.slice(0, 2);
   const extra   = specs.length - 2;
   const city    = vendor.location?.city || vendor.city || 'India';
+  const cardImages = vendor.cardImages?.length ? vendor.cardImages : (vendor.portfolioImages || []);
 
   const [saved,          setSaved]          = useState(false);
   const [showModal,      setShowModal]      = useState(false);
@@ -411,20 +413,18 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
           background: 'var(--bg-cream)',
         }}
       >
-        {/* Photo layer — zooms on hover, same whileHover pattern as StyleGallery */}
+        {/* Photo layer — zooms on hover, same whileHover pattern as StyleGallery.
+            cardImages (one representative photo per published project, see
+            attachCardImages in public.controller.js) is what actually has
+            data; portfolioImages is a legacy Vendor field nothing writes to
+            anymore, kept only as a fallback for safety. */}
         <motion.div
           whileHover={{ scale: shouldReduceMotion ? 1 : 1.06 }}
           transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: 'easeOut' }}
           style={{ position: 'absolute', inset: 0 }}
         >
-          {vendor.portfolioImages?.[0] ? (
-            <Image
-              src={vendor.portfolioImages[0]}
-              alt={vendor.businessName}
-              fill
-              style={{ objectFit: 'cover' }}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
+          {cardImages.length > 0 ? (
+            <ProjectImageSlider images={cardImages} alt={vendor.businessName} />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Building2 size={40} color="var(--border-emp)" />
