@@ -98,11 +98,18 @@ export default function VendorSearch() {
         {/* City */}
         <div style={{ flex: '1 1 160px' }}>
           <label style={LABEL_STYLE}><MapPin size={12} />City</label>
+          {/* Scoped to actual vendor coverage (business address,
+              serviceLocations, and completed-project cities — see
+              searchVendorCities in place.controller.js), same endpoint the
+              homepage search already uses, rather than CitySelect's default
+              full ~740-city taxonomy which would suggest cities with zero
+              vendors here. */}
           <CitySelect
             value={city}
             onChange={(val) => setCity(val)}
             placeholder="Search city..."
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            endpoint="/public/vendor-cities"
           />
         </div>
 
