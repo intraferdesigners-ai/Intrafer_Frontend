@@ -9,7 +9,6 @@ import { MapPin, Building2, ShieldCheck, Heart, Scale, Star, ArrowRight } from '
 import QuickEnquiryModal from './QuickEnquiryModal';
 import VendorTooltip from './VendorTooltip';
 import ProjectImageSlider from './ProjectImageSlider';
-import { getPriceRange } from '@/lib/utils';
 import { trackVendorInterest } from '@/lib/trackInterest';
 import { isAuthenticated } from '@/lib/auth';
 import api from '@/lib/api';
@@ -135,8 +134,6 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
 
   const showTooltip = () => { clearTimeout(tooltipTimeout.current); setTooltipVisible(true); };
   const hideTooltip = () => { tooltipTimeout.current = setTimeout(() => setTooltipVisible(false), 120); };
-
-  const priceRange = getPriceRange(specs);
 
   if (variant === 'compact') {
     return (
@@ -348,15 +345,6 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
                 ) : (
                   <span style={{ fontSize: '11px', color: 'var(--text-hint)' }}>New</span>
                 )}
-                {priceRange && (
-                  <span style={{
-                    fontSize: '11px', fontWeight: 600, color: 'var(--primary)',
-                    letterSpacing: '.04em', marginLeft: '6px',
-                    padding: '2px 6px', background: 'var(--primary-bg)', borderRadius: '4px',
-                  }}>
-                    {priceRange}
-                  </span>
-                )}
               </div>
 
               <div style={{ display: 'flex', gap: '6px' }}>
@@ -538,7 +526,6 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
             ) : (
               <span style={{ color: 'rgba(255,255,255,.7)' }}>New</span>
             )}
-            {priceRange && <span style={{ fontWeight: 600 }}>{priceRange}</span>}
           </div>
 
           {/* Hover-reveal actions — always shown on touch (no hover state there) */}
