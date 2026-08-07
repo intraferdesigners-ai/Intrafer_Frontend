@@ -398,6 +398,12 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
           position: 'relative', display: 'block', textDecoration: 'none',
           borderRadius: 'var(--r-xl)', overflow: 'hidden',
           aspectRatio: '3 / 4', boxShadow: 'var(--shadow-sm)',
+          // A shadow alone barely reads as a card in dark mode (--shadow-sm
+          // there is a near-black rgba(0,0,0,.4) against an already-dark
+          // page background) — a visible border, same convention as the
+          // shared .card class, is what actually separates the card from
+          // the page at rest, regardless of theme.
+          border: '1px solid var(--border)',
           background: 'var(--bg-cream)',
         }}
       >
@@ -445,8 +451,22 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
           )}
         </div>
 
-        {/* Top-right: favorite + compare glass circles — same real wiring as before, just restyled */}
-        <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 2, display: 'flex', gap: 8 }}>
+        {/* Top-right: favorite + compare glass circles — hover-reveal like the
+            bottom actions below, rather than always-on, so the resting card
+            reads as a clean photo and every actionable control appears
+            together on hover/touch. */}
+        <motion.div
+          initial={false}
+          animate={{
+            opacity: showActions ? 1 : 0,
+            y: showActions ? 0 : (shouldReduceMotion ? 0 : -6),
+          }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: 'easeOut' }}
+          style={{
+            position: 'absolute', top: 12, right: 12, zIndex: 2, display: 'flex', gap: 8,
+            pointerEvents: showActions ? 'auto' : 'none',
+          }}
+        >
           <button
             onClick={toggleSave}
             className="vendor-glass-circle"
@@ -475,7 +495,7 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
           >
             <Scale size={14} />
           </motion.button>
-        </div>
+        </motion.div>
 
         {/* Bottom info overlay — name, location, rating, tags, all on the photo */}
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 2, padding: 16 }}>
