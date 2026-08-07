@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { Building2 } from 'lucide-react';
 import VendorSearch from '../../../components/vendor/VendorSearch';
-import VendorBHKFilter from '../../../components/vendor/VendorBHKFilter';
 import CompareBar from '../../../components/vendor/CompareBar';
 import VendorResultsGrid from '../../../components/vendor/VendorResultsGrid';
 import AnimatedCounter from '../../../components/ui/AnimatedCounter';
@@ -16,11 +15,6 @@ async function fetchVendors(searchParams) {
     if (searchParams.locality)       q.set('locality', searchParams.locality);
     if (searchParams.specialization && searchParams.specialization !== 'All')
                                      q.set('specialization', searchParams.specialization);
-    // Own param, not merged into `specialization` — getVendors doesn't read
-    // `bhk` yet (no home-type field on the Vendor model), so this is a no-op
-    // filter-wise, but it no longer collides with the specialization filter.
-    if (searchParams.bhk && searchParams.bhk !== 'All')
-                                     q.set('bhk', searchParams.bhk);
     if (searchParams.sort)           q.set('sort', searchParams.sort);
     if (searchParams.page)           q.set('page', searchParams.page);
     q.set('limit', '12');
@@ -42,7 +36,6 @@ function buildPageUrl(searchParams, p) {
   if (searchParams.city)           q.set('city', searchParams.city);
   if (searchParams.locality)       q.set('locality', searchParams.locality);
   if (searchParams.specialization) q.set('specialization', searchParams.specialization);
-  if (searchParams.bhk)            q.set('bhk', searchParams.bhk);
   if (searchParams.sort)           q.set('sort', searchParams.sort);
   q.set('page', String(p));
   return '/vendors?' + q.toString();
@@ -64,11 +57,6 @@ export default async function VendorsPage({ searchParams }) {
 
       <Suspense fallback={null}>
         <VendorSearch />
-      </Suspense>
-
-      {/* BHK filter pills */}
-      <Suspense fallback={null}>
-        <VendorBHKFilter />
       </Suspense>
 
       {vendors.length > 0 ? (
