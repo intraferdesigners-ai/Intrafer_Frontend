@@ -13,7 +13,12 @@ const DEBOUNCE_MS = 300;
 // — the "no zero-result cities suggested at the door" pivot. Both endpoints
 // return the same { places: [{_id, name, state}] } shape, so this is a
 // drop-in swap with no other changes needed here.
-export default function CitySelect({ value, onChange, onSelectPlace, placeholder, onKeyDown, compact = false, endpoint = '/public/places' }) {
+// seamless — strips the input's own border/background so it blends
+// directly into a parent pill container (e.g. HeroSearch's combined
+// city-dropdown-plus-search-button bar) instead of reading as a separate
+// boxed field floating inside another box. The parent's own border/focus
+// ring carries the "this is one control" affordance instead.
+export default function CitySelect({ value, onChange, onSelectPlace, placeholder, onKeyDown, compact = false, seamless = false, endpoint = '/public/places' }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [inputVal, setInputVal] = useState(value || '');
@@ -121,11 +126,11 @@ export default function CitySelect({ value, onChange, onSelectPlace, placeholder
   const handleInputFocus = (e) => {
     setSearch('');
     setOpen(true);
-    e.target.style.borderColor = 'var(--primary)';
+    if (!seamless) e.target.style.borderColor = 'var(--primary)';
   };
 
   const handleInputBlur = (e) => {
-    e.target.style.borderColor = 'var(--border)';
+    if (!seamless) e.target.style.borderColor = 'var(--border)';
   };
 
   return (
@@ -155,9 +160,9 @@ export default function CitySelect({ value, onChange, onSelectPlace, placeholder
           style={{
             width: '100%', height: compact ? '38px' : '48px',
             padding: '0 40px 0 42px',
-            background: 'var(--bg-parchment)',
-            border: '1.5px solid var(--border)',
-            borderRadius: 'var(--r-md)',
+            background: seamless ? 'transparent' : 'var(--bg-parchment)',
+            border: seamless ? 'none' : '1.5px solid var(--border)',
+            borderRadius: seamless ? 0 : 'var(--r-md)',
             fontSize: compact ? '14px' : '15px', color: 'var(--text)',
             outline: 'none',
             transition: 'border-color 150ms',

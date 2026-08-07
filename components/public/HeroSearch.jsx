@@ -48,6 +48,7 @@ export default function HeroSearch() {
             onChange={(val) => setCity(val)}
             placeholder="Any city"
             endpoint="/public/vendor-cities"
+            seamless
           />
         </div>
 
