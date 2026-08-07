@@ -2,16 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Tag, ArrowUpDown, MapPin, Navigation } from 'lucide-react';
+import { Search, Tag, ArrowUpDown, MapPin } from 'lucide-react';
 import Button from '../ui/Button';
 import CitySelect from '../ui/CitySelect';
-import LocalitySelect from '../ui/LocalitySelect';
 import api from '../../lib/api';
 
-const SPECIALIZATIONS = [
-  'All', 'Residential', 'Modular Kitchen', 'Living Room',
-  'Office Interiors', 'Commercial', 'Bedroom', 'Bathroom',
-];
+const SPECIALIZATIONS = ['All', 'Residential', 'Commercial'];
+
+// This filter describes a vendor's overall practice area, not an individual
+// project's nature — deliberately narrower than the admin-managed Category
+// taxonomy (which also includes "Personalised", relevant to a one-off
+// project but not something a vendor broadly specializes in). Scoped as an
+// allowlist here rather than trimmed at the taxonomy level, since Category
+// is shared with the enquiry form and a vendor's own specializations editor,
+// where "Personalised" still belongs.
+const ALLOWED_SPECIALIZATIONS = new Set(['Residential', 'Commercial']);
 
 const SORT_OPTIONS = [
   { label: 'Best rated',    value: 'rating'  },
@@ -40,58 +45,28 @@ export default function VendorSearch() {
   const searchParams = useSearchParams();
 
   const [city,           setCity]           = useState(searchParams.get('city')           || '');
-  const [cityPlaceId,    setCityPlaceId]    = useState(null);
-  const [locality,       setLocality]       = useState(searchParams.get('locality')        || '');
   const [specialization, setSpecialization] = useState(searchParams.get('specialization') || 'All');
   const [sort,           setSort]           = useState(searchParams.get('sort')           || 'rating');
   const [specOptions,    setSpecOptions]    = useState(SPECIALIZATIONS);
 
-  const hasFilters = !!(searchParams.get('city') || searchParams.get('specialization') || searchParams.get('locality'));
+  const hasFilters = !!(searchParams.get('city') || searchParams.get('specialization'));
 
   // Prefer admin-managed categories when available; silently keep the
   // hardcoded fallback list if the endpoint fails or returns nothing.
   useEffect(() => {
     api.get('/public/categories')
       .then(({ data }) => {
-        const names = (data.data?.categories || []).map((c) => c.name);
+        const names = (data.data?.categories || [])
+          .map((c) => c.name)
+          .filter((n) => ALLOWED_SPECIALIZATIONS.has(n));
         if (names.length > 0) setSpecOptions(['All', ...names]);
       })
       .catch(() => {});
   }, []);
 
-  // A `city` query param on initial load is just a name, not a placeId —
-  // CitySelect only ever learns a placeId via its onSelectPlace callback,
-  // which fires from user interaction, never from a URL. Without this,
-  // loading /vendors?city=X&locality=Y shows the city name but leaves
-  // LocalitySelect permanently disabled (no placeId to scope its search to)
-  // even though the locality filter itself is already applied server-side.
-  // Resolved once on mount only — not kept in sync with `city` afterwards,
-  // since that would re-resolve on every keystroke as the user types.
-  useEffect(() => {
-    const initialCity = searchParams.get('city');
-    if (!initialCity) return;
-    let cancelled = false;
-    api.get('/public/places', { params: { q: initialCity, limit: 8 } })
-      .then(({ data }) => {
-        if (cancelled) return;
-        // Exclude locality-fallback pseudo-places (isLocality: true) — their
-        // _id refers to a Locality document, not a Place, so using one here
-        // would 404 against /public/places/:placeId/localities.
-        const places = (data.data?.places || []).filter((p) => !p.isLocality);
-        const match = places.find((p) => p.name.toLowerCase() === initialCity.toLowerCase()) || places[0];
-        if (match) setCityPlaceId(match._id);
-        // No match (bad/stale URL) — leave cityPlaceId null; city/locality
-        // text stays as-is and LocalitySelect simply stays disabled.
-      })
-      .catch(() => {});
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (city.trim())                                params.set('city', city.trim());
-    if (locality.trim())                            params.set('locality', locality.trim());
     if (specialization && specialization !== 'All') params.set('specialization', specialization);
     if (sort && sort !== 'rating')                  params.set('sort', sort);
     router.push('/vendors' + (params.toString() ? '?' + params.toString() : ''));
@@ -99,8 +74,6 @@ export default function VendorSearch() {
 
   const handleClear = () => {
     setCity('');
-    setCityPlaceId(null);
-    setLocality('');
     setSpecialization('All');
     setSort('rating');
     router.push('/vendors');
@@ -127,22 +100,9 @@ export default function VendorSearch() {
           <label style={LABEL_STYLE}><MapPin size={12} />City</label>
           <CitySelect
             value={city}
-            onChange={(val) => { setCity(val); setCityPlaceId(null); }}
-            onSelectPlace={(place) => setCityPlaceId(place._id)}
+            onChange={(val) => setCity(val)}
             placeholder="Search city..."
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          />
-        </div>
-
-        {/* Locality — optional, appears once a city has been picked from
-            the dropdown (a typed-but-unselected city has no known placeId
-            to scope the locality search to). */}
-        <div style={{ flex: '1 1 160px' }}>
-          <label style={LABEL_STYLE}><Navigation size={12} />Locality <span style={{ fontWeight: 400, color: 'var(--color-text-hint)' }}>(optional)</span></label>
-          <LocalitySelect
-            placeId={cityPlaceId}
-            value={locality}
-            onChange={(val) => setLocality(val)}
           />
         </div>
 
