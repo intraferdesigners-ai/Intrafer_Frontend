@@ -8,6 +8,7 @@ import { Mail, Lock, User, Phone, UserPlus } from 'lucide-react';
 import api from '../../../lib/api';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import Honeypot from '../../../components/ui/Honeypot';
 import AuthSplitCard from '../../../components/auth/AuthSplitCard';
 
 function RegisterContent() {
@@ -25,6 +26,7 @@ function RegisterContent() {
   const [loading,         setLoading]         = useState(false);
   const [error,           setError]           = useState('');
   const [confirmError,    setConfirmError]    = useState('');
+  const [website,         setWebsite]         = useState(''); // honeypot — see components/ui/Honeypot.jsx
 
   // A vendor-specific entry point (e.g. VendorNavbar's "Vendor login" ->
   // "Sign up") signals role=vendor explicitly, so the toggle starts hidden.
@@ -59,7 +61,7 @@ function RegisterContent() {
     try {
       const { data } = await api.post('/auth/register', {
         name: name.trim(), email: email.trim(),
-        phone: phone.trim(), password, role,
+        phone: phone.trim(), password, role, website,
       });
       const userId = data.data.userId;
       // Registration now requires OTP verification before the account can
@@ -162,6 +164,7 @@ function RegisterContent() {
       )}
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <Honeypot value={website} onChange={(e) => setWebsite(e.target.value)} />
         <Input label="Full name"     icon={User}  value={name}     onChange={(e) => setName(e.target.value)}     placeholder="Your full name"         required />
         <Input label="Email address" type="email" icon={Mail}  value={email}    onChange={(e) => setEmail(e.target.value)}    placeholder="you@example.com"        required />
         <Input label="Phone number"  type="tel"   icon={Phone} value={phone}    onChange={(e) => setPhone(e.target.value)}    placeholder="10-digit mobile number" inputMode="numeric" maxLength={10} hint="10-digit Indian mobile number" required />

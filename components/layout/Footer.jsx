@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
+import Honeypot from '../ui/Honeypot';
 
 const FOOTER_LINKS = [
   {
@@ -77,6 +78,7 @@ export default function Footer() {
   const [trustStats, setTrustStats] = useState(TRUST_STATS_FALLBACK);
   const [email, setEmail] = useState('');
   const [subscribing, setSubscribing] = useState(false);
+  const [website, setWebsite] = useState(''); // honeypot — see components/ui/Honeypot.jsx
 
   useEffect(() => {
     let cancelled = false;
@@ -111,7 +113,7 @@ export default function Footer() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/newsletter/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), website }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.success) {
@@ -266,6 +268,7 @@ export default function Footer() {
               Get design tips and new designer spotlights in your inbox.
             </p>
             <form onSubmit={handleSubscribe} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <Honeypot value={website} onChange={(e) => setWebsite(e.target.value)} />
               <input
                 type="email"
                 required

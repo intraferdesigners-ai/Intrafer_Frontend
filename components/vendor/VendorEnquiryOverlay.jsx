@@ -7,6 +7,7 @@ import { X, User, Phone, Mail, ShieldCheck } from 'lucide-react';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import Honeypot from '@/components/ui/Honeypot';
 import useAuthStore from '@/store/authStore';
 import { hasEngagedVendor, markVendorEngaged } from '@/lib/session';
 
@@ -48,6 +49,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [website, setWebsite] = useState(''); // honeypot — see components/ui/Honeypot.jsx
 
   const timerRef = useRef(null);
   const vendorId = vendor?._id ? String(vendor._id) : '';
@@ -114,7 +116,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
 
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/send-otp', { name, email, phone });
+      const { data } = await api.post('/auth/send-otp', { name, email, phone, website });
       sessionStorage.setItem('intrafer_enquiry_draft', JSON.stringify({
         name, email, phone,
         vendorId,
@@ -255,6 +257,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <Honeypot value={website} onChange={(e) => setWebsite(e.target.value)} />
                 <div className="vendor-enquiry-fields">
                   <div style={{ borderBottom: '0.5px solid rgba(255,255,255,.14)' }}>
                     <Input

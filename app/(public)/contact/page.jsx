@@ -8,6 +8,7 @@ import { isAuthenticated } from '@/lib/auth';
 import useAuthStore from '@/store/authStore';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import Honeypot from '@/components/ui/Honeypot';
 import Reveal from '@/components/ui/Reveal';
 
 const CONTACT_INFO = [
@@ -27,6 +28,7 @@ export default function ContactPage() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [website, setWebsite] = useState(''); // honeypot — see components/ui/Honeypot.jsx
 
   const { user, initFromCookies } = useAuthStore();
 
@@ -43,7 +45,7 @@ export default function ContactPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/public/support-tickets', { name, email, phone, subject, message, userId: user?.id || null });
+      await api.post('/public/support-tickets', { name, email, phone, subject, message, userId: user?.id || null, website });
       setSuccess(true);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send message. Please try again.');
@@ -151,6 +153,7 @@ export default function ContactPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <Honeypot value={website} onChange={(e) => setWebsite(e.target.value)} />
               <div className="grid-mobile-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <Input label="Full name"    icon={User}  value={name}  onChange={(e) => setName(e.target.value)}  placeholder="Your name"  required />
                 <Input label="Phone"        icon={Phone} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile"     type="tel" />

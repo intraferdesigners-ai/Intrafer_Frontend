@@ -6,6 +6,7 @@ import Image from 'next/image';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import Honeypot from '@/components/ui/Honeypot';
 import { X, User, Phone, Mail, Lock, Clock, BadgeCheck } from 'lucide-react';
 
 export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
@@ -18,6 +19,7 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
   const [requirements, setRequirements] = useState('');
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
+  const [website,      setWebsite]      = useState(''); // honeypot — see components/ui/Honeypot.jsx
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
@@ -42,7 +44,7 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
 
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/send-otp', { name, email, phone });
+      const { data } = await api.post('/auth/send-otp', { name, email, phone, website });
       sessionStorage.setItem('intrafer_enquiry_draft', JSON.stringify({
         name, email, phone,
         vendorId:     vendor._id,
@@ -118,6 +120,8 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
           Verified designer
         </div>
       </div>
+
+      <Honeypot value={website} onChange={(e) => setWebsite(e.target.value)} />
 
       {/* Name + Phone */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px' }}>

@@ -8,6 +8,7 @@ import { User, Phone, Mail, MapPin, Lock, Clock, BadgeCheck, ArrowRight } from '
 import api from '../../../lib/api';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import Honeypot from '../../../components/ui/Honeypot';
 import CitySelect from '../../../components/ui/CitySelect';
 
 const STEPS = [
@@ -50,6 +51,7 @@ function EnquiryForm() {
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
   const [vendor,       setVendor]       = useState(null);
+  const [website,      setWebsite]      = useState(''); // honeypot — see components/ui/Honeypot.jsx
 
   // The vendor's own city is already known once the enquiry is tied to a
   // specific vendor, so City can default to that and become optional here —
@@ -82,7 +84,7 @@ function EnquiryForm() {
     setLoading(true);
     try {
       const { data } = await api.post('/auth/send-otp', {
-        name: name.trim(), email: email.trim(), phone: phone.trim(),
+        name: name.trim(), email: email.trim(), phone: phone.trim(), website,
       });
 
       sessionStorage.setItem('intrafer_enquiry_draft', JSON.stringify({
@@ -294,6 +296,7 @@ function EnquiryForm() {
               </p>
 
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <Honeypot value={website} onChange={(e) => setWebsite(e.target.value)} />
                 {/* Personal details */}
                 <div>
                   <p className="caps-label-primary" style={{ marginBottom: '12px' }}>YOUR DETAILS</p>
