@@ -245,7 +245,7 @@ export default function VendorProfilePage() {
   const addServiceLocation = () => {
     setForm((prev) => ({
       ...prev,
-      serviceLocations: [...prev.serviceLocations, { city: '', state: '', pincode: '', placeId: null }],
+      serviceLocations: [...prev.serviceLocations, { city: '', state: '', placeId: null }],
     }));
   };
 
@@ -263,29 +263,34 @@ export default function VendorProfilePage() {
     }));
   };
 
-  // Pincode is exactly 6 digits, so there's no ambiguity about when it's
-  // "done" — the lookup fires the moment the 6th digit lands, no debounce
-  // timer needed. A miss (no matching Locality) is silent: city/state just
-  // stay whatever they already were, editable as normal, rather than
-  // blocking entry for a pincode our India Post-derived dataset doesn't
-  // happen to cover.
-  const handlePincodeChange = async (index, rawValue) => {
-    const digits = rawValue.replace(/\D/g, '').slice(0, 6);
-    updateServiceLocation(index, 'pincode', digits);
-    if (digits.length !== 6) return;
+  // Same city -> state auto-fill as the business-address field above
+  // (getStateForCity + the effect watching form.city): a typed/selected city
+  // that matches the app's canonical city list fills in its state
+  // immediately, while an unmatched freeform city just leaves state as-is
+  // for manual entry — same "starting point, not a lock" philosophy the
+  // pincode lookup this replaced already had.
+  const updateServiceLocationCity = (index, city) => {
+    const mappedState = getStateForCity(city);
+    setForm((prev) => ({
+      ...prev,
+      serviceLocations: prev.serviceLocations.map((l, i) =>
+        i === index ? { ...l, city, state: mappedState || l.state } : l
+      ),
+    }));
+  };
 
-    try {
-      const { data } = await api.get(`/public/pincode/${digits}`);
-      const { city, state, placeId } = data.data;
-      setForm((prev) => ({
-        ...prev,
-        serviceLocations: prev.serviceLocations.map((l, i) =>
-          i === index ? { ...l, city, state, placeId } : l
-        ),
-      }));
-    } catch {
-      // No matching pincode in the dataset — leave city/state as-is.
-    }
+  // CitySelect's onSelectPlace hands back the authoritative state from the
+  // full ~740-place taxonomy (see place.controller.js) — takes priority over
+  // the smaller hardcoded CITY_STATE_MAP a freeform-typed city falls back to
+  // above, same relationship the business-address field has between its own
+  // onSelectPlace and its getStateForCity effect.
+  const selectServiceLocationPlace = (index, place) => {
+    setForm((prev) => ({
+      ...prev,
+      serviceLocations: prev.serviceLocations.map((l, i) =>
+        i === index ? { ...l, city: place.name, state: place.state, placeId: place._id } : l
+      ),
+    }));
   };
 
   const specPillStyle = (spec) => {
@@ -539,10 +544,10 @@ export default function VendorProfilePage() {
 
         {/* Service locations — cities/areas served beyond the business
             address above (e.g. a Bengaluru-based studio that also takes
-            projects in Mysuru). Entering a pincode looks up its city/state
-            from the same India Post-derived dataset CitySelect searches, but
-            the fields stay fully editable afterward — the lookup is a
-            starting point, not a lock. */}
+            projects in Mysuru). No pincode field here (that's specific to a
+            single business address, not a repeatable list) — picking or
+            typing a city auto-fills its state, same as the business-address
+            field above, but the fields stay fully editable afterward. */}
         <div>
           <span style={SECTION_LABEL}>
             <MapPinned size={10} style={{ display: 'inline', marginRight: 4 }} />
@@ -558,27 +563,27 @@ export default function VendorProfilePage() {
                 padding: 14, display: 'flex', flexDirection: 'column', gap: 10,
                 background: 'var(--color-surface-alt)',
               }}>
-                <div className="form-row-3" style={{ gap: 10 }}>
-                  <Input
-                    label="Pincode"
-                    value={loc.pincode}
-                    onChange={(e) => handlePincodeChange(i, e.target.value)}
-                    placeholder="560034"
-                    inputMode="numeric"
-                    maxLength={6}
-                    hint="Type to auto-fill city/state"
-                  />
-                  <Input
-                    label="City"
-                    value={loc.city}
-                    onChange={(e) => updateServiceLocation(i, 'city', e.target.value)}
-                    placeholder="e.g. Mysuru"
-                  />
+                <div className="form-row" style={{ gap: 10 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    <label style={{
+                      fontSize: 10, fontWeight: 600, letterSpacing: '.1em',
+                      textTransform: 'uppercase', color: 'var(--color-text-hint)',
+                    }}>
+                      City
+                    </label>
+                    <CitySelect
+                      value={loc.city}
+                      onChange={(city) => updateServiceLocationCity(i, city)}
+                      onSelectPlace={(place) => selectServiceLocationPlace(i, place)}
+                      placeholder="e.g. Mysuru"
+                    />
+                  </div>
                   <Input
                     label="State"
                     value={loc.state}
                     onChange={(e) => updateServiceLocation(i, 'state', e.target.value)}
                     placeholder="e.g. Karnataka"
+                    hint={loc.city && getStateForCity(loc.city) === loc.state ? 'Auto-filled from city' : undefined}
                   />
                 </div>
 
