@@ -8,6 +8,7 @@ import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
 import { getInitials, formatDate } from '../../../../lib/utils';
 import VendorProfileTracker from '../../../../components/vendor/VendorProfileTracker';
 import VendorMobileCTA from '../../../../components/vendor/VendorMobileCTA';
+import VendorEnquiryOverlay from '../../../../components/vendor/VendorEnquiryOverlay';
 import Reveal from '../../../../components/ui/Reveal';
 
 const PRICE_UNIT_LABEL = {
@@ -125,6 +126,7 @@ export default async function VendorProfilePage({ params }) {
     <main style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
       <VendorProfileTracker vendorId={String(vendor._id)} />
       <VendorMobileCTA vendorId={String(vendor._id)} />
+      <VendorEnquiryOverlay vendor={vendor} />
       <Link
         href="/vendors"
         className="back-link"

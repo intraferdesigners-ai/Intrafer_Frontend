@@ -4,13 +4,19 @@ import { usePathname } from 'next/navigation';
 import { getSessionId, shouldShowPopup, markPopupFilled, markPopupDismissed, hasFilledPopup, recordFirstVisit, getSecondsSinceFirstVisit } from '@/lib/session';
 import CitySelect from './CitySelect';
 
-// Don't show the popup on auth or dashboard pages
+// Don't show the popup on auth or dashboard pages. '/vendors/' (trailing
+// slash, so this doesn't match the /vendors listing page) is excluded
+// because vendor detail pages have their own targeted VendorEnquiryOverlay,
+// which — unlike this generic /visitor/capture popup — actually creates a
+// real lead for that specific vendor. Showing both would compete for the
+// same visitor's attention on the same page.
 const EXCLUDED_PATHS = [
   '/auth',
   '/user/dashboard',
   '/vendor/dashboard',
   '/admin/dashboard',
   '/enquiry',
+  '/vendors/',
 ];
 
 export default function LeadCapturePopup() {
