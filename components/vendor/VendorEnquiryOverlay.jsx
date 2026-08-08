@@ -135,10 +135,19 @@ export default function VendorEnquiryOverlay({ vendor }) {
   return (
     <>
       <style>{`
+        /* Same glass language as the card/button — translucent fill instead
+           of the solid --bg-parchment block this used to be. Kept more
+           opaque than both the card (42%) and the button (50%): this is the
+           one piece of the card the visitor stares at and edits character by
+           character, so it gets the highest opacity floor of the three glass
+           surfaces to keep typed text, placeholders, and icons sharp. The
+           card element already blurs whatever is behind it via its own
+           blur(28px) — this fill just needs to stay legible sitting on top
+           of that, not blur anything itself. */
         .vendor-enquiry-fields {
-          border: 1px solid var(--border);
+          border: 0.5px solid var(--border);
           border-radius: var(--r-md);
-          background: var(--bg-parchment);
+          background: color-mix(in srgb, var(--bg-parchment) 60%, transparent);
           overflow: hidden;
           transition: border-color 150ms, box-shadow 150ms;
         }
@@ -229,7 +238,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div className="vendor-enquiry-fields">
-                  <div style={{ borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ borderBottom: '0.5px solid var(--border)' }}>
                     <Input
                       icon={User}
                       value={name}
@@ -239,7 +248,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
                       style={fieldStyle}
                     />
                   </div>
-                  <div style={{ borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ borderBottom: '0.5px solid var(--border)' }}>
                     <Input
                       icon={Phone}
                       value={phone}
