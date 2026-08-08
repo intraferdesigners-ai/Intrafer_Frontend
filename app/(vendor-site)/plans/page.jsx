@@ -11,6 +11,25 @@ import RevealItem from '@/components/ui/RevealItem';
 
 // TEMP test pricing for live Razorpay flow verification — real prices were
 // 799900 / 1499900 / 1999900. Revert once testing is done.
+//
+// Every plan shows this same feature list — price/duration is the only
+// distinction between tiers, so the list is the union of what used to be
+// spread unevenly across the three (the strongest phrasing wins where two
+// tiers had overlapping items, e.g. "Full analytics + export" over the old
+// 6-month tier's "Advanced analytics dashboard"). "Best value — 12 month
+// billing" was dropped rather than generalized — it's a claim about the
+// 12-month plan specifically, not a feature every tier can honestly list.
+const PLAN_FEATURES = [
+  'Upto 10 qualified leads per month',
+  'Verified designer badge',
+  'Portfolio showcase',
+  'Top featured placement in search',
+  'Full analytics dashboard + export',
+  'Priority email + WhatsApp support',
+  'Dedicated account manager',
+  'Lead quality guarantee',
+];
+
 const FALLBACK_PLANS = [
   {
     name: '3 Month',
@@ -19,12 +38,7 @@ const FALLBACK_PLANS = [
     period: '3 months',
     leadsPerMonth: 10,
     durationDays: 90,
-    features: [
-      'Upto 10 qualified leads per month',
-      'Verified designer badge',
-      'Portfolio showcase',
-      'Email support',
-    ],
+    features: PLAN_FEATURES,
   },
   {
     name: '6 Month',
@@ -34,14 +48,7 @@ const FALLBACK_PLANS = [
     leadsPerMonth: 10,
     durationDays: 180,
     popular: true,
-    features: [
-      'Upto 10 qualified leads per month',
-      'Priority placement in search',
-      'Portfolio showcase',
-      'Advanced analytics dashboard',
-      'Priority email + WhatsApp support',
-      'Lead quality guarantee',
-    ],
+    features: PLAN_FEATURES,
   },
   {
     name: '12 Month',
@@ -50,15 +57,7 @@ const FALLBACK_PLANS = [
     period: '12 months',
     leadsPerMonth: 10,
     durationDays: 365,
-    features: [
-      'Upto 10 qualified leads per month',
-      'Top featured placement',
-      'Portfolio showcase',
-      'Full analytics + export',
-      'Dedicated account manager',
-      'Lead quality guarantee',
-      'Best value — 12 month billing',
-    ],
+    features: PLAN_FEATURES,
   },
 ];
 
