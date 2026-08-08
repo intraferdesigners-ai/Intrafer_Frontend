@@ -108,7 +108,7 @@ export default function RegisterSuccessScreen({ role, ctaHref = '/auth/login' })
           maxWidth: '380px', margin: '0 auto 32px',
         }}>
           {role === 'vendor'
-            ? 'Your designer account is ready. Complete your profile to start receiving leads from homeowners.'
+            ? 'Your designer account is ready. Complete your profile and subscribe to start receiving leads from homeowners.'
             : 'Your account is ready. Start browsing verified interior designers and submit your first enquiry.'}
         </p>
 
@@ -133,9 +133,15 @@ export default function RegisterSuccessScreen({ role, ctaHref = '/auth/login' })
           marginBottom: '28px',
         }}>
           {(role === 'vendor' ? [
+            // Order matches the actual gate, not a suggested reading order:
+            // the backend rejects portfolio uploads with a 403 until a
+            // subscription is active (see createProject in
+            // vendor.controller.js), so subscribing has to come before
+            // uploading projects — same Profile -> Subscribe -> Portfolio
+            // sequence OnboardingChecklist.jsx enforces in the dashboard.
             { icon: '👤', step: '01', title: 'Complete profile', desc: 'Add bio, city, specialisations' },
-            { icon: '🖼', step: '02', title: 'Upload projects', desc: 'Show your best work' },
-            { icon: '💳', step: '03', title: 'Subscribe', desc: 'Start receiving leads' },
+            { icon: '💳', step: '02', title: 'Subscribe', desc: 'Activate your listing' },
+            { icon: '🖼', step: '03', title: 'Upload projects', desc: 'Show your best work' },
           ] : [
             { icon: '🔍', step: '01', title: 'Browse designers', desc: 'Find verified studios near you' },
             { icon: '📋', step: '02', title: 'Submit enquiry', desc: 'Free, takes 2 minutes' },
