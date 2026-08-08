@@ -3,14 +3,40 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { X, User, Phone, Mail } from 'lucide-react';
+import { X, User, Phone, Mail, ShieldCheck } from 'lucide-react';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import useAuthStore from '@/store/authStore';
 import { hasEngagedVendor, markVendorEngaged } from '@/lib/session';
 
-const SHOW_DELAY_MS = 4000;
+// Near-immediate: a long artificial delay here reads as "the site is slow"
+// even though no network call is involved in it — this used to be 4000ms,
+// which is what visitors were actually reacting to (see the investigation
+// in the commit history). A short delay still avoids popping in before the
+// page itself has painted, but nothing close to 4s.
+const SHOW_DELAY_MS = 400;
+
+// Fields sit borderless inside one grouped, divided container rather than
+// each being its own bordered box — same "seamless input inside a shared
+// pill" language HeroSearch/CitySelect already use for the homepage search
+// bar, reused here instead of inventing a new input style.
+//
+// The divider between rows is drawn on a plain wrapper div, not on the
+// <Input> itself: Input.jsx's own inline style already sets `borderColor`
+// on focus/error, and pairing that with a `borderBottom` override here
+// triggered React's "don't mix shorthand and non-shorthand border
+// properties" warning (borderColor vs borderBottom both touch the bottom
+// edge's color). Overriding the same `borderColor` key Input already uses
+// avoids the conflict entirely — border width/style still come from its
+// existing `.form-input-styled` class, just made invisible.
+const fieldStyle = {
+  borderColor: 'transparent',
+  borderRadius: 0,
+  background: 'transparent',
+  boxShadow: 'none',
+  padding: '12px 14px 12px 38px',
+};
 
 export default function VendorEnquiryOverlay({ vendor }) {
   const router = useRouter();
@@ -68,6 +94,13 @@ export default function VendorEnquiryOverlay({ vendor }) {
     };
   }, [vendorId, vendorOwnerId]);
 
+  // Body-scroll lock while shown, same as QuickEnquiryModal/LeadCapturePopup
+  // — consistent with the centered-backdrop treatment those already use.
+  useEffect(() => {
+    if (visible) document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [visible]);
+
   const dismiss = useCallback((reason) => {
     markVendorEngaged(vendorId, reason);
     setVisible(false);
@@ -102,120 +135,153 @@ export default function VendorEnquiryOverlay({ vendor }) {
   return (
     <>
       <style>{`
-        .vendor-enquiry-overlay {
-          position: fixed;
-          right: 20px;
-          bottom: 20px;
-          z-index: 150;
-          width: 340px;
-          max-width: calc(100vw - 40px);
+        .vendor-enquiry-fields {
+          border: 1px solid var(--border);
+          border-radius: var(--r-md);
+          background: var(--bg-parchment);
+          overflow: hidden;
+          transition: border-color 150ms, box-shadow 150ms;
         }
-        @media (max-width: 640px) {
-          .vendor-enquiry-overlay {
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            max-width: 100%;
-            padding: 0 12px max(12px, env(safe-area-inset-bottom));
-            box-sizing: border-box;
-          }
+        .vendor-enquiry-fields:focus-within {
+          border-color: var(--primary);
+          box-shadow: 0 0 0 3px rgba(59,130,246,.12);
         }
       `}</style>
       <AnimatePresence>
         {visible && (
           <motion.div
-            className="vendor-enquiry-overlay"
-            role="dialog"
-            aria-label={`Leave your contact details for ${vendor?.businessName || 'this designer'}`}
-            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.32, ease: 'easeOut' }}
+            role="presentation"
+            onClick={() => dismiss('dismissed')}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.25, ease: 'easeOut' }}
             style={{
-              background: 'color-mix(in srgb, var(--surface) 90%, transparent)',
-              backdropFilter: 'blur(2px)',
-              WebkitBackdropFilter: 'blur(2px)',
-              border: '1px solid var(--border)',
-              borderRadius: '16px',
-              boxShadow: '0 12px 32px rgba(15,23,42,.18)',
+              position: 'fixed', inset: 0, zIndex: 200,
+              background: 'rgba(15,23,42,.4)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: '16px',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '10px' }}>
-              <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)', margin: 0, lineHeight: 1.4 }}>
-                Interested in {vendor?.businessName || 'this designer'}? Leave your details and they&apos;ll reach out.
-              </p>
+            <motion.div
+              role="dialog"
+              aria-label={`Leave your contact details for ${vendor?.businessName || 'this designer'}`}
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.96, y: shouldReduceMotion ? 0 : 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.97, y: shouldReduceMotion ? 0 : 6 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.28, ease: 'easeOut' }}
+              style={{
+                width: '100%', maxWidth: '360px',
+                background: 'color-mix(in srgb, var(--surface) 97%, transparent)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--r-xl)',
+                boxShadow: '0 24px 64px rgba(15,23,42,.28)',
+                padding: '24px', position: 'relative',
+              }}
+            >
               <button
                 onClick={() => dismiss('dismissed')}
                 aria-label="Close"
                 style={{
-                  background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0,
+                  position: 'absolute', top: '14px', right: '14px',
+                  background: 'none', border: 'none', cursor: 'pointer',
                   padding: '2px', color: 'var(--text-hint)',
-                  width: '24px', height: '24px',
+                  width: '28px', height: '28px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
                 <X size={16} />
               </button>
-            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Input
-                icon={User}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                aria-label="Your name"
-              />
-              <Input
-                icon={Phone}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="10-digit phone"
-                inputMode="tel"
-                aria-label="Phone number"
-              />
-              <Input
-                icon={Mail}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                inputMode="email"
-                aria-label="Email address"
-              />
-
-              {error && (
+              <div style={{ textAlign: 'center', marginBottom: '18px' }}>
                 <div style={{
-                  background: 'var(--danger-bg)', color: 'var(--danger)',
-                  fontSize: '12px', padding: '8px 10px', borderRadius: 'var(--r-md)',
+                  width: '40px', height: '40px', borderRadius: '50%',
+                  background: 'var(--primary-bg)', border: '1.5px solid var(--primary-light)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 12px',
                 }}>
-                  {error}
+                  <ShieldCheck size={18} color="var(--primary)" strokeWidth={1.8} />
                 </div>
-              )}
+                <h2 style={{
+                  fontFamily: 'var(--font-display)', fontSize: '19px', fontWeight: 400,
+                  color: 'var(--text)', margin: '0 0 6px',
+                }}>
+                  Verify your details to connect
+                </h2>
+                <p style={{ fontSize: '12.5px', color: 'var(--text-hint)', margin: 0, lineHeight: 1.5 }}>
+                  {vendor?.businessName || 'This designer'} will reach out once we confirm it&apos;s you — takes 30 seconds.
+                </p>
+              </div>
 
-              <Button
-                variant="primary"
-                size="md"
-                loading={loading}
-                onClick={handleSubmit}
-                style={{ width: '100%', marginTop: '2px' }}
-              >
-                Send my details →
-              </Button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className="vendor-enquiry-fields">
+                  <div style={{ borderBottom: '1px solid var(--border)' }}>
+                    <Input
+                      icon={User}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name"
+                      aria-label="Your name"
+                      style={fieldStyle}
+                    />
+                  </div>
+                  <div style={{ borderBottom: '1px solid var(--border)' }}>
+                    <Input
+                      icon={Phone}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="10-digit phone"
+                      inputMode="tel"
+                      aria-label="Phone number"
+                      style={fieldStyle}
+                    />
+                  </div>
+                  <Input
+                    icon={Mail}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email"
+                    inputMode="email"
+                    aria-label="Email address"
+                    style={fieldStyle}
+                  />
+                </div>
 
-              <button
-                onClick={() => dismiss('dismissed')}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: '12px', color: 'var(--text-hint)',
-                  textDecoration: 'underline', textDecorationStyle: 'dotted',
-                  textUnderlineOffset: '3px', padding: '2px', alignSelf: 'center',
-                }}
-              >
-                I&apos;ll do it later
-              </button>
-            </div>
+                {error && (
+                  <div style={{
+                    background: 'var(--danger-bg)', color: 'var(--danger)',
+                    fontSize: '12px', padding: '8px 10px', borderRadius: 'var(--r-md)',
+                  }}>
+                    {error}
+                  </div>
+                )}
+
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={loading}
+                  onClick={handleSubmit}
+                  style={{ width: '100%', marginTop: '2px' }}
+                >
+                  Send my details →
+                </Button>
+
+                <button
+                  onClick={() => dismiss('dismissed')}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: '12px', color: 'var(--text-hint)',
+                    textDecoration: 'underline', textDecorationStyle: 'dotted',
+                    textUnderlineOffset: '3px', padding: '2px', alignSelf: 'center',
+                  }}
+                >
+                  I&apos;ll do it later
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
