@@ -158,9 +158,9 @@ export default function VendorEnquiryOverlay({ vendor }) {
             transition={{ duration: shouldReduceMotion ? 0 : 0.25, ease: 'easeOut' }}
             style={{
               position: 'fixed', inset: 0, zIndex: 200,
-              background: 'rgba(15,23,42,.4)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
+              background: 'rgba(15,23,42,.45)',
+              backdropFilter: 'blur(18px)',
+              WebkitBackdropFilter: 'blur(18px)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: '16px',
             }}
@@ -175,8 +175,19 @@ export default function VendorEnquiryOverlay({ vendor }) {
               transition={{ duration: shouldReduceMotion ? 0 : 0.28, ease: 'easeOut' }}
               style={{
                 width: '100%', maxWidth: '360px',
-                background: 'color-mix(in srgb, var(--surface) 97%, transparent)',
-                border: '1px solid var(--border)',
+                // Glass card: a much more transparent fill than a typical
+                // modal (42% of --surface) relies on the strong blur below —
+                // and the backdrop layer's own blur — to keep whatever page
+                // content shows through as an illegible soft wash rather
+                // than readable text/photo detail. The border deliberately
+                // stays at full token opacity (not blended toward
+                // transparent) so it reads as "higher opacity than the
+                // fill" and keeps the card's edge defined against any
+                // background.
+                background: 'color-mix(in srgb, var(--surface) 42%, transparent)',
+                backdropFilter: 'blur(28px)',
+                WebkitBackdropFilter: 'blur(28px)',
+                border: '0.5px solid var(--border)',
                 borderRadius: 'var(--r-xl)',
                 boxShadow: '0 24px 64px rgba(15,23,42,.28)',
                 padding: '24px', position: 'relative',
@@ -264,7 +275,17 @@ export default function VendorEnquiryOverlay({ vendor }) {
                   size="md"
                   loading={loading}
                   onClick={handleSubmit}
-                  style={{ width: '100%', marginTop: '2px' }}
+                  style={{
+                    width: '100%', marginTop: '2px',
+                    // Same glass language as the card itself — tinted fill
+                    // + defining border instead of a solid block. Kept a bit
+                    // less transparent than the card body (50% vs 42%) since
+                    // this carries white button text that needs to stay
+                    // legible on its own, not just blend into the glass.
+                    background: 'color-mix(in srgb, var(--primary) 50%, transparent)',
+                    border: '1px solid var(--primary)',
+                    boxShadow: 'none',
+                  }}
                 >
                   Send my details →
                 </Button>
