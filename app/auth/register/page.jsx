@@ -16,13 +16,15 @@ function RegisterContent() {
   const explicitVendor = searchParams.get('role') === 'vendor';
   const initialRole = explicitVendor ? 'vendor' : 'user';
 
-  const [name,     setName]     = useState('');
-  const [email,    setEmail]    = useState('');
-  const [phone,    setPhone]    = useState('');
-  const [password, setPassword] = useState('');
-  const [role,     setRole]     = useState(initialRole);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
+  const [name,            setName]            = useState('');
+  const [email,           setEmail]           = useState('');
+  const [phone,           setPhone]           = useState('');
+  const [password,        setPassword]        = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [role,            setRole]            = useState(initialRole);
+  const [loading,         setLoading]         = useState(false);
+  const [error,           setError]           = useState('');
+  const [confirmError,    setConfirmError]    = useState('');
 
   // A vendor-specific entry point (e.g. VendorNavbar's "Vendor login" ->
   // "Sign up") signals role=vendor explicitly, so the toggle starts hidden.
@@ -37,6 +39,13 @@ function RegisterContent() {
 
   useEffect(() => { document.title = 'Create account | Intrafer'; }, []);
 
+  // Re-checked on every keystroke of either field (see the Input onChange
+  // handlers below) so the mismatch error clears the moment the two fields
+  // agree again, rather than lingering until the next submit attempt.
+  const checkPasswordsMatch = (pw, confirmPw) => {
+    setConfirmError(confirmPw && pw !== confirmPw ? 'Passwords do not match.' : '');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -44,6 +53,7 @@ function RegisterContent() {
     if (name.trim().length < 2)           { setError('Name must be at least 2 characters.'); return; }
     if (!/^[6-9]\d{9}$/.test(phone.trim())) { setError('Enter a valid 10-digit Indian mobile number.'); return; }
     if (password.length < 8)              { setError('Password must be at least 8 characters.'); return; }
+    if (password !== confirmPassword)     { setConfirmError('Passwords do not match.'); return; }
 
     setLoading(true);
     try {
@@ -155,7 +165,8 @@ function RegisterContent() {
         <Input label="Full name"     icon={User}  value={name}     onChange={(e) => setName(e.target.value)}     placeholder="Your full name"         required />
         <Input label="Email address" type="email" icon={Mail}  value={email}    onChange={(e) => setEmail(e.target.value)}    placeholder="you@example.com"        required />
         <Input label="Phone number"  type="tel"   icon={Phone} value={phone}    onChange={(e) => setPhone(e.target.value)}    placeholder="10-digit mobile number" inputMode="numeric" maxLength={10} hint="10-digit Indian mobile number" required />
-        <Input label="Password"      type="password" icon={Lock} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 8 characters"    hint="Minimum 8 characters" required />
+        <Input label="Password"      type="password" icon={Lock} value={password} onChange={(e) => { setPassword(e.target.value); checkPasswordsMatch(e.target.value, confirmPassword); }} placeholder="Min. 8 characters"    hint="Minimum 8 characters" required />
+        <Input label="Confirm password" type="password" icon={Lock} value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); checkPasswordsMatch(password, e.target.value); }} placeholder="Re-enter your password" error={confirmError} required />
 
         <Button type="submit" variant="primary" size="lg" loading={loading} style={{ width: '100%', marginTop: '4px' }}>
           Create account
