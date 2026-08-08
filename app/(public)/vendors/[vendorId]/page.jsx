@@ -122,8 +122,12 @@ export default async function VendorProfilePage({ params }) {
   // already shown unconditionally on this page.
   const vendorContactEmail = vendor.businessEmail || vendor.userId?.email || '';
 
+  // Top padding matches the fixed Navbar's height (same clamp() the sibling
+  // /vendors listing page uses) — the flat 40px here left the "All
+  // designers" back-link tucked directly under the fixed navbar, overlapping
+  // the logo instead of clearing it.
   return (
-    <main style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 24px' }}>
+    <main style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(80px, 10vw, 108px) 24px 40px' }}>
       <VendorProfileTracker vendorId={String(vendor._id)} />
       <VendorMobileCTA vendorId={String(vendor._id)} />
       <VendorEnquiryOverlay vendor={vendor} />
