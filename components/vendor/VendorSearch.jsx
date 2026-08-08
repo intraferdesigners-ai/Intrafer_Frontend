@@ -69,6 +69,10 @@ export default function VendorSearch() {
     if (city.trim())                                params.set('city', city.trim());
     if (specialization && specialization !== 'All') params.set('specialization', specialization);
     if (sort && sort !== 'rating')                  params.set('sort', sort);
+    // Same instant-feedback signal a real <Link> click gives RouteProgressBar
+    // — this navigation is router.push()-driven from a button, not an <a>,
+    // so the bar's click listener alone wouldn't see it.
+    window.dispatchEvent(new Event('intrafer:nav-start'));
     router.push('/vendors' + (params.toString() ? '?' + params.toString() : ''));
   };
 
@@ -76,6 +80,7 @@ export default function VendorSearch() {
     setCity('');
     setSpecialization('All');
     setSort('rating');
+    window.dispatchEvent(new Event('intrafer:nav-start'));
     router.push('/vendors');
   };
 
