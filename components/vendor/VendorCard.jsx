@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { motion, useReducedMotion } from 'framer-motion';
-import { MapPin, Building2, ShieldCheck, Heart, Scale, Star, ArrowRight } from 'lucide-react';
+import { MapPin, ShieldCheck, Heart, Scale, Star, ArrowRight } from 'lucide-react';
 import QuickEnquiryModal from './QuickEnquiryModal';
 import VendorTooltip from './VendorTooltip';
 import ProjectImageSlider from './ProjectImageSlider';
@@ -34,6 +34,27 @@ function fetchSavedVendorIds() {
       });
   }
   return savedIdsPromise;
+}
+
+// Last-resort fallback when a vendor has neither published project photos
+// nor a banner image — a colored initial reads as an intentional identity
+// mark (same idea as Slack/Gmail avatars), unlike the old generic Building2
+// icon, which looked like a broken image rather than a designed empty state.
+function VendorMonogram({ name, size }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: 'var(--primary)', display: 'flex',
+      alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      <span style={{
+        fontSize: size * 0.42, fontWeight: 700, color: '#fff',
+        fontFamily: 'var(--font-ui)', letterSpacing: '-0.02em',
+      }}>
+        {name?.charAt(0)?.toUpperCase() || 'I'}
+      </span>
+    </div>
+  );
 }
 
 // variant="editorial" (default) — full-bleed photo card used on the public
@@ -142,7 +163,12 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
   const hideTooltip = () => { tooltipTimeout.current = setTimeout(() => setTooltipVisible(false), 120); };
 
   if (variant === 'compact') {
-    const compactImage = vendor.portfolioImages?.[0] || vendor.bannerImage || vendor.profilePhoto || null;
+    // portfolioImages is the same dead field noted on the editorial variant
+    // above (nothing writes to it anymore) — profilePhoto deliberately isn't
+    // in this chain: it's a personal headshot, not a project/cover photo,
+    // so it's excluded from the card image here the same as it now is from
+    // attachCardImages's server-side fallback.
+    const compactImage = vendor.portfolioImages?.[0] || vendor.bannerImage || null;
     return (
       <>
         <div className="vendor-card-hover" style={{
@@ -173,8 +199,8 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
                 {/* /auth/saved-vendors doesn't run project photos through
                     attachCardImages (see public.controller.js) — the same
                     portfolioImages dead-field issue as the editorial variant,
-                    so fall back to bannerImage/profilePhoto here too rather
-                    than dropping straight to the placeholder icon. */}
+                    so fall back to bannerImage here too rather than dropping
+                    straight to the placeholder. */}
                 {compactImage ? (
                   <Image
                     src={compactImage}
@@ -185,7 +211,7 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 ) : (
-                  <Building2 size={36} color="var(--border-emp)" />
+                  <VendorMonogram name={vendor.businessName} size={56} />
                 )}
 
                 {vendor.isFeatured && (
@@ -420,11 +446,11 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
         }}
       >
         {/* Photo layer — zooms on hover, same whileHover pattern as StyleGallery.
-            cardImages (see attachCardImages in public.controller.js) pools
-            published-project photos, falling back to bannerImage/profilePhoto
-            for vendors with no published projects yet — the placeholder icon
-            below is now truly a last resort, for vendors with nothing
-            uploaded at all. */}
+            cardImages (see attachCardImages in public.controller.js) is
+            published-project photos only when any exist — never mixed with
+            the banner — falling back to bannerImage alone for vendors with
+            no published projects yet, and finally to the monogram below for
+            vendors with neither. */}
         <motion.div
           whileHover={{ scale: shouldReduceMotion ? 1 : 1.06 }}
           transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: 'easeOut' }}
@@ -434,7 +460,7 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
             <ProjectImageSlider images={cardImages} alt={vendor.businessName} />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Building2 size={40} color="var(--border-emp)" />
+              <VendorMonogram name={vendor.businessName} size={88} />
             </div>
           )}
         </motion.div>
