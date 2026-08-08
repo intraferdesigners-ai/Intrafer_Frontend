@@ -143,17 +143,25 @@ export default function VendorEnquiryOverlay({ vendor }) {
            surfaces to keep typed text, placeholders, and icons sharp. The
            card element already blurs whatever is behind it via its own
            blur(28px) — this fill just needs to stay legible sitting on top
-           of that, not blur anything itself. */
+           of that, not blur anything itself.
+           Fixed white-on-dark instead of the theme-driven var(--bg-parchment)/
+           var(--text) — see the card comment below for why. */
         .vendor-enquiry-fields {
-          border: 0.5px solid var(--border);
+          border: 0.5px solid rgba(255,255,255,.16);
           border-radius: var(--r-md);
-          background: color-mix(in srgb, var(--bg-parchment) 60%, transparent);
+          background: rgba(255,255,255,.08);
           overflow: hidden;
           transition: border-color 150ms, box-shadow 150ms;
         }
         .vendor-enquiry-fields:focus-within {
           border-color: var(--primary);
           box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+        }
+        .vendor-enquiry-fields input.form-input-styled {
+          color: rgba(255,255,255,.95);
+        }
+        .vendor-enquiry-fields input.form-input-styled::placeholder {
+          color: rgba(255,255,255,.5);
         }
       `}</style>
       <AnimatePresence>
@@ -184,19 +192,22 @@ export default function VendorEnquiryOverlay({ vendor }) {
               transition={{ duration: shouldReduceMotion ? 0 : 0.28, ease: 'easeOut' }}
               style={{
                 width: '100%', maxWidth: '360px',
-                // Glass card: a much more transparent fill than a typical
-                // modal (42% of --surface) relies on the strong blur below —
-                // and the backdrop layer's own blur — to keep whatever page
-                // content shows through as an illegible soft wash rather
-                // than readable text/photo detail. The border deliberately
-                // stays at full token opacity (not blended toward
-                // transparent) so it reads as "higher opacity than the
-                // fill" and keeps the card's edge defined against any
-                // background.
-                background: 'color-mix(in srgb, var(--surface) 42%, transparent)',
+                // Glass card: fixed dark navy (matching the backdrop's own
+                // tint) rather than color-mixing the theme's var(--surface),
+                // which flips to a light tone in light theme — this card
+                // composites over an arbitrary vendor banner photo, not the
+                // page's own background, so it can't rely on the site theme
+                // to land on a readable result the way a normal modal can.
+                // A fixed dark glass + fixed light text (below) holds
+                // contrast the same way regardless of theme or of how light
+                // or dark the photo underneath happens to be. Nudged up from
+                // the 42% this used to blend at (of --surface) to 58% of a
+                // guaranteed-dark color, per live testing against real
+                // vendor banners — 42% let bright banners wash the text out.
+                background: 'rgba(15,23,42,.58)',
                 backdropFilter: 'blur(28px)',
                 WebkitBackdropFilter: 'blur(28px)',
-                border: '0.5px solid var(--border)',
+                border: '0.5px solid rgba(255,255,255,.16)',
                 borderRadius: 'var(--r-xl)',
                 boxShadow: '0 24px 64px rgba(15,23,42,.28)',
                 padding: '24px', position: 'relative',
@@ -208,7 +219,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
                 style={{
                   position: 'absolute', top: '14px', right: '14px',
                   background: 'none', border: 'none', cursor: 'pointer',
-                  padding: '2px', color: 'var(--text-hint)',
+                  padding: '2px', color: 'rgba(255,255,255,.7)',
                   width: '28px', height: '28px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
@@ -225,20 +236,27 @@ export default function VendorEnquiryOverlay({ vendor }) {
                 }}>
                   <ShieldCheck size={18} color="var(--primary)" strokeWidth={1.8} />
                 </div>
+                {/* Fixed white + a text-shadow (not var(--text), which is
+                    dark in light theme and would sit unreadably close to
+                    this card's own dark glass) — see the card background
+                    comment above. */}
                 <h2 style={{
                   fontFamily: 'var(--font-display)', fontSize: '19px', fontWeight: 400,
-                  color: 'var(--text)', margin: '0 0 6px',
+                  color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,.45)', margin: '0 0 6px',
                 }}>
                   Verify your details to connect
                 </h2>
-                <p style={{ fontSize: '12.5px', color: 'var(--text-hint)', margin: 0, lineHeight: 1.5 }}>
+                <p style={{
+                  fontSize: '12.5px', color: 'rgba(255,255,255,.8)',
+                  textShadow: '0 1px 3px rgba(0,0,0,.4)', margin: 0, lineHeight: 1.5,
+                }}>
                   {vendor?.businessName || 'This designer'} will reach out once we confirm it&apos;s you — takes 30 seconds.
                 </p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div className="vendor-enquiry-fields">
-                  <div style={{ borderBottom: '0.5px solid var(--border)' }}>
+                  <div style={{ borderBottom: '0.5px solid rgba(255,255,255,.14)' }}>
                     <Input
                       icon={User}
                       value={name}
@@ -246,9 +264,10 @@ export default function VendorEnquiryOverlay({ vendor }) {
                       placeholder="Your name"
                       aria-label="Your name"
                       style={fieldStyle}
+                      iconColor="rgba(255,255,255,.55)"
                     />
                   </div>
-                  <div style={{ borderBottom: '0.5px solid var(--border)' }}>
+                  <div style={{ borderBottom: '0.5px solid rgba(255,255,255,.14)' }}>
                     <Input
                       icon={Phone}
                       value={phone}
@@ -257,6 +276,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
                       inputMode="tel"
                       aria-label="Phone number"
                       style={fieldStyle}
+                      iconColor="rgba(255,255,255,.55)"
                     />
                   </div>
                   <Input
@@ -267,6 +287,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
                     inputMode="email"
                     aria-label="Email address"
                     style={fieldStyle}
+                    iconColor="rgba(255,255,255,.55)"
                   />
                 </div>
 
@@ -303,7 +324,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
                   onClick={() => dismiss('dismissed')}
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer',
-                    fontSize: '12px', color: 'var(--text-hint)',
+                    fontSize: '12px', color: 'rgba(255,255,255,.65)',
                     textDecoration: 'underline', textDecorationStyle: 'dotted',
                     textUnderlineOffset: '3px', padding: '2px', alignSelf: 'center',
                   }}

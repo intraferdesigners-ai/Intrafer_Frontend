@@ -1,7 +1,17 @@
 'use client';
 import { useState } from 'react';
 
-export default function Input({ label, error, hint, icon: Icon, className, style, ...rest }) {
+export default function Input({
+  label, error, hint, icon: Icon, className, style,
+  // Let a caller compositing this over unpredictable content (a photo, not
+  // the page's own light/dark chrome — see VendorEnquiryOverlay) pin the
+  // icon to fixed colors instead of the theme's --text-hint/--primary,
+  // which assume they're sitting on the page background. Defaults match
+  // the previous unconditional behavior exactly, so every other caller is
+  // unaffected.
+  iconColor = 'var(--text-hint)', iconColorFocused = 'var(--primary)',
+  ...rest
+}) {
   const [focused, setFocused] = useState(false);
 
   return (
@@ -19,7 +29,7 @@ export default function Input({ label, error, hint, icon: Icon, className, style
           <Icon size={15} style={{
             position: 'absolute', left: '12px',
             top: '50%', transform: 'translateY(-50%)',
-            color: focused ? 'var(--primary)' : 'var(--text-hint)',
+            color: focused ? iconColorFocused : iconColor,
             transition: 'color 150ms', pointerEvents: 'none',
           }} />
         )}
