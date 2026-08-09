@@ -3,22 +3,23 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import useNotificationStore from '../../store/notificationStore';
-import useAuthStore from '../../store/authStore';
 import { formatRelativeTime } from '../../lib/utils';
 import { Bell, X, FileText, CheckCircle, XCircle, Crown, AlertCircle, MessageCircle } from 'lucide-react';
 import Spinner from '../ui/Spinner';
 import HoverLift from '../ui/HoverLift';
 
+// lead_accepted, lead_cancelled, and enquiry_created are no longer created
+// (see notification.service.js and the homeowner-removal plan, Phase 7) —
+// removed here rather than left dead, since this panel is vendor/admin-only
+// and never displayed them to begin with (their recipientRole was always
+// 'user').
 const NOTIFICATION_CONFIG = {
   lead_assigned:         { icon: FileText,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
-  lead_accepted:         { icon: CheckCircle,   color: 'var(--success)', bg: 'var(--success-bg)' },
-  lead_cancelled:        { icon: XCircle,       color: 'var(--danger)',  bg: 'var(--danger-bg)'  },
   payment_success:       { icon: Crown,         color: 'var(--primary)', bg: 'var(--primary-bg)' },
   subscription_expiring: { icon: AlertCircle,   color: 'var(--warning)', bg: 'var(--warning-bg)' },
   vendor_approved:       { icon: CheckCircle,   color: 'var(--success)', bg: 'var(--success-bg)' },
   project_approved:      { icon: CheckCircle,   color: 'var(--success)', bg: 'var(--success-bg)' },
   project_rejected:      { icon: XCircle,       color: 'var(--danger)',  bg: 'var(--danger-bg)'  },
-  enquiry_created:       { icon: FileText,      color: 'var(--info)',    bg: 'var(--info-bg)'    },
   new_message:           { icon: MessageCircle, color: 'var(--primary)', bg: 'var(--primary-bg)' },
 };
 
@@ -47,18 +48,19 @@ export default function NotificationPanel({ isOpen, onClose, anchorRect }) {
     }
 
     const leadId = notification.metadata?.leadId;
-    const role = useAuthStore.getState().role;
+    // This panel is only ever rendered for vendor/admin (see DashboardLayout —
+    // the homeowner dashboard no longer exists), so every deep link below is
+    // vendor-side. lead_accepted and enquiry_created used to target a
+    // homeowner recipient and are no longer created at all (see
+    // notification.service.js and the homeowner-removal plan, Phase 7).
     const deepLinks = {
       lead_assigned:         `/vendor/dashboard/leads/${leadId}`,
-      lead_accepted:         `/vendor/dashboard/leads/${leadId}`,
-      lead_cancelled:        `/vendor/dashboard/leads/${leadId}`,
       payment_success:       '/vendor/dashboard/subscription',
       subscription_expiring: '/vendor/dashboard/subscription',
       vendor_approved:       '/vendor/dashboard/profile',
       project_approved:      '/vendor/dashboard/projects',
       project_rejected:      '/vendor/dashboard/projects',
-      enquiry_created:       `/user/dashboard/enquiries/${leadId}`,
-      new_message:           role === 'vendor' ? `/vendor/dashboard/leads/${leadId}` : `/user/dashboard/enquiries/${leadId}`,
+      new_message:           `/vendor/dashboard/leads/${leadId}`,
     };
     const href = deepLinks[notification.type];
     if (href) window.location.href = href;

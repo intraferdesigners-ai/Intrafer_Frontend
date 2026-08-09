@@ -12,7 +12,6 @@ import CitySelect from './CitySelect';
 // same visitor's attention on the same page.
 const EXCLUDED_PATHS = [
   '/auth',
-  '/user/dashboard',
   '/vendor/dashboard',
   '/admin/dashboard',
   '/enquiry',
