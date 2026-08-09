@@ -15,13 +15,14 @@ const NAV_LINKS = [
   { label: 'Design Ideas',    href: '/gallery'         },
 ];
 
-// Same three-way role->dashboard mapping already used by middleware.js (route
+// Same role->dashboard mapping already used by middleware.js (route
 // protection) and the login page's post-login redirect — kept as its own
 // small local copy rather than a shared import, matching how those two
 // existing spots already each define it independently (middleware.js runs
 // in the Edge runtime, so it can't share a module with client-only code
-// like this one anyway).
-const ROLE_DASHBOARDS = { user: '/user/dashboard', vendor: '/vendor/dashboard', admin: '/admin/dashboard' };
+// like this one anyway). No 'user' entry — that role has no login surface
+// anymore (see the homeowner-removal plan, Phase 4).
+const ROLE_DASHBOARDS = { vendor: '/vendor/dashboard', admin: '/admin/dashboard' };
 
 const DRAWER_SECTIONS = [
   {

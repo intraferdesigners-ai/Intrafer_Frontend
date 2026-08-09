@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Lock, User, Phone, UserPlus } from 'lucide-react';
@@ -11,33 +11,22 @@ import Input from '../../../components/ui/Input';
 import Honeypot from '../../../components/ui/Honeypot';
 import AuthSplitCard from '../../../components/auth/AuthSplitCard';
 
+// Self-registration only ever creates vendor accounts — the homeowner role
+// has no signup surface anymore (see the homeowner-removal plan, Phase 4).
+// Real admin accounts are never created here either (see auth.controller.js's
+// register()).
 function RegisterContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const explicitVendor = searchParams.get('role') === 'vendor';
-  const initialRole = explicitVendor ? 'vendor' : 'user';
 
   const [name,            setName]            = useState('');
   const [email,           setEmail]           = useState('');
   const [phone,           setPhone]           = useState('');
   const [password,        setPassword]        = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role,            setRole]            = useState(initialRole);
   const [loading,         setLoading]         = useState(false);
   const [error,           setError]           = useState('');
   const [confirmError,    setConfirmError]    = useState('');
   const [website,         setWebsite]         = useState(''); // honeypot — see components/ui/Honeypot.jsx
-
-  // A vendor-specific entry point (e.g. VendorNavbar's "Vendor login" ->
-  // "Sign up") signals role=vendor explicitly, so the toggle starts hidden.
-  // The "Not a designer?" escape hatch below can still bring it back for
-  // anyone who followed a shared vendor link by mistake.
-  const [showRoleToggle, setShowRoleToggle] = useState(!explicitVendor);
-
-  const switchToHomeowner = () => {
-    setRole('user');
-    setShowRoleToggle(true);
-  };
 
   useEffect(() => { document.title = 'Create account | Intrafer'; }, []);
 
@@ -61,14 +50,14 @@ function RegisterContent() {
     try {
       const { data } = await api.post('/auth/register', {
         name: name.trim(), email: email.trim(),
-        phone: phone.trim(), password, role, website,
+        phone: phone.trim(), password, role: 'vendor', website,
       });
       const userId = data.data.userId;
       // Registration now requires OTP verification before the account can
       // log in (see backend register()/login()) — hand off to the same
       // verification step the enquiry flow already uses, rather than
       // showing the account as ready to use immediately.
-      router.push(`/auth/register/verify?userId=${userId}&role=${role}&email=${encodeURIComponent(email.trim())}`);
+      router.push(`/auth/register/verify?userId=${userId}&role=vendor&email=${encodeURIComponent(email.trim())}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
       setLoading(false);
@@ -100,58 +89,20 @@ function RegisterContent() {
         </p>
       </div>
 
-      {/* Role toggle — hidden when role=vendor arrived as an explicit signal
-          from a vendor-specific entry point (see showRoleToggle above) */}
-      {showRoleToggle ? (
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-          {[['user', "I'm a homeowner"], ['vendor', "I'm a designer"]].map(([val, label]) => (
-            <button
-              key={val}
-              type="button"
-              onClick={() => setRole(val)}
-              style={{
-                flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 500,
-                cursor: 'pointer', textAlign: 'center', borderRadius: 'var(--r-md)',
-                transition: 'all 150ms ease-out',
-                background: role === val ? 'var(--primary-bg)' : 'var(--bg-parchment)',
-                color:      role === val ? 'var(--primary)'    : 'var(--text-sub)',
-                border:     role === val ? '1.5px solid var(--primary-light)' : '1px solid var(--border)',
-              }}
-            >
-              {label}
-            </button>
-          ))}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+        <div style={{
+          flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 500,
+          textAlign: 'center', borderRadius: 'var(--r-md)',
+          background: 'var(--primary-bg)', color: 'var(--primary)',
+          border: '1.5px solid var(--primary-light)',
+        }}>
+          Creating a designer account
         </div>
-      ) : (
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-          <div style={{
-            flex: 1, padding: '10px 16px', fontSize: '13px', fontWeight: 500,
-            textAlign: 'center', borderRadius: 'var(--r-md)',
-            background: 'var(--primary-bg)', color: 'var(--primary)',
-            border: '1.5px solid var(--primary-light)',
-          }}>
-            Creating a designer account
-          </div>
-        </div>
-      )}
+      </div>
 
-      <p style={{ fontSize: '12px', color: 'var(--text-hint)', textAlign: 'center', margin: showRoleToggle ? '0 0 20px' : '0 0 8px', lineHeight: 1.5 }}>
-        {role === 'vendor'
-          ? 'Reach homeowners actively looking for a designer · Manage every enquiry from one dashboard'
-          : 'Free to browse and enquire · Verified designers only'}
+      <p style={{ fontSize: '12px', color: 'var(--text-hint)', textAlign: 'center', margin: '0 0 20px', lineHeight: 1.5 }}>
+        Reach homeowners actively looking for a designer · Manage every enquiry from one dashboard
       </p>
-
-      {!showRoleToggle && (
-        <p style={{ textAlign: 'center', margin: '0 0 20px' }}>
-          <button
-            type="button"
-            onClick={switchToHomeowner}
-            style={{ background: 'none', border: 'none', padding: 0, fontSize: '12px', color: 'var(--text-hint)', textDecoration: 'underline', cursor: 'pointer' }}
-          >
-            Not a designer? Register as a homeowner instead
-          </button>
-        </p>
-      )}
 
       {error && (
         <div style={{
@@ -178,7 +129,7 @@ function RegisterContent() {
 
       <p style={{ fontSize: '13px', textAlign: 'center', color: 'var(--text-sub)', marginTop: '24px' }}>
         Already have an account?{' '}
-        <Link href="/auth/login" style={{ color: 'var(--primary)', fontWeight: 500 }}>
+        <Link href="/auth/login?role=vendor" style={{ color: 'var(--primary)', fontWeight: 500 }}>
           Sign in
         </Link>
       </p>

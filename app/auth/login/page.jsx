@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -13,24 +13,20 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import AuthSplitCard from '../../../components/auth/AuthSplitCard';
 
-const tabStyle = (active) => ({
-  flex: 1, padding: '8px 12px', borderRadius: 'var(--r-sm)', border: 'none',
-  background: active ? 'var(--surface)' : 'transparent',
-  color: active ? 'var(--primary)' : 'var(--text-sub)',
-  fontSize: '13px', fontWeight: 500, cursor: 'pointer',
-  boxShadow: active ? 'var(--shadow-sm)' : 'none',
-  transition: 'all 150ms ease-out',
-});
-
-const ROLE_LABELS = { user: 'homeowner', vendor: 'vendor', admin: 'admin' };
+// 'user' (homeowner) intentionally has no entry — that role has no login
+// surface anymore (see the homeowner-removal plan, Phase 4). A pre-existing
+// homeowner account attempting the password form still authenticates
+// server-side (those rows are left inert, not purged), it just falls back
+// to raw "user" here instead of a friendly label, and to '/' below instead
+// of a dashboard that no longer exists.
+const ROLE_LABELS = { vendor: 'vendor', admin: 'admin' };
 const roleLabel = (r) => ROLE_LABELS[r] || r;
 const articleFor = (label) => (/^[aeiou]/i.test(label) ? 'an' : 'a');
 
-// Same {user, vendor, admin} -> path mapping middleware.js and Navbar.jsx
-// keep, duplicated rather than imported since middleware.js runs in the Edge
+// Same {vendor, admin} -> path mapping middleware.js and Navbar.jsx keep,
+// duplicated rather than imported since middleware.js runs in the Edge
 // runtime and can't share a module with client-only code anyway.
 const ROLE_DASHBOARDS = {
-  user:   '/user/dashboard',
   vendor: '/vendor/dashboard',
   admin:  '/admin/dashboard',
 };
@@ -75,16 +71,6 @@ function LoginContent() {
   const heading = ROLE_COPY[roleParam]?.heading || 'Welcome back';
   const subtext = ROLE_COPY[roleParam]?.subtext || 'Sign in to your Intrafer account';
 
-  // Email-code sign-in is a homeowner convenience for accounts that may not
-  // have a real password yet. Vendor/admin accounts always have one, and
-  // send-otp silently auto-creates a placeholder homeowner account for any
-  // email that doesn't already exist — exposing it here would be a latent
-  // bug risk on top of the UX mismatch, so it's hidden for those roles.
-  const showOtpTab = roleParam !== 'vendor' && roleParam !== 'admin';
-
-  const [authMethod, setAuthMethod] = useState('password'); // 'password' | 'otp'
-  const effectiveAuthMethod = showOtpTab ? authMethod : 'password';
-
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
@@ -97,19 +83,7 @@ function LoginContent() {
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendingVerify,   setResendingVerify]   = useState(false);
 
-  // Email-code sign-in state
-  const [otpUserId,     setOtpUserId]     = useState('');
-  const [otpSent,       setOtpSent]       = useState(false);
-  const [otp,           setOtp]           = useState(['', '', '', '', '', '']);
-  const [sendingCode,   setSendingCode]   = useState(false);
-  const [resendTimer,   setResendTimer]   = useState(0);
-  const [canResend,     setCanResend]     = useState(true);
-
-  const inputRefs = useRef([]);
-  const timerRef  = useRef(null);
-
   useEffect(() => { document.title = 'Login | Intrafer'; }, []);
-  useEffect(() => () => clearInterval(timerRef.current), []);
 
   // Navigating between role params (e.g. clicking the mismatch banner's
   // "Try {role} sign-in" link, or "Choose a different account type") is a
@@ -122,14 +96,6 @@ function LoginContent() {
     setRoleMismatch(null);
   }, [roleParam]);
 
-  const switchMethod = (method) => {
-    setAuthMethod(method);
-    setError('');
-    setRoleMismatch(null);
-  };
-
-  // Shared by both the password and email-code paths so the redirect logic
-  // never diverges between the two sign-in methods.
   const completeLogin = (user, accessToken) => {
     // If the visitor picked a specific role card (or arrived with ?role= from
     // a role-specific entry point), block sign-in when the real account is a
@@ -174,81 +140,6 @@ function LoginContent() {
     setResendingVerify(false);
   };
 
-  const startCountdown = (from = 60) => {
-    clearInterval(timerRef.current);
-    setResendTimer(from);
-    setCanResend(false);
-    timerRef.current = setInterval(() => {
-      setResendTimer((prev) => {
-        if (prev <= 1) { clearInterval(timerRef.current); setCanResend(true); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const handleSendCode = async () => {
-    if (!email) { setError('Please enter your email address.'); return; }
-    setSendingCode(true);
-    setError('');
-    setRoleMismatch(null);
-    try {
-      const { data } = await api.post('/auth/send-otp', { email });
-      setOtpUserId(data.data.userId);
-      setOtp(['', '', '', '', '', '']);
-      setOtpSent(true);
-      toast.success('Code sent! Check your email.');
-      startCountdown();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send code. Please try again.');
-    }
-    setSendingCode(false);
-  };
-
-  const handleOtpChange = (index, value) => {
-    const digit = value.replace(/\D/g, '').slice(-1);
-    const next  = [...otp];
-    next[index] = digit;
-    setOtp(next);
-    if (digit && index < 5) inputRefs.current[index + 1]?.focus();
-  };
-
-  const handleOtpKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    const next = [...otp];
-    for (let i = 0; i < text.length; i++) next[i] = text[i];
-    setOtp(next);
-    inputRefs.current[Math.min(text.length - 1, 5)]?.focus();
-  };
-
-  const handleVerifyCode = async () => {
-    const otpString = otp.join('');
-    if (otpString.length < 6) { setError('Please enter all 6 digits.'); return; }
-    setLoading(true);
-    setError('');
-    setRoleMismatch(null);
-    try {
-      const { data } = await api.post('/auth/verify-otp', { userId: otpUserId, otp: otpString });
-      completeLogin(data.data.user, data.data.accessToken);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Invalid code. Please try again.');
-    }
-    setLoading(false);
-  };
-
-  const handleUseDifferentEmail = () => {
-    setOtpSent(false);
-    setOtp(['', '', '', '', '', '']);
-    setError('');
-    clearInterval(timerRef.current);
-  };
-
   return (
     <AuthSplitCard>
       <Link href="/" style={{ display: 'inline-flex', marginBottom: '20px' }}>
@@ -283,20 +174,6 @@ function LoginContent() {
         </Link>
       )}
 
-      {showOtpTab && (
-        <div style={{
-          display: 'flex', gap: '4px', padding: '4px', marginBottom: '20px',
-          background: 'var(--bg-parchment)', borderRadius: 'var(--r-md)',
-        }}>
-          <button type="button" style={tabStyle(authMethod === 'password')} onClick={() => switchMethod('password')}>
-            Password
-          </button>
-          <button type="button" style={tabStyle(authMethod === 'otp')} onClick={() => switchMethod('otp')}>
-            Email code
-          </button>
-        </div>
-      )}
-
       {roleMismatch ? (
         <div style={{
           background: 'var(--danger-bg)', color: 'var(--danger)',
@@ -327,136 +204,37 @@ function LoginContent() {
         </div>
       )}
 
-      {effectiveAuthMethod === 'password' ? (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Input
+          label="Email address"
+          type="email"
+          icon={Mail}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          required
+        />
+        <div>
           <Input
-            label="Email address"
-            type="email"
-            icon={Mail}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            label="Password"
+            type="password"
+            icon={Lock}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
             required
           />
-          <div>
-            <Input
-              label="Password"
-              type="password"
-              icon={Lock}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
-            <div style={{ textAlign: 'right', marginTop: '6px' }}>
-              <Link href="/auth/forgot-password" style={{ fontSize: '12px', color: 'var(--primary)' }}>
-                Forgot password?
-              </Link>
-            </div>
+          <div style={{ textAlign: 'right', marginTop: '6px' }}>
+            <Link href="/auth/forgot-password" style={{ fontSize: '12px', color: 'var(--primary)' }}>
+              Forgot password?
+            </Link>
           </div>
-
-          <Button type="submit" variant="primary" size="lg" loading={loading} style={{ width: '100%', marginTop: '8px' }}>
-            Sign in
-          </Button>
-        </form>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {!otpSent ? (
-            <>
-              <Input
-                label="Email address"
-                type="email"
-                icon={Mail}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-              />
-              <p style={{ fontSize: '12px', color: 'var(--text-hint)', margin: 0 }}>
-                We&apos;ll send a 6-digit code to this email — no password needed.
-              </p>
-              <Button
-                type="button"
-                variant="primary"
-                size="lg"
-                loading={sendingCode}
-                onClick={handleSendCode}
-                style={{ width: '100%', marginTop: '8px' }}
-              >
-                Send code
-              </Button>
-            </>
-          ) : (
-            <>
-              <p style={{ fontSize: '13px', color: 'var(--text-sub)', margin: '0 0 4px' }}>
-                Enter the 6-digit code sent to <strong>{email}</strong>.
-              </p>
-
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                {otp.map((digit, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => { inputRefs.current[i] = el; }}
-                    className="otp-input"
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    autoComplete={i === 0 ? 'one-time-code' : 'off'}
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                    onPaste={i === 0 ? handleOtpPaste : undefined}
-                    style={{
-                      width: 'clamp(32px, 10vw, 48px)',
-                      height: 'clamp(46px, 12vw, 56px)',
-                      fontSize: '20px',
-                      textAlign: 'center',
-                      fontWeight: 500,
-                      fontFamily: 'var(--font-mono)',
-                      color: 'var(--text)',
-                      background: 'var(--surface)',
-                      border: '1.5px solid var(--border-sub)',
-                      borderRadius: 'var(--r-md)',
-                      outline: 'none',
-                    }}
-                  />
-                ))}
-              </div>
-
-              <Button
-                type="button"
-                variant="primary"
-                size="lg"
-                loading={loading}
-                onClick={handleVerifyCode}
-                style={{ width: '100%', marginTop: '8px' }}
-              >
-                Sign in
-              </Button>
-
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                <button
-                  type="button"
-                  onClick={handleUseDifferentEmail}
-                  style={{ background: 'none', border: 'none', padding: 0, fontSize: '12px', color: 'var(--text-hint)', cursor: 'pointer' }}
-                >
-                  Use a different email
-                </button>
-                {canResend ? (
-                  <Button variant="ghost" size="sm" loading={sendingCode} onClick={handleSendCode}>
-                    Resend code
-                  </Button>
-                ) : (
-                  <span style={{ fontSize: '12px', color: 'var(--text-hint)' }}>
-                    Resend in {resendTimer}s
-                  </span>
-                )}
-              </div>
-            </>
-          )}
         </div>
-      )}
+
+        <Button type="submit" variant="primary" size="lg" loading={loading} style={{ width: '100%', marginTop: '8px' }}>
+          Sign in
+        </Button>
+      </form>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
         <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />

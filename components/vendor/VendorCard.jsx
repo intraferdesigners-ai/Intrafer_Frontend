@@ -10,31 +10,7 @@ import QuickEnquiryModal from './QuickEnquiryModal';
 import VendorTooltip from './VendorTooltip';
 import ProjectImageSlider from './ProjectImageSlider';
 import { trackVendorInterest } from '@/lib/trackInterest';
-import { isAuthenticated } from '@/lib/auth';
-import api from '@/lib/api';
 import { useCompare } from '@/context/CompareContext';
-
-// Shared across every VendorCard instance on a page so the logged-in user's
-// saved-vendor list is fetched once per page load, not once per card.
-let savedIdsCache = null;
-let savedIdsPromise = null;
-
-function fetchSavedVendorIds() {
-  if (savedIdsCache) return Promise.resolve(savedIdsCache);
-  if (!savedIdsPromise) {
-    savedIdsPromise = api.get('/auth/saved-vendors')
-      .then(({ data }) => {
-        const ids = new Set((data.data?.vendors || []).map((v) => v._id));
-        savedIdsCache = ids;
-        return ids;
-      })
-      .catch(() => {
-        savedIdsPromise = null;
-        return new Set();
-      });
-  }
-  return savedIdsPromise;
-}
 
 // Last-resort fallback when a vendor has neither published project photos
 // nor a banner image — a colored initial reads as an intentional identity
@@ -88,10 +64,6 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
   const compared = isSelected(vendor._id);
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      fetchSavedVendorIds().then((ids) => setSaved(ids.has(vendor._id)));
-      return;
-    }
     try {
       const list = JSON.parse(localStorage.getItem('intrafer_saved') || '[]');
       setSaved(list.includes(vendor._id));
@@ -102,30 +74,13 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
     setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
   }, []);
 
-  const toggleSave = async (e) => {
+  const toggleSave = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (!shouldReduceMotion) {
       setSavePulse(true);
       setTimeout(() => setSavePulse(false), 260);
-    }
-
-    if (isAuthenticated()) {
-      const next = !saved;
-      setSaved(next); // optimistic
-      try {
-        if (next) {
-          await api.post(`/auth/saved-vendors/${vendor._id}`);
-          savedIdsCache?.add(vendor._id);
-        } else {
-          await api.delete(`/auth/saved-vendors/${vendor._id}`);
-          savedIdsCache?.delete(vendor._id);
-        }
-      } catch {
-        setSaved(!next); // revert on failure
-      }
-      return;
     }
 
     try {

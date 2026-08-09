@@ -5,8 +5,8 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
-  User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Heart, Newspaper, Tag, LifeBuoy, Mail, Shield, Star,
-  MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck, Scale, Kanban, Sparkles,
+  User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Newspaper, Tag, LifeBuoy, Mail, Shield, Star,
+  MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck, Kanban, Sparkles,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { clearAuthTokens } from '../../lib/auth';
@@ -37,15 +37,9 @@ const ADMIN_NAV_PERMISSIONS = {
   '/admin/dashboard/cms':             'manage_settings',
 };
 
+// No 'user' entry — the homeowner dashboard no longer exists (see the
+// homeowner-removal plan, Phase 4).
 const NAV = {
-  user: [
-    { label: 'Dashboard',       href: '/user/dashboard',                icon: LayoutDashboard, group: 'OVERVIEW' },
-    { label: 'My enquiries',    href: '/user/dashboard/enquiries',      icon: FileText,        group: 'ACTIVITY' },
-    { label: 'Saved Designers', href: '/user/dashboard/saved',          icon: Heart,           group: 'ACTIVITY' },
-    { label: 'Compare',         href: '/compare',                       icon: Scale,           group: 'ACTIVITY' },
-    { label: 'Profile',         href: '/user/dashboard/profile',        icon: User,            group: 'ACCOUNT'  },
-    { label: 'Settings',        href: '/user/dashboard/settings',       icon: Settings,        group: 'ACCOUNT'  },
-  ],
   vendor: [
     { label: 'Dashboard',    href: '/vendor/dashboard',              icon: LayoutDashboard, group: 'OVERVIEW' },
     { label: 'Leads',        href: '/vendor/dashboard/leads',        icon: FileText,        group: 'BUSINESS' },
@@ -88,7 +82,7 @@ const NAV = {
   ],
 };
 
-const ROLE_LABELS = { user: 'Homeowner', vendor: 'Designer', admin: 'Admin' };
+const ROLE_LABELS = { vendor: 'Designer', admin: 'Admin' };
 
 export default function Sidebar({ onClose }) {
   const pathname                  = usePathname();

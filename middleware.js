@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 
 const PROTECTED = {
-  '/user/dashboard':   'user',
   '/vendor/dashboard': 'vendor',
   '/admin/dashboard':  'admin',
 };
 
 const ROLE_DASHBOARDS = {
-  user:   '/user/dashboard',
   vendor: '/vendor/dashboard',
   admin:  '/admin/dashboard',
 };
@@ -46,5 +44,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/user/:path*', '/vendor/:path*', '/admin/:path*', '/auth/:path*'],
+  matcher: ['/vendor/:path*', '/admin/:path*', '/auth/:path*'],
 };

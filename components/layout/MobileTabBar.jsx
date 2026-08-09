@@ -3,12 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+// No 'user' entry — the homeowner dashboard no longer exists (see the
+// homeowner-removal plan, Phase 4).
 const TABS = {
-  user: [
-    { href: '/user/dashboard',            label: 'Home',      icon: 'home'    },
-    { href: '/user/dashboard/enquiries',  label: 'Enquiries', icon: 'list'    },
-    { href: '/user/dashboard/profile',    label: 'Profile',   icon: 'user'    },
-  ],
   vendor: [
     { href: '/vendor/dashboard',              label: 'Home',      icon: 'home'        },
     { href: '/vendor/dashboard/leads',        label: 'Leads',     icon: 'inbox'       },
@@ -37,9 +34,12 @@ const ICONS = {
   'chart-bar': <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>,
 };
 
-export default function MobileTabBar({ role = 'user' }) {
+export default function MobileTabBar({ role }) {
   const pathname = usePathname();
-  const tabs = TABS[role] || TABS.user;
+  // No safe universal default now that 'user' is gone — empty array is the
+  // correct fallback for the brief window before role hydrates from cookies
+  // (see DashboardLayout.jsx), same as Sidebar.jsx's NAV[role] || [].
+  const tabs = TABS[role] || [];
   const dashRoot = `/${role}/dashboard`;
 
   return (

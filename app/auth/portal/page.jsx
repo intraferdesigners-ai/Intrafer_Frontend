@@ -3,13 +3,14 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Home, Palette, ShieldCheck, ChevronRight, LogIn } from 'lucide-react';
+import { Palette, ShieldCheck, ChevronRight, LogIn } from 'lucide-react';
 import AuthSplitCard from '../../../components/auth/AuthSplitCard';
 
+// No homeowner card — that role has no login surface anymore (see the
+// homeowner-removal plan, Phase 4).
 const ROLE_CARDS = [
-  { role: 'user',   label: 'Homeowner', desc: 'Browse designers, track enquiries, and manage your project.', Icon: Home },
-  { role: 'vendor', label: 'Vendor',    desc: 'Manage your studio profile, leads, and subscription.',        Icon: Palette },
-  { role: 'admin',  label: 'Admin',     desc: 'Access the operations console.',                              Icon: ShieldCheck },
+  { role: 'vendor', label: 'Vendor',    desc: 'Manage your studio profile, leads, and subscription.', Icon: Palette },
+  { role: 'admin',  label: 'Admin',     desc: 'Access the operations console.',                       Icon: ShieldCheck },
 ];
 
 export default function AuthPortalPage() {
