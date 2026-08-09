@@ -71,9 +71,9 @@ export default function AdminLeadsPage() {
       'Project Type': l.projectType,
       'City': l.city,
       'Budget': l.budget,
-      'Client Name': l.userId?.name || '',
-      'Client Phone': l.userId?.phone || '',
-      'Client Email': l.userId?.email || '',
+      'Client Name': l.contactName || '',
+      'Client Phone': l.contactPhone || '',
+      'Client Email': l.contactEmail || '',
       'Designer': l.vendorId?.businessName || '',
       'Status': l.status,
       'Date': new Date(l.createdAt).toLocaleDateString('en-IN'),
@@ -211,16 +211,16 @@ export default function AdminLeadsPage() {
               {/* Client */}
               <div style={{ flex: 1.5, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)', marginBottom: 3 }}>
-                  {lead.userId?.name || '—'}
+                  {lead.contactName || '—'}
                 </div>
-                {lead.userId?.phone && (
+                {lead.contactPhone && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-hint)', marginBottom: 2 }}>
-                    <Phone size={11} />{lead.userId.phone}
+                    <Phone size={11} />{lead.contactPhone}
                   </div>
                 )}
-                {lead.userId?.email && (
+                {lead.contactEmail && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-hint)' }}>
-                    <Mail size={11} />{lead.userId.email}
+                    <Mail size={11} />{lead.contactEmail}
                   </div>
                 )}
               </div>

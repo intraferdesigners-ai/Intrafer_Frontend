@@ -220,7 +220,7 @@ export default function VendorLeadsPage() {
                 marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--color-border)',
               }}>
                 <span style={{ fontSize: 12, color: 'var(--color-text-sub)' }}>
-                  Client: <strong>{lead.userId?.name || 'Unknown'}</strong>
+                  Client: <strong>{lead.contactName || 'Unknown'}</strong>
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   {lead.status === 'new' && (

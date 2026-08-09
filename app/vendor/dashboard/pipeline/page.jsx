@@ -265,7 +265,7 @@ export default function VendorPipelinePage() {
                         </div>
 
                         <div style={{ fontSize: 11, color: 'var(--color-text-sub)', paddingTop: 6, borderTop: '1px solid var(--color-border)' }}>
-                          Client: <strong>{lead.userId?.name || 'Unknown'}</strong>
+                          Client: <strong>{lead.contactName || 'Unknown'}</strong>
                         </div>
                       </HoverLift>
                     </Link>
