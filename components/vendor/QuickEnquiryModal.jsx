@@ -44,7 +44,7 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
 
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/send-otp', { name, email, phone, website });
+      const { data } = await api.post('/enquiry/send-otp', { name, email, phone, website });
       sessionStorage.setItem('intrafer_enquiry_draft', JSON.stringify({
         name, email, phone,
         vendorId:     vendor._id,
@@ -52,7 +52,7 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
         requirements,
       }));
       onClose();
-      router.push(`/enquiry/verify?userId=${data.data.userId}`);
+      router.push(`/enquiry/verify?pendingId=${data.data.pendingId}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong. Please try again.');
     }

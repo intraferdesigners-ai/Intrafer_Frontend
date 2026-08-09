@@ -61,32 +61,18 @@ export default function VendorEnquiryOverlay({ vendor }) {
 
     let cancelled = false;
 
-    timerRef.current = setTimeout(async () => {
+    timerRef.current = setTimeout(() => {
       const { role, user } = useAuthStore.getState();
 
       // Vendor previewing their own listing, or staff/admin — never prompt.
       if (role === 'admin') return;
       if (role === 'vendor' && user?.id && vendorOwnerId && String(user.id) === vendorOwnerId) return;
 
-      // Logged-in homeowner who has already enquired with this vendor —
-      // check the server (covers a returning visitor on a new device/browser
-      // where the local "engaged" flag wouldn't exist yet).
-      if (role === 'user' && user?.id) {
-        try {
-          const { data } = await api.get('/leads/user');
-          const already = (data?.data?.leads || []).some(
-            (lead) => String(lead.vendorId?._id || lead.vendorId) === vendorId
-          );
-          if (already) {
-            markVendorEngaged(vendorId, 'existing-lead');
-            return;
-          }
-        } catch {
-          // If the check fails, fall through and show the overlay anyway —
-          // worst case a homeowner who already enquired sees one extra prompt.
-        }
-      }
-
+      // Dedup is localStorage-only now (hasEngagedVendor above) — guest
+      // enquiries no longer create a logged-in session to check server-side
+      // leads against (see enquiry.controller.js). A returning visitor on a
+      // new device/browser will see the overlay again once; that's the
+      // accepted trade-off of not requiring an account.
       if (!cancelled) setVisible(true);
     }, SHOW_DELAY_MS);
 
@@ -116,7 +102,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
 
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/send-otp', { name, email, phone, website });
+      const { data } = await api.post('/enquiry/send-otp', { name, email, phone, website });
       sessionStorage.setItem('intrafer_enquiry_draft', JSON.stringify({
         name, email, phone,
         vendorId,
@@ -125,7 +111,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
       }));
       markVendorEngaged(vendorId, 'submitted');
       setVisible(false);
-      router.push(`/enquiry/verify?userId=${data.data.userId}`);
+      router.push(`/enquiry/verify?pendingId=${data.data.pendingId}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong. Please try again.');
       setLoading(false);

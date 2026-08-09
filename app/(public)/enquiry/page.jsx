@@ -83,7 +83,7 @@ function EnquiryForm() {
 
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/send-otp', {
+      const { data } = await api.post('/enquiry/send-otp', {
         name: name.trim(), email: email.trim(), phone: phone.trim(), website,
       });
 
@@ -93,7 +93,7 @@ function EnquiryForm() {
         vendorId,
       }));
 
-      router.push(`/enquiry/verify?userId=${data.data.userId}`);
+      router.push(`/enquiry/verify?pendingId=${data.data.pendingId}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to send OTP. Please try again.');
     }

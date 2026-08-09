@@ -142,13 +142,15 @@ export default function SuccessContent() {
 
       {/* Action buttons */}
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-        <Link href="/user/dashboard" style={{
-          padding: '12px 24px', background: 'var(--primary)', color: '#fff',
-          borderRadius: 'var(--r-md)', fontSize: '14px', fontWeight: 500,
-          textDecoration: 'none',
-        }}>
-          View my dashboard →
-        </Link>
+        {vendorId && (
+          <Link href={`/vendors/${vendorId}`} style={{
+            padding: '12px 24px', background: 'var(--primary)', color: '#fff',
+            borderRadius: 'var(--r-md)', fontSize: '14px', fontWeight: 500,
+            textDecoration: 'none',
+          }}>
+            View designer profile →
+          </Link>
+        )}
         <Link href="/vendors" style={{
           padding: '12px 20px', background: 'var(--surface)', color: 'var(--text-sub)',
           border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
@@ -159,10 +161,6 @@ export default function SuccessContent() {
       </div>
 
       <p style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '16px', lineHeight: 1.6 }}>
-        This also set up your free Intrafer account — no password to remember. Next time, just enter your email on the sign-in page and we&apos;ll send you a code.
-      </p>
-
-      <p style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '12px', lineHeight: 1.6 }}>
         🔒 Your contact details are only shared after the designer accepts your enquiry.
       </p>
     </div>

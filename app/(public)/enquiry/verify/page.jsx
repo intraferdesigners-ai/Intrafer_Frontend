@@ -6,16 +6,12 @@ import Link from 'next/link';
 import { Mail } from 'lucide-react';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
-import Spinner from '../../../../components/ui/Spinner';
-import { setAuthTokens } from '../../../../lib/auth';
-import useAuthStore from '../../../../store/authStore';
 
 function VerifyContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
-  const userId       = searchParams.get('userId');
+  const pendingId     = searchParams.get('pendingId');
   const draftKey     = 'intrafer_enquiry_draft';
-  const { setAuth }  = useAuthStore();
 
   const [otp,           setOtp]           = useState(['', '', '', '', '', '']);
   const [loading,       setLoading]       = useState(false);
@@ -28,7 +24,7 @@ function VerifyContent() {
   const timerRef  = useRef(null);
 
   useEffect(() => {
-    if (!userId || !sessionStorage.getItem(draftKey)) {
+    if (!pendingId || !sessionStorage.getItem(draftKey)) {
       router.push('/enquiry');
     }
   }, []);
@@ -79,16 +75,15 @@ function VerifyContent() {
     setLoading(true);
     setError('');
     try {
-      const { data } = await api.post('/auth/verify-otp', { userId, otp: otpString });
-      const { accessToken, user } = data.data;
-
-      setAuthTokens(accessToken, user.role);
-      setAuth(user, accessToken);
-
       const raw   = sessionStorage.getItem(draftKey);
       const draft = JSON.parse(raw || '{}');
 
-      const leadRes = await api.post('/leads', {
+      // Single call — verifies the OTP and creates the Lead together, with
+      // no session or account created for the visitor. See
+      // enquiry.controller.js's submitGuestEnquiry.
+      const { data } = await api.post('/enquiry/submit', {
+        pendingId,
+        otp:          otpString,
         vendorId:     draft.vendorId,
         projectType:  draft.projectType,
         budget:       draft.budget,
@@ -96,7 +91,7 @@ function VerifyContent() {
         requirements: draft.requirements,
       });
 
-      const lead = leadRes.data?.data?.lead;
+      const lead = data.data?.lead;
       sessionStorage.removeItem(draftKey);
       router.push(
         `/enquiry/success?enquiryId=${lead?._id || ''}&vendorId=${draft.vendorId || ''}`
@@ -113,7 +108,7 @@ function VerifyContent() {
     try {
       const raw   = sessionStorage.getItem(draftKey);
       const draft = JSON.parse(raw || '{}');
-      await api.post('/auth/send-otp', { name: draft.name, email: draft.email, phone: draft.phone });
+      await api.post('/enquiry/send-otp', { name: draft.name, email: draft.email, phone: draft.phone });
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
       startCountdown(60);
