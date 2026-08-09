@@ -13,7 +13,7 @@ import { formatDate } from '../../../../lib/utils';
 const PERMISSIONS = [
   { key: 'manage_vendors',         label: 'Manage Vendors'         },
   { key: 'manage_leads',           label: 'Manage Leads'           },
-  { key: 'manage_users',           label: 'Manage Users'           },
+  { key: 'manage_users',           label: 'View Enquirers'         },
   { key: 'view_analytics',         label: 'View Analytics'         },
   { key: 'manage_blog',            label: 'Manage Blog'            },
   { key: 'manage_coupons',         label: 'Manage Coupons'         },

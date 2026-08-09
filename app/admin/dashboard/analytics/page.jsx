@@ -54,7 +54,7 @@ export default function AdminAnalyticsPage() {
 
   const PLATFORM_CARDS = stats ? [
     { label: 'Active vendors',       value: stats.totalVendors,        icon: Building2,  iconBg: 'var(--color-info-bg)',    iconColor: 'var(--color-info)'    },
-    { label: 'Total users',          value: stats.totalUsers,          icon: Users,      iconBg: 'var(--color-success-bg)', iconColor: 'var(--color-success)' },
+    { label: 'Unique enquirers',     value: stats.totalEnquirers,      icon: Users,      iconBg: 'var(--color-success-bg)', iconColor: 'var(--color-success)' },
     { label: 'Total leads',          value: stats.totalLeads,          icon: FileText,   iconBg: 'var(--color-warning-bg)', iconColor: 'var(--color-warning)' },
     { label: 'Conversion rate',      value: conversionRate,            icon: TrendingUp, iconBg: 'var(--color-primary-bg)', iconColor: 'var(--color-primary)' },
     { label: 'Featured vendors',     value: stats.featuredCount ?? 0,  icon: Crown,      iconBg: 'var(--color-accent-bg)',  iconColor: 'var(--color-primary)' },

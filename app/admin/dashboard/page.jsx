@@ -24,10 +24,10 @@ const QUICK_ACTIONS = [
     sub:     'Monitor lead pipeline and assignments',
   },
   {
-    href:    '/admin/dashboard/users',
+    href:    '/admin/dashboard/enquirers',
     icon:    Users,
-    label:   'User directory',
-    sub:     'View all registered homeowners',
+    label:   'Enquirer directory',
+    sub:     'View everyone who has submitted an enquiry',
   },
   {
     href:    '/admin/dashboard/analytics',
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
 
   const KPI_CARDS = stats ? [
     { label: 'Active vendors',        value: stats.totalVendors,        icon: Building2,  iconBg: 'var(--color-info-bg)',     iconColor: 'var(--color-info)'    },
-    { label: 'Registered users',      value: stats.totalUsers,          icon: Users,      iconBg: 'var(--color-success-bg)',  iconColor: 'var(--color-success)' },
+    { label: 'Unique enquirers',      value: stats.totalEnquirers,      icon: Users,      iconBg: 'var(--color-success-bg)',  iconColor: 'var(--color-success)' },
     { label: 'Total leads',           value: stats.totalLeads,          icon: FileText,   iconBg: 'var(--color-warning-bg)',  iconColor: 'var(--color-warning)' },
     { label: 'Active subscriptions',  value: stats.activeSubscriptions, icon: Crown,      iconBg: 'var(--color-accent-bg)',   iconColor: 'var(--color-primary)' },
     { label: 'Total revenue',         value: formatINR(stats.totalRevenue || 0), icon: TrendingUp, iconBg: 'var(--color-primary-bg)', iconColor: 'var(--color-primary)' },

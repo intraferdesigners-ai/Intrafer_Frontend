@@ -21,7 +21,7 @@ import NotificationBell from '../notification/NotificationBell';
 const ADMIN_NAV_PERMISSIONS = {
   '/admin/dashboard/vendors':         'manage_vendors',
   '/admin/dashboard/leads':           'manage_leads',
-  '/admin/dashboard/users':           'manage_users',
+  '/admin/dashboard/enquirers':       'manage_users',
   '/admin/dashboard/analytics':       'view_analytics',
   '/admin/dashboard/blog':            'manage_blog',
   '/admin/dashboard/coupons':         'manage_coupons',
@@ -56,7 +56,7 @@ const NAV = {
 
     { label: 'Vendors',      href: '/admin/dashboard/vendors',       icon: Building2,       group: 'OPERATIONS' },
     { label: 'Leads',        href: '/admin/dashboard/leads',         icon: FileText,        group: 'OPERATIONS' },
-    { label: 'Users',        href: '/admin/dashboard/users',         icon: Users,           group: 'OPERATIONS' },
+    { label: 'Enquirers',    href: '/admin/dashboard/enquirers',     icon: Users,           group: 'OPERATIONS' },
     { label: 'All Projects', href: '/admin/dashboard/projects',      icon: Building2,       group: 'OPERATIONS' },
     { label: 'Portfolio moderation', href: '/admin/dashboard/portfolio-approvals', icon: ClipboardCheck, group: 'OPERATIONS' },
 
