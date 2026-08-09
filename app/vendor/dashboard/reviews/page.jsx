@@ -68,7 +68,7 @@ export default function VendorReviewsPage() {
               </span>
             </div>
             <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', margin: '8px 0 0' }}>
-              {review.userId?.name || 'Anonymous'}
+              {review.leadId?.contactName || review.userId?.name || 'Anonymous'}
             </p>
             {review.comment && (
               <p style={{ fontSize: 13, color: 'var(--color-text-sub)', lineHeight: 1.6, margin: '6px 0 0' }}>

@@ -16,6 +16,11 @@ const EXCLUDED_PATHS = [
   '/admin/dashboard',
   '/enquiry',
   '/vendors/',
+  // A guest who clicked a review-invite email link (see the homeowner-removal
+  // plan's Reviews rework) is here to do exactly one task — pitching them an
+  // unrelated "find a designer" popup mid-task is jarring, not a lead-gen
+  // opportunity worth taking.
+  '/review/',
 ];
 
 export default function LeadCapturePopup() {
