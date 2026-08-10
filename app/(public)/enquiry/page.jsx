@@ -10,6 +10,7 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Honeypot from '../../../components/ui/Honeypot';
 import CitySelect from '../../../components/ui/CitySelect';
+import { getSavedContact, saveContact } from '../../../lib/session';
 
 const STEPS = [
   { n: 1, label: 'Submit your project' },
@@ -43,9 +44,9 @@ function EnquiryForm() {
   const searchParams = useSearchParams();
   const vendorId     = searchParams.get('vendorId');
 
-  const [name,         setName]         = useState('');
-  const [email,        setEmail]        = useState('');
-  const [phone,        setPhone]        = useState('');
+  const [name,         setName]         = useState(() => getSavedContact()?.name || '');
+  const [email,        setEmail]        = useState(() => getSavedContact()?.email || '');
+  const [phone,        setPhone]        = useState(() => getSavedContact()?.phone || '');
   const [city,         setCity]         = useState('');
   const [requirements, setRequirements] = useState('');
   const [loading,      setLoading]      = useState(false);
@@ -92,6 +93,7 @@ function EnquiryForm() {
         city: city.trim(), requirements: requirements.trim(),
         vendorId,
       }));
+      saveContact({ name: name.trim(), phone: phone.trim(), email: email.trim() });
 
       router.push(`/enquiry/verify?pendingId=${data.data.pendingId}`);
     } catch (err) {

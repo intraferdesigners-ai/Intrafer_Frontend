@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Honeypot from '@/components/ui/Honeypot';
 import useAuthStore from '@/store/authStore';
-import { hasEngagedVendor, markVendorEngaged } from '@/lib/session';
+import { hasEngagedVendor, markVendorEngaged, getSavedContact, saveContact } from '@/lib/session';
 
 // Near-immediate: a long artificial delay here reads as "the site is slow"
 // even though no network call is involved in it — this used to be 4000ms,
@@ -44,9 +44,9 @@ export default function VendorEnquiryOverlay({ vendor }) {
   const shouldReduceMotion = useReducedMotion();
 
   const [visible, setVisible] = useState(false);
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState(() => getSavedContact()?.name || '');
+  const [phone, setPhone] = useState(() => getSavedContact()?.phone || '');
+  const [email, setEmail] = useState(() => getSavedContact()?.email || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [website, setWebsite] = useState(''); // honeypot — see components/ui/Honeypot.jsx
@@ -109,6 +109,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
         city: vendor?.location?.city || '',
         requirements: '',
       }));
+      saveContact({ name, phone, email });
       markVendorEngaged(vendorId, 'submitted');
       setVisible(false);
       router.push(`/enquiry/verify?pendingId=${data.data.pendingId}`);

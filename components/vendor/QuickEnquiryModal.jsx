@@ -7,15 +7,16 @@ import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Honeypot from '@/components/ui/Honeypot';
+import { getSavedContact, saveContact } from '@/lib/session';
 import { X, User, Phone, Mail, Lock, Clock, BadgeCheck } from 'lucide-react';
 
 export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(false);
 
-  const [name,         setName]         = useState('');
-  const [email,        setEmail]        = useState('');
-  const [phone,        setPhone]        = useState('');
+  const [name,         setName]         = useState(() => getSavedContact()?.name || '');
+  const [email,        setEmail]        = useState(() => getSavedContact()?.email || '');
+  const [phone,        setPhone]        = useState(() => getSavedContact()?.phone || '');
   const [requirements, setRequirements] = useState('');
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState('');
@@ -51,6 +52,7 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
         city:         vendor.location?.city || '',
         requirements,
       }));
+      saveContact({ name, phone, email });
       onClose();
       router.push(`/enquiry/verify?pendingId=${data.data.pendingId}`);
     } catch (err) {
