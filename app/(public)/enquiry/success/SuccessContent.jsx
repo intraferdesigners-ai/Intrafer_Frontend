@@ -168,8 +168,16 @@ export default function SuccessContent() {
         </Link>
       </div>
 
+      {/* This designer gets the full enquiry — including your contact
+          details — by email right away, so they can respond directly
+          without needing to log in first. Not the old "only shared after
+          the designer accepts" copy: that stopped being true once the
+          lead-assigned email started carrying contactName/contactPhone/
+          contactEmail immediately (see notification.service.js's
+          LEAD_ASSIGNED handler) — still never shared with anyone but this
+          one designer. */}
       <p style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '16px', lineHeight: 1.6 }}>
-        🔒 Your contact details are only shared after the designer accepts your enquiry.
+        🔒 Your contact details are shared only with {vendor?.businessName || 'this designer'}, so they can reach out to you directly.
       </p>
     </div>
   );
