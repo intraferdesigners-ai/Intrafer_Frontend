@@ -10,15 +10,13 @@ import { formatRelativeTime } from '../../../../lib/utils';
 import HoverLift from '../../../../components/ui/HoverLift';
 
 const COLUMNS = [
-  { key: 'new',            label: 'New'            },
-  { key: 'accepted',       label: 'Accepted'       },
-  { key: 'contacted',      label: 'Contacted'      },
-  { key: 'quotation_sent', label: 'Quotation Sent' },
-  { key: 'won',            label: 'Won'            },
-  { key: 'lost',           label: 'Lost'           },
+  { key: 'new',      label: 'New'      },
+  { key: 'accepted', label: 'Accepted' },
+  { key: 'won',      label: 'Won'      },
+  { key: 'lost',     label: 'Lost'     },
 ];
 
-const STATUS_ENDPOINT_TARGETS = ['contacted', 'quotation_sent', 'won', 'lost'];
+const STATUS_ENDPOINT_TARGETS = ['won', 'lost'];
 
 export default function VendorPipelinePage() {
   const [leads,            setLeads]            = useState([]);

@@ -8,12 +8,10 @@ import Spinner from '../../../../components/ui/Spinner';
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 const FUNNEL_LABELS = {
-  new:            { label: 'New',             color: 'var(--color-primary)'  },
-  contacted:      { label: 'Contacted',       color: 'var(--purple)'         },
-  quotation_sent: { label: 'Quotation sent',  color: 'var(--color-warning)'  },
-  accepted:       { label: 'Accepted',        color: 'var(--color-info)'     },
-  won:            { label: 'Won',             color: 'var(--color-success)'  },
-  lost:           { label: 'Lost',            color: 'var(--color-danger)'   },
+  new:      { label: 'New',      color: 'var(--color-primary)' },
+  accepted: { label: 'Accepted', color: 'var(--color-info)'    },
+  won:      { label: 'Won',      color: 'var(--color-success)' },
+  lost:     { label: 'Lost',     color: 'var(--color-danger)'  },
 };
 
 const SECTION_LABEL = {

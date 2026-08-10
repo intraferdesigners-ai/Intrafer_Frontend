@@ -22,18 +22,16 @@ const LABEL = {
   display: 'block', marginBottom: 4,
 };
 
-const CONTACT_REVEALED = new Set(['accepted', 'contacted', 'quotation_sent', 'won', 'lost']);
+const CONTACT_REVEALED = new Set(['accepted', 'won', 'lost']);
 
 const STATUS_TRANSITIONS = {
-  new:            [],
-  accepted:       ['contacted'],
-  contacted:      ['quotation_sent'],
-  quotation_sent: ['won', 'lost'],
-  won:            [],
-  lost:           [],
+  new:      [],
+  accepted: ['won', 'lost'],
+  won:      [],
+  lost:     [],
 };
 
-const PIPELINE = ['new', 'accepted', 'contacted', 'quotation_sent', 'won', 'lost'];
+const PIPELINE = ['new', 'accepted', 'won', 'lost'];
 
 function DetailItem({ icon: Icon, label, value }) {
   if (!value) return null;

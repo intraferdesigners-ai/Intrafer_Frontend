@@ -7,12 +7,10 @@ import Spinner from '../../../../components/ui/Spinner';
 import { formatINR } from '../../../../lib/utils';
 
 const PIPELINE_STATUSES = [
-  { key: 'new',            label: 'New',             color: 'var(--color-primary)'  },
-  { key: 'accepted',       label: 'Accepted',        color: 'var(--color-info)'     },
-  { key: 'contacted',      label: 'Contacted',       color: 'var(--purple)'         },
-  { key: 'quotation_sent', label: 'Quotation sent',  color: 'var(--color-warning)'  },
-  { key: 'won',            label: 'Won',             color: 'var(--color-success)'  },
-  { key: 'lost',           label: 'Lost',            color: 'var(--color-danger)'   },
+  { key: 'new',      label: 'New',      color: 'var(--color-primary)' },
+  { key: 'accepted', label: 'Accepted', color: 'var(--color-info)'    },
+  { key: 'won',      label: 'Won',      color: 'var(--color-success)' },
+  { key: 'lost',     label: 'Lost',     color: 'var(--color-danger)'  },
 ];
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];

@@ -11,13 +11,11 @@ import { formatDate } from '../../../../lib/utils';
 import { downloadCSV } from '../../../../lib/csv';
 
 const FILTER_TABS = [
-  { key: 'all',            label: 'All'            },
-  { key: 'new',            label: 'New'            },
-  { key: 'accepted',       label: 'Accepted'       },
-  { key: 'contacted',      label: 'Contacted'      },
-  { key: 'quotation_sent', label: 'Quotation sent' },
-  { key: 'won',            label: 'Won'            },
-  { key: 'lost',           label: 'Lost'           },
+  { key: 'all',      label: 'All'      },
+  { key: 'new',      label: 'New'      },
+  { key: 'accepted', label: 'Accepted' },
+  { key: 'won',      label: 'Won'      },
+  { key: 'lost',     label: 'Lost'     },
 ];
 
 const HEADER_CELL = {

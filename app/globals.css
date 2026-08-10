@@ -311,12 +311,10 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: .01em;
 }
 
-.status-new            { background: var(--primary-bg);   color: var(--primary);  }
-.status-accepted       { background: var(--info-bg);       color: var(--info);     }
-.status-contacted      { background: var(--purple-bg);     color: var(--purple);   }
-.status-quotation_sent { background: var(--warning-bg);    color: var(--warning);  }
-.status-won            { background: var(--success-bg);    color: var(--success);  }
-.status-lost           { background: var(--danger-bg);     color: var(--danger);   }
+.status-new      { background: var(--primary-bg); color: var(--primary); }
+.status-accepted { background: var(--info-bg);    color: var(--info);    }
+.status-won      { background: var(--success-bg); color: var(--success); }
+.status-lost     { background: var(--danger-bg);  color: var(--danger);  }
 
 .divider { height: 1px; background: var(--border); }
 
