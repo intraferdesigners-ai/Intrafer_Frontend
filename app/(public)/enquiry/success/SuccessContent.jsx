@@ -31,6 +31,14 @@ export default function SuccessContent() {
     ? 'ENQ-' + enquiryId.slice(-6).toUpperCase()
     : 'ENQ-XXXXXX';
 
+  // This vendor's own WhatsApp-reachable number — same businessPhone ->
+  // userId.phone fallback the vendor detail page's "Chat on WhatsApp"
+  // button already uses (see app/(public)/vendors/[vendorId]/page.jsx),
+  // not the sitewide/admin number the floating WhatsAppButton widget uses.
+  // A homeowner who just enquired to this specific vendor should reach
+  // that vendor directly, not site support.
+  const vendorWhatsappNumber = vendor?.businessPhone || vendor?.userId?.phone || '';
+
   return (
     <div style={{ maxWidth: '560px', margin: '80px auto', padding: '0 24px', textAlign: 'center' }}>
       {/* Animated check */}
@@ -113,13 +121,13 @@ export default function SuccessContent() {
       )}
 
       {/* WhatsApp CTA */}
-      {vendor && (
+      {vendor && vendorWhatsappNumber && (
         <div style={{ marginBottom: '28px', textAlign: 'left' }}>
           <p style={{ fontSize: '13px', color: 'var(--text-hint)', marginBottom: '10px' }}>
             While you wait, you can also reach out directly:
           </p>
           <a
-            href={`https://wa.me/919217211408?text=${encodeURIComponent(
+            href={`https://wa.me/91${vendorWhatsappNumber}?text=${encodeURIComponent(
               `Hi ${vendor.businessName}! I just submitted an enquiry on Intrafer (${shortId}). Would love to discuss my project.`
             )}`}
             target="_blank"
