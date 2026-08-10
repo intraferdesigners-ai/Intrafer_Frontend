@@ -117,9 +117,21 @@ export default function Sidebar({ onClose }) {
   // its own internal visual styling and vertical layout, rather than
   // redeclaring width/height/position a second time on a second, redundant
   // <aside>.
+  //
+  // minHeight (not height): the nav item list can be taller than the
+  // sidebar's own viewport (e.g. admin's ~19 items on a short mobile
+  // screen). With a hard `height: 100%`, this div's own box stayed capped
+  // at the viewport height while its flex children — nav has no overflow
+  // of its own — painted past that box's bottom edge uncontained. That
+  // overflow region has no background of its own (only this div paints
+  // one), so scrolling the parent `.dashboard-sidebar` (which is what
+  // actually scrolls — see globals.css) revealed transparent gaps with
+  // whatever sits behind the sidebar showing through. minHeight lets this
+  // div grow to fit its real content, so the background always covers
+  // everything the parent can scroll to.
   return (
     <div style={{
-      height: '100%', width: '100%',
+      minHeight: '100%', width: '100%',
       background: 'var(--surface)',
       borderRight: '1px solid var(--border)',
       display: 'flex', flexDirection: 'column',
