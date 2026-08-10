@@ -109,7 +109,16 @@ function LoginContent() {
     setAuth(user, accessToken);
     toast.success('Welcome back, ' + user.name + '!');
     const dest = isSafeRedirect(redirectParam) ? redirectParam : (ROLE_DASHBOARDS[user.role] || '/');
-    router.push(dest);
+    // A hard navigation, not router.push(dest) — the App Router's client
+    // cache can hold a *stale, pre-login* entry for `dest` (e.g. from an
+    // unauthenticated Link prefetch elsewhere on the site that hit
+    // middleware's redirect-to-login before this user ever signed in — see
+    // Footer.jsx's `prefetch: false` on its vendor-dashboard link for one
+    // such source). router.push() would happily reuse that cached redirect
+    // and strand the user back on this login page despite a successful
+    // login. A full navigation always re-requests `dest` from the server
+    // with the just-set cookies, so middleware evaluates it fresh.
+    window.location.href = dest;
   };
 
   const handleSubmit = async (e) => {

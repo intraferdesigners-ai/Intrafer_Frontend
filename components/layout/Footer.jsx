@@ -22,7 +22,17 @@ const FOOTER_LINKS = [
     links: [
       { label: 'List your studio',     href: '/for-designers'    },
       { label: 'Subscription plans',   href: '/plans'            },
-      { label: 'Vendor dashboard',     href: '/vendor/dashboard' },
+      // prefetch: false — this link sits in front of every visitor
+      // regardless of auth state, but the route behind it is
+      // middleware-protected. Next.js's default viewport prefetch would
+      // fetch it while the visitor is still logged out, middleware would
+      // redirect that prefetch to /auth/login, and Next caches *that*
+      // redirect response under the /vendor/dashboard cache key — so a
+      // vendor who logs in later and gets router.push('/vendor/dashboard')
+      // can be served the stale cached login-page response instead of the
+      // dashboard (see app/auth/login/page.jsx's completeLogin for the
+      // matching hardening on the other side of this).
+      { label: 'Vendor dashboard',     href: '/vendor/dashboard', prefetch: false },
       { label: 'Partner benefits',     href: '/for-designers#benefits' },
     ],
   },
@@ -227,7 +237,7 @@ export default function Footer() {
                 {heading}
               </p>
               {links.map((l) => (
-                <Link key={l.label} href={l.href} style={{ fontSize: '13px', color: 'rgba(240,246,255,.3)', marginBottom: '6px', display: 'block', transition: 'color 150ms', textDecoration: 'none' }}>
+                <Link key={l.label} href={l.href} prefetch={l.prefetch === false ? false : undefined} style={{ fontSize: '13px', color: 'rgba(240,246,255,.3)', marginBottom: '6px', display: 'block', transition: 'color 150ms', textDecoration: 'none' }}>
                   {l.label}
                 </Link>
               ))}
