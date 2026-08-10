@@ -15,7 +15,6 @@ const PERMISSIONS = [
   { key: 'manage_leads',           label: 'Manage Leads'           },
   { key: 'manage_users',           label: 'View Enquirers'         },
   { key: 'view_analytics',         label: 'View Analytics'         },
-  { key: 'manage_blog',            label: 'Manage Blog'            },
   { key: 'manage_coupons',         label: 'Manage Coupons'         },
   { key: 'manage_support',         label: 'Manage Support'         },
   { key: 'manage_email_templates', label: 'Manage Email Templates' },

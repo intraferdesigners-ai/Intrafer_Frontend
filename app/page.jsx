@@ -7,7 +7,6 @@ import StickyMobileCTA from '../components/ui/StickyMobileCTA';
 import BeforeAfterShowcase from '../components/public/BeforeAfterShowcase';
 import EMICalculator from '../components/ui/EMICalculator';
 import { IMAGES } from '../lib/images';
-import { BLOG_POSTS } from '../lib/blog-data';
 import {
   ArrowRight, Building2, Shield, Lock, Star,
   Clock, Users, ImageIcon,
@@ -27,24 +26,6 @@ export const metadata = {
   title: 'Intrafer — Vetted Interior Designers Across India',
   description: "Compare interior designers by city, style, and budget. Every portfolio is real, completed work. Submit one enquiry and hear back within 48 hours.",
 };
-
-function formatPublishedDate(dateString) {
-  return new Date(dateString).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-}
-
-async function fetchFeaturedBlogPosts() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/blog`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    const json = await res.json();
-    const posts = json.data?.posts || [];
-    return posts.slice(0, 3).map((p) => ({
-      ...p,
-      image: p.coverImage || '/images/blog/modular-kitchen.jpg',
-      date: formatPublishedDate(p.publishedAt),
-    }));
-  } catch { return []; }
-}
 
 async function fetchStats() {
   try {
@@ -141,13 +122,10 @@ const STYLES_FEATURED = [
   { slug:'luxury',       label:'Luxury',       image: IMAGES.styles.luxuryHero       },
 ];
 
-const FEATURED_BLOG_FALLBACK = BLOG_POSTS.slice(0, 3);
-
 export default async function Home() {
-  const [statsData, apiBlogPosts, featuredProjects, heroSubtitle, siteReviews, styleCounts] = await Promise.all([
-    fetchStats(), fetchFeaturedBlogPosts(), fetchFeaturedProjects(), fetchHomepageContent(), fetchSiteReviews(), fetchStyleCounts(),
+  const [statsData, featuredProjects, heroSubtitle, siteReviews, styleCounts] = await Promise.all([
+    fetchStats(), fetchFeaturedProjects(), fetchHomepageContent(), fetchSiteReviews(), fetchStyleCounts(),
   ]);
-  const FEATURED_BLOG = apiBlogPosts.length > 0 ? apiBlogPosts : FEATURED_BLOG_FALLBACK;
   const REVIEWS = siteReviews.filter((r) => r.comment).slice(0, 8);
   const styleGalleryData = STYLES_FEATURED.map((s) => ({ ...s, count: styleCounts[s.slug] || 0 }));
 
@@ -426,40 +404,6 @@ export default async function Home() {
           </section>
         </>
       )}
-
-      <div className="divider" />
-
-      {/* ── BLOG PREVIEW ── */}
-      <section style={{ background: 'var(--bg-parchment)', padding: 'clamp(60px,8vw,100px) clamp(16px,4vw,40px)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
-            <div>
-              <p className="caps-label-primary" style={{ marginBottom: '10px' }}>DESIGN KNOWLEDGE</p>
-              <h2 className="section-heading">Design guides &amp; tips</h2>
-            </div>
-            <Link href="/blog" style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 500 }}>View all articles →</Link>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px' }} className="grid-mobile-1">
-            {FEATURED_BLOG.map((post) => (
-              <Link key={post.slug} href={`/blog/${post.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
-                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }} className="card-hover">
-                  <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
-                    <Image src={post.image} alt={post.title} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 100vw, 33vw" />
-                  </div>
-                  <div style={{ padding: '16px' }}>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.08em', background: 'var(--primary-bg)', color: 'var(--primary)', padding: '3px 8px', borderRadius: '20px', textTransform: 'uppercase' }}>{post.category}</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-hint)' }}>{post.readTime}</span>
-                    </div>
-                    <h3 style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', lineHeight: 1.4, margin: '0 0 6px' }}>{post.title}</h3>
-                    <div style={{ fontSize: '12px', color: 'var(--text-hint)' }}>{post.date}</div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <div className="divider" />
 

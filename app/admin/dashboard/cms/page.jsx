@@ -109,20 +109,6 @@ export default function AdminCmsPage() {
           </p>
         </div>
 
-        {/* Blog note */}
-        <div style={{
-          background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-xl)', padding: '20px',
-        }}>
-          <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '.08em', color: 'var(--color-text-hint)', textTransform: 'uppercase', marginBottom: '10px' }}>
-            BLOG CONTENT
-          </p>
-          <p style={{ fontSize: '14px', color: 'var(--color-text-sub)', margin: 0, lineHeight: 1.6 }}>
-            Blog posts are managed via <code style={{ fontFamily: 'monospace', fontSize: '12px', background: 'var(--color-surface-alt)', padding: '1px 5px', borderRadius: '4px' }}>lib/blog-data.js</code>.
-            Deploy a new build after editing to update the live site.
-          </p>
-        </div>
-
         <Button
           type="submit"
           variant="primary"

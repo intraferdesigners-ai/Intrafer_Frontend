@@ -50,7 +50,6 @@ const FOOTER_LINKS = [
   {
     heading: 'Resources',
     links: [
-      { label: 'Blog',                 href: '/blog'             },
       { label: 'Design guides',        href: '/guides'           },
       { label: 'Wardrobe calculator',  href: '/wardrobe-calculator' },
       { label: 'How it works',         href: '/how-it-works'     },

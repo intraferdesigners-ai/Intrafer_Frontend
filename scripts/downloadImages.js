@@ -68,14 +68,6 @@ const IMAGES = [
   ['gallery/office/o3.jpg','https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80'],
   ['gallery/office/o4.jpg','https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800&q=80'],
 
-  // ── Blog ──────────────────────────────────────────────────────────────────
-  ['blog/modular-kitchen.jpg',  'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80'],
-  ['blog/false-ceiling.jpg',    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80'],
-  ['blog/bedroom-design.jpg',   'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80'],
-  ['blog/living-room-tips.jpg', 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=800&q=80'],
-  ['blog/bathroom-trends.jpg',  'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80'],
-  ['blog/cost-guide.jpg',       'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80'],
-
   // ── Styles ────────────────────────────────────────────────────────────────
   ['styles/modern.jpg',       'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80'],
   ['styles/scandinavian.jpg', 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80'],

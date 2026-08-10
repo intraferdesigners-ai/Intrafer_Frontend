@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
-  User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Newspaper, Tag, LifeBuoy, Mail, Shield, Star,
+  User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Tag, LifeBuoy, Mail, Shield, Star,
   MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck, Kanban, Sparkles,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
@@ -23,7 +23,6 @@ const ADMIN_NAV_PERMISSIONS = {
   '/admin/dashboard/leads':           'manage_leads',
   '/admin/dashboard/enquirers':       'manage_users',
   '/admin/dashboard/analytics':       'view_analytics',
-  '/admin/dashboard/blog':            'manage_blog',
   '/admin/dashboard/coupons':         'manage_coupons',
   '/admin/dashboard/support':         'manage_support',
   '/admin/dashboard/email-templates': 'manage_email_templates',
@@ -64,7 +63,6 @@ const NAV = {
     { label: 'Coupons',      href: '/admin/dashboard/coupons',       icon: Tag,             group: 'FINANCIAL' },
 
     { label: 'CMS',          href: '/admin/dashboard/cms',           icon: Sparkles,        group: 'CONTENT' },
-    { label: 'Blog',         href: '/admin/dashboard/blog',          icon: Newspaper,       group: 'CONTENT' },
     { label: 'Cities',       href: '/admin/dashboard/cities',        icon: MapPin,          group: 'CONTENT' },
     { label: 'Categories',   href: '/admin/dashboard/categories',    icon: LayoutGrid,      group: 'CONTENT' },
     { label: 'Email Templates', href: '/admin/dashboard/email-templates', icon: Mail,        group: 'CONTENT' },
