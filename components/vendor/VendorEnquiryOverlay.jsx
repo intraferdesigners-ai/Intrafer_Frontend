@@ -73,7 +73,23 @@ export default function VendorEnquiryOverlay({ vendor }) {
       // leads against (see enquiry.controller.js). A returning visitor on a
       // new device/browser will see the overlay again once; that's the
       // accepted trade-off of not requiring an account.
-      if (!cancelled) setVisible(true);
+      if (cancelled) return;
+
+      // Re-read saved contact right before showing, not just at the
+      // useState initializer above: this component instance can outlive a
+      // contact save that happened elsewhere (a second tab open on another
+      // vendor, or the browser restoring this exact page from bfcache after
+      // back-navigation) without remounting, which would otherwise leave
+      // these fields stuck on whatever localStorage held at the moment this
+      // instance first mounted.
+      const saved = getSavedContact();
+      if (saved) {
+        setName(saved.name);
+        setPhone(saved.phone);
+        setEmail(saved.email);
+      }
+
+      setVisible(true);
     }, SHOW_DELAY_MS);
 
     return () => {
@@ -89,10 +105,41 @@ export default function VendorEnquiryOverlay({ vendor }) {
     return () => { document.body.style.overflow = ''; };
   }, [visible]);
 
-  const dismiss = useCallback((reason) => {
-    markVendorEngaged(vendorId, reason);
+  // Covers the case the setTimeout re-sync above can't: this overlay was
+  // already visible (fields already set, one-time timer already fired)
+  // before a contact got saved elsewhere — another tab open on a different
+  // vendor, or this tab itself being restored from bfcache after the
+  // visitor hit back post-submission. Re-check on every return to this tab
+  // and fill in only what's still blank, so we never stomp on partial input
+  // the visitor already typed by hand.
+  useEffect(() => {
+    if (!visible) return undefined;
+    const resync = () => {
+      if (document.visibilityState !== 'visible') return;
+      const saved = getSavedContact();
+      if (!saved) return;
+      setName((v) => (v ? v : saved.name));
+      setPhone((v) => (v ? v : saved.phone));
+      setEmail((v) => (v ? v : saved.email));
+    };
+    document.addEventListener('visibilitychange', resync);
+    window.addEventListener('pageshow', resync);
+    return () => {
+      document.removeEventListener('visibilitychange', resync);
+      window.removeEventListener('pageshow', resync);
+    };
+  }, [visible]);
+
+  // Closing without submitting only hides this view — it does NOT mark the
+  // vendor engaged. That's a deliberate reversal of this overlay's original
+  // "don't re-nag" design (dismiss used to permanently suppress it via
+  // markVendorEngaged, same as a real submission): a fresh page load of this
+  // vendor's profile should show the overlay again until the visitor
+  // actually completes an enquiry for it. Only handleSubmit's success path
+  // calls markVendorEngaged now.
+  const dismiss = useCallback(() => {
     setVisible(false);
-  }, [vendorId]);
+  }, []);
 
   const handleSubmit = async () => {
     setError('');
@@ -157,7 +204,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
         {visible && (
           <motion.div
             role="presentation"
-            onClick={() => dismiss('dismissed')}
+            onClick={() => dismiss()}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -203,7 +250,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
               }}
             >
               <button
-                onClick={() => dismiss('dismissed')}
+                onClick={() => dismiss()}
                 aria-label="Close"
                 style={{
                   position: 'absolute', top: '14px', right: '14px',
@@ -311,7 +358,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
                 </Button>
 
                 <button
-                  onClick={() => dismiss('dismissed')}
+                  onClick={() => dismiss()}
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer',
                     fontSize: '12px', color: 'rgba(255,255,255,.65)',
