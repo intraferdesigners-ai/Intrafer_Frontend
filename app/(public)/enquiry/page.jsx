@@ -10,7 +10,7 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Honeypot from '../../../components/ui/Honeypot';
 import CitySelect from '../../../components/ui/CitySelect';
-import { getSavedContact, saveContact } from '../../../lib/session';
+import { getSavedContact } from '../../../lib/session';
 
 const STEPS = [
   { n: 1, label: 'Submit your project' },
@@ -93,7 +93,8 @@ function EnquiryForm() {
         city: city.trim(), requirements: requirements.trim(),
         vendorId,
       }));
-      saveContact({ name: name.trim(), phone: phone.trim(), email: email.trim() });
+      // Contact gets cached on the verify page instead, once OTP is
+      // actually confirmed — see enquiry/verify/page.jsx.
 
       router.push(`/enquiry/verify?pendingId=${data.data.pendingId}`);
     } catch (err) {

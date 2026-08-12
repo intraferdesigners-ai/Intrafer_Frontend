@@ -9,7 +9,8 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Honeypot from '@/components/ui/Honeypot';
 import useAuthStore from '@/store/authStore';
-import { hasEngagedVendor, markVendorEngaged, getSavedContact, saveContact } from '@/lib/session';
+import { hasEngagedVendor, markVendorEngaged, getSavedContact } from '@/lib/session';
+import { autoSendVendorEnquiry } from '@/lib/enquiryFlow';
 
 // Near-immediate: a long artificial delay here reads as "the site is slow"
 // even though no network call is involved in it — this used to be 4000ms,
@@ -64,7 +65,8 @@ export default function VendorEnquiryOverlay({ vendor }) {
     timerRef.current = setTimeout(() => {
       const { role, user } = useAuthStore.getState();
 
-      // Vendor previewing their own listing, or staff/admin — never prompt.
+      // Vendor previewing their own listing, or staff/admin — never prompt,
+      // and never auto-send on their behalf either.
       if (role === 'admin') return;
       if (role === 'vendor' && user?.id && vendorOwnerId && String(user.id) === vendorOwnerId) return;
 
@@ -75,18 +77,21 @@ export default function VendorEnquiryOverlay({ vendor }) {
       // accepted trade-off of not requiring an account.
       if (cancelled) return;
 
-      // Re-read saved contact right before showing, not just at the
+      // Re-read saved contact right before acting, not just at the
       // useState initializer above: this component instance can outlive a
       // contact save that happened elsewhere (a second tab open on another
       // vendor, or the browser restoring this exact page from bfcache after
       // back-navigation) without remounting, which would otherwise leave
-      // these fields stuck on whatever localStorage held at the moment this
+      // this stuck on whatever localStorage held at the moment this
       // instance first mounted.
       const saved = getSavedContact();
       if (saved) {
-        setName(saved.name);
-        setPhone(saved.phone);
-        setEmail(saved.email);
+        // This browser already OTP-verified a contact — send this vendor's
+        // enquiry silently with it instead of showing the form again. No
+        // setVisible(true) at all: the overlay never appears once a
+        // verified contact exists anywhere on the site.
+        autoSendVendorEnquiry(vendor);
+        return;
       }
 
       setVisible(true);
@@ -106,21 +111,22 @@ export default function VendorEnquiryOverlay({ vendor }) {
   }, [visible]);
 
   // Covers the case the setTimeout re-sync above can't: this overlay was
-  // already visible (fields already set, one-time timer already fired)
-  // before a contact got saved elsewhere — another tab open on a different
-  // vendor, or this tab itself being restored from bfcache after the
-  // visitor hit back post-submission. Re-check on every return to this tab
-  // and fill in only what's still blank, so we never stomp on partial input
-  // the visitor already typed by hand.
+  // already visible (one-time timer already fired) before a contact got
+  // OTP-verified elsewhere — another tab completing verification for a
+  // different vendor, or this tab itself being restored from bfcache after
+  // the visitor hit back post-submission. Re-check on every return to this
+  // tab; if a verified contact now exists, close this form and auto-send
+  // instead of just prefilling it — under the current one-time-ever
+  // verification model, seeing this form at all once a contact is verified
+  // is itself the state to correct, not just its fields.
   useEffect(() => {
     if (!visible) return undefined;
     const resync = () => {
       if (document.visibilityState !== 'visible') return;
       const saved = getSavedContact();
       if (!saved) return;
-      setName((v) => (v ? v : saved.name));
-      setPhone((v) => (v ? v : saved.phone));
-      setEmail((v) => (v ? v : saved.email));
+      setVisible(false);
+      autoSendVendorEnquiry(vendor);
     };
     document.addEventListener('visibilitychange', resync);
     window.addEventListener('pageshow', resync);
@@ -128,7 +134,7 @@ export default function VendorEnquiryOverlay({ vendor }) {
       document.removeEventListener('visibilitychange', resync);
       window.removeEventListener('pageshow', resync);
     };
-  }, [visible]);
+  }, [visible, vendor]);
 
   // Closing without submitting only hides this view — it does NOT mark the
   // vendor engaged. That's a deliberate reversal of this overlay's original
@@ -156,7 +162,11 @@ export default function VendorEnquiryOverlay({ vendor }) {
         city: vendor?.location?.city || '',
         requirements: '',
       }));
-      saveContact({ name, phone, email });
+      // Contact gets cached (saveContact) on the verify page instead, once
+      // OTP is actually confirmed — see enquiry/verify/page.jsx. Doing it
+      // here, before the visitor has entered any code, would let a
+      // never-verified contact silently start auto-sending leads to every
+      // vendor page they open afterward.
       markVendorEngaged(vendorId, 'submitted');
       setVisible(false);
       router.push(`/enquiry/verify?pendingId=${data.data.pendingId}`);

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Mail } from 'lucide-react';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
+import { saveContact } from '../../../../lib/session';
 
 function VerifyContent() {
   const router       = useRouter();
@@ -78,9 +79,10 @@ function VerifyContent() {
       const raw   = sessionStorage.getItem(draftKey);
       const draft = JSON.parse(raw || '{}');
 
-      // Single call — verifies the OTP and creates the Lead together, with
-      // no session or account created for the visitor. See
-      // enquiry.controller.js's submitGuestEnquiry.
+      // Single call — verifies the OTP and creates the Lead (or, if this
+      // draft has no vendorId, a Visitor capture) together, with no session
+      // or account created for the visitor. See enquiry.controller.js's
+      // submitGuestEnquiry.
       const { data } = await api.post('/enquiry/submit', {
         pendingId,
         otp:          otpString,
@@ -89,9 +91,22 @@ function VerifyContent() {
         budget:       draft.budget,
         city:         draft.city,
         requirements: draft.requirements,
+        sessionId:    draft.sessionId,
       });
 
       const lead = data.data?.lead;
+
+      // Only now — after OTP has actually been checked server-side — does
+      // this contact count as "verified" for the site's shared cache (see
+      // lib/session.js). Every subsequent vendor this visitor reaches
+      // reads this to auto-send without asking for OTP again.
+      if (data.data?.contactToken) {
+        saveContact({
+          name: draft.name, phone: draft.phone, email: draft.email,
+          contactToken: data.data.contactToken,
+        });
+      }
+
       sessionStorage.removeItem(draftKey);
       router.push(
         `/enquiry/success?enquiryId=${lead?._id || ''}&vendorId=${draft.vendorId || ''}`

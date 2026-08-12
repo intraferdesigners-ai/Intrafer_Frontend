@@ -7,7 +7,7 @@ import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Honeypot from '@/components/ui/Honeypot';
-import { getSavedContact, saveContact } from '@/lib/session';
+import { getSavedContact } from '@/lib/session';
 import { X, User, Phone, Mail, Lock, Clock, BadgeCheck } from 'lucide-react';
 
 export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
@@ -52,7 +52,9 @@ export default function QuickEnquiryModal({ vendor, isOpen, onClose }) {
         city:         vendor.location?.city || '',
         requirements,
       }));
-      saveContact({ name, phone, email });
+      // Contact gets cached on the verify page instead, once OTP is
+      // actually confirmed — see enquiry/verify/page.jsx and
+      // VendorEnquiryOverlay's matching comment.
       onClose();
       router.push(`/enquiry/verify?pendingId=${data.data.pendingId}`);
     } catch (err) {

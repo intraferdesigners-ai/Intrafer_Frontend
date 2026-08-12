@@ -11,6 +11,8 @@ import VendorTooltip from './VendorTooltip';
 import ProjectImageSlider from './ProjectImageSlider';
 import { trackVendorInterest } from '@/lib/trackInterest';
 import { useCompare } from '@/context/CompareContext';
+import { getSavedContact, hasEngagedVendor } from '@/lib/session';
+import { autoSendVendorEnquiry } from '@/lib/enquiryFlow';
 
 // Last-resort fallback when a vendor has neither published project photos
 // nor a banner image — a colored initial reads as an intentional identity
@@ -111,6 +113,17 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
     e.preventDefault();
     e.stopPropagation();
     trackVendorInterest(vendor._id, 'card');
+
+    // Already sent for this vendor — nothing left for this click to do.
+    if (hasEngagedVendor(vendor._id)) return;
+
+    // This browser already OTP-verified a contact elsewhere — send this
+    // vendor's enquiry silently with it instead of opening the form again.
+    if (getSavedContact()) {
+      autoSendVendorEnquiry(vendor);
+      return;
+    }
+
     setShowModal(true);
   };
 

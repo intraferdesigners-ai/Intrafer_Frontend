@@ -1,8 +1,10 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
-import { getSessionId, shouldShowPopup, markPopupFilled, markPopupDismissed, hasFilledPopup, recordFirstVisit, getSecondsSinceFirstVisit } from '@/lib/session';
+import { usePathname, useRouter } from 'next/navigation';
+import api from '@/lib/api';
+import { getSessionId, shouldShowPopup, markPopupDismissed, getSavedContact, recordFirstVisit, getSecondsSinceFirstVisit } from '@/lib/session';
 import CitySelect from './CitySelect';
+import Honeypot from './Honeypot';
 
 // Don't show the popup on auth or dashboard pages. '/vendors/' (trailing
 // slash, so this doesn't match the /vendors listing page) is excluded
@@ -25,12 +27,13 @@ const EXCLUDED_PATHS = [
 
 export default function LeadCapturePopup() {
   const pathname = usePathname();
+  const router    = useRouter();
   const isExcluded = EXCLUDED_PATHS.some(p => pathname.startsWith(p));
 
   const [visible,  setVisible]  = useState(false);
-  const [step,     setStep]     = useState(1);
   const [isMobile, setIsMobile] = useState(false);
-  const [form,     setForm]     = useState({ name: '', contact: '', city: '' });
+  const [form,     setForm]     = useState({ name: '', phone: '', email: '', city: '' });
+  const [website,  setWebsite]  = useState(''); // honeypot — see components/ui/Honeypot.jsx
   const [errors,   setErrors]   = useState({});
   const [loading,  setLoading]  = useState(false);
   const timerRef      = useRef(null);
@@ -73,11 +76,11 @@ export default function LeadCapturePopup() {
     };
   }, [isExcluded]);
 
-  // When popup closes, re-schedule if user said "later" (not submitted)
+  // When popup closes, re-schedule if user said "later" (not verified)
   useEffect(() => {
     if (!visible && !isExcluded) {
       clearTimeout(rescheduleRef.current);
-      if (!hasFilledPopup()) {
+      if (!getSavedContact()) {
         rescheduleRef.current = setTimeout(() => {
           if (shouldShowPopup() && !isExcluded) setVisible(true);
         }, 300000); // 5 minutes
@@ -103,41 +106,38 @@ export default function LeadCapturePopup() {
       e.name = 'Please enter your name';
     if (!form.city)
       e.city = 'Please select your city';
-    if (!form.contact.trim()) {
-      e.contact = 'Please enter your phone or email';
-    } else {
-      const isPhone = /^[6-9]\d{9}$/.test(form.contact.replace(/\s/g, ''));
-      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact);
-      if (!isPhone && !isEmail)
-        e.contact = 'Enter a valid 10-digit mobile or email address';
-    }
+    if (!/^[6-9]\d{9}$/.test(form.phone.replace(/\s/g, '')))
+      e.phone = 'Enter a valid 10-digit mobile number';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      e.email = 'Enter a valid email address';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  // Same OTP-verify pipeline as VendorEnquiryOverlay/QuickEnquiryModal (see
+  // enquiry/verify/page.jsx) — unified per the decision to standardize
+  // every guest-contact-capture entry point on OTP rather than this popup's
+  // old submit-and-done shape. No vendorId in the draft: this is the
+  // site-wide "match me with designers" capture, not tied to one vendor —
+  // see enquiry.controller.js's submitGuestEnquiry for how a vendor-less
+  // draft becomes a Visitor capture instead of a Lead.
   const handleSubmit = async () => {
     if (!validate()) return;
     setLoading(true);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/visitor/capture`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: getSessionId(),
-          name:      form.name.trim(),
-          contact:   form.contact.trim(),
-          city:      form.city,
-          userAgent: navigator.userAgent,
-        }),
+      const { data } = await api.post('/enquiry/send-otp', {
+        name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim(), website,
       });
-    } catch {
-      // fail silently
-    } finally {
-      setLoading(false);
+      sessionStorage.setItem('intrafer_enquiry_draft', JSON.stringify({
+        name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim(),
+        city: form.city, requirements: '', vendorId: null, sessionId: getSessionId(),
+      }));
+      setVisible(false);
+      router.push(`/enquiry/verify?pendingId=${data.data.pendingId}`);
+    } catch (err) {
+      setErrors({ submit: err.response?.data?.message || 'Something went wrong. Please try again.' });
     }
-    markPopupFilled();
-    setStep(2);
-    setTimeout(() => setVisible(false), 5000);
+    setLoading(false);
   };
 
   if (isExcluded || !visible) return null;
@@ -199,9 +199,10 @@ export default function LeadCapturePopup() {
           )}
 
           <PopupContent
-            step={step}
             form={form}
             setForm={setForm}
+            website={website}
+            setWebsite={setWebsite}
             errors={errors}
             loading={loading}
             onSubmit={handleSubmit}
@@ -214,38 +215,15 @@ export default function LeadCapturePopup() {
   );
 }
 
-function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismiss, isMobile }) {
-  if (step === 2) {
-    return (
-      <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-        <div style={{
-          width: '72px', height: '72px', borderRadius: '50%',
-          background: 'var(--success-bg)', border: '2px solid var(--success)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 20px',
-          animation: 'scaleIn 400ms cubic-bezier(.34,1.56,.64,1) forwards',
-        }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-            stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
-        <div style={{
-          fontFamily: 'var(--font-display)', fontSize: '26px',
-          fontWeight: 400, color: 'var(--text)', marginBottom: '8px',
-        }}>
-          Thank you, {form.name.split(' ')[0]}!
-        </div>
-        <div style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.6 }}>
-          Our team will connect you with the best interior designers in {form.city}.
-        </div>
-      </div>
-    );
-  }
-
+function PopupContent({ form, setForm, website, setWebsite, errors, loading, onSubmit, onDismiss, isMobile }) {
+  // No more inline "Thank you" step — a submission here only requests an
+  // OTP and navigates to the shared /enquiry/verify page (same as
+  // VendorEnquiryOverlay/QuickEnquiryModal), which itself redirects to
+  // /enquiry/success once verification actually completes.
   const formFields = (
     <FormFields
-      form={form} setForm={setForm} errors={errors} loading={loading}
+      form={form} setForm={setForm} website={website} setWebsite={setWebsite}
+      errors={errors} loading={loading}
       onSubmit={onSubmit} onDismiss={onDismiss}
     />
   );
@@ -419,9 +397,11 @@ function PopupContent({ step, form, setForm, errors, loading, onSubmit, onDismis
 
 const TRUST_LINES = ['Vetted designers', 'Free to enquire', 'No spam, ever'];
 
-function FormFields({ form, setForm, errors, loading, onSubmit, onDismiss }) {
+function FormFields({ form, setForm, website, setWebsite, errors, loading, onSubmit, onDismiss }) {
   return (
     <>
+      <Honeypot value={website} onChange={e => setWebsite(e.target.value)} />
+
       <Field label="Your city" error={errors.city}>
         <CitySelect
           value={form.city}
@@ -442,18 +422,36 @@ function FormFields({ form, setForm, errors, loading, onSubmit, onDismiss }) {
         </InputWithIcon>
       </Field>
 
-      <Field label="Mobile or email" error={errors.contact} last>
-        <InputWithIcon icon={<PhoneIcon />} error={errors.contact}>
+      <Field label="Mobile number" error={errors.phone}>
+        <InputWithIcon icon={<PhoneIcon />} error={errors.phone}>
           <input
             type="text"
-            value={form.contact}
-            onChange={e => setForm(f => ({ ...f, contact: e.target.value }))}
-            placeholder="9876543210 or you@email.com"
+            value={form.phone}
+            onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+            placeholder="9876543210"
             inputMode="tel"
-            style={inputStyle(errors.contact)}
+            maxLength={10}
+            style={inputStyle(errors.phone)}
           />
         </InputWithIcon>
       </Field>
+
+      <Field label="Email" error={errors.email} last>
+        <InputWithIcon icon={<MailIcon />} error={errors.email}>
+          <input
+            type="email"
+            value={form.email}
+            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            placeholder="you@email.com"
+            inputMode="email"
+            style={inputStyle(errors.email)}
+          />
+        </InputWithIcon>
+      </Field>
+
+      {errors.submit && (
+        <div style={{ fontSize: '12px', color: 'var(--danger)', marginBottom: '10px' }}>{errors.submit}</div>
+      )}
 
       <button
         onClick={onSubmit}
@@ -477,11 +475,11 @@ function FormFields({ form, setForm, errors, loading, onSubmit, onDismiss }) {
               border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff',
               animation: 'spin 600ms linear infinite',
             }} />
-            Connecting you...
+            Sending code...
           </>
         ) : (
           <>
-            Get matched with designers
+            Continue — verify with OTP
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" strokeWidth="2">
               <line x1="5" y1="12" x2="19" y2="12"/>
@@ -576,6 +574,16 @@ function PhoneIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth="2">
       <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+    </svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="4" width="20" height="16" rx="2"/>
+      <path d="M22 6l-10 7L2 6"/>
     </svg>
   );
 }

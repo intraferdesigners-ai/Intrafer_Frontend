@@ -177,7 +177,7 @@ export default function SuccessContent() {
           LEAD_ASSIGNED handler) — still never shared with anyone but this
           one designer. */}
       <p style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '16px', lineHeight: 1.6 }}>
-        🔒 Your contact details are shared only with {vendor?.businessName || 'this designer'}, so they can reach out to you directly.
+        🔒 Your contact details are shared only with {vendor ? vendor.businessName : 'the designers we match you with'}, so they can reach out to you directly.
       </p>
     </div>
   );
