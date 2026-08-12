@@ -25,6 +25,7 @@ import TestimonialCarousel from '../components/public/TestimonialCarousel';
 export const metadata = {
   title: 'Intrafer — Vetted Interior Designers Across India',
   description: "Compare interior designers by city, style, and budget. Every portfolio is real, completed work. Submit one enquiry and hear back within 48 hours.",
+  alternates: { canonical: '/' },
 };
 
 async function fetchStats() {
