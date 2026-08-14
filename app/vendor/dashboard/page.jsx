@@ -12,6 +12,7 @@ import Button from '../../../components/ui/Button';
 import OnboardingChecklist from '../../../components/vendor/OnboardingChecklist';
 import { formatDate } from '../../../lib/utils';
 import HoverLift from '../../../components/ui/HoverLift';
+import useAuthStore from '../../../store/authStore';
 
 const LABEL = {
   fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
@@ -19,6 +20,7 @@ const LABEL = {
 };
 
 export default function VendorDashboard() {
+  const { user } = useAuthStore();
   const [analytics,    setAnalytics]    = useState(null);
   const [leads,        setLeads]        = useState([]);
   const [subscription, setSubscription] = useState(null);
@@ -137,7 +139,7 @@ export default function VendorDashboard() {
 
       {/* Onboarding checklist */}
       {!loading && (
-        <OnboardingChecklist vendor={vendor} projects={projects} subscription={subscription} />
+        <OnboardingChecklist vendor={vendor} projects={projects} subscription={subscription} user={user} />
       )}
 
       {/* Lead credits bar */}

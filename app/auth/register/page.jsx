@@ -6,10 +6,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Lock, User, Phone, UserPlus } from 'lucide-react';
 import api from '../../../lib/api';
+import { setAuthTokens } from '../../../lib/auth';
+import useAuthStore from '../../../store/authStore';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Honeypot from '../../../components/ui/Honeypot';
 import AuthSplitCard from '../../../components/auth/AuthSplitCard';
+import GoogleAuthButton from '../../../components/auth/GoogleAuthButton';
+import RegisterSuccessScreen from '../../../components/auth/RegisterSuccessScreen';
 
 // Self-registration only ever creates vendor accounts — the homeowner role
 // has no signup surface anymore (see the homeowner-removal plan, Phase 4).
@@ -17,6 +21,7 @@ import AuthSplitCard from '../../../components/auth/AuthSplitCard';
 // register()).
 function RegisterContent() {
   const router = useRouter();
+  const { setAuth } = useAuthStore();
 
   const [name,            setName]            = useState('');
   const [email,           setEmail]           = useState('');
@@ -27,6 +32,13 @@ function RegisterContent() {
   const [error,           setError]           = useState('');
   const [confirmError,    setConfirmError]    = useState('');
   const [website,         setWebsite]         = useState(''); // honeypot — see components/ui/Honeypot.jsx
+
+  // Google signup bypasses the OTP step entirely (Google's own
+  // email_verified claim stands in for it — see the Google OAuth
+  // Enablement plan, §06) and logs the account straight in, so success
+  // here lands on the same RegisterSuccessScreen the OTP-verify page shows,
+  // not a redirect into a verification step that has nothing to verify.
+  const [googleSuccess, setGoogleSuccess] = useState(false);
 
   useEffect(() => { document.title = 'Create account | Intrafer'; }, []);
 
@@ -63,6 +75,17 @@ function RegisterContent() {
       setLoading(false);
     }
   };
+
+  const handleGoogleSuccess = (result) => {
+    setError('');
+    setAuthTokens(result.accessToken, result.user.role);
+    setAuth(result.user, result.accessToken);
+    setGoogleSuccess(true);
+  };
+
+  if (googleSuccess) {
+    return <RegisterSuccessScreen role="vendor" ctaHref="/vendor/dashboard" />;
+  }
 
   return (
     <AuthSplitCard>
@@ -126,6 +149,14 @@ function RegisterContent() {
           Create account
         </Button>
       </form>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
+        <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+        <span style={{ fontSize: '12px', color: 'var(--text-hint)' }}>or</span>
+        <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+      </div>
+
+      <GoogleAuthButton intent="signup" onSuccess={handleGoogleSuccess} onError={setError} />
 
       <p style={{ fontSize: '13px', textAlign: 'center', color: 'var(--text-sub)', marginTop: '24px' }}>
         Already have an account?{' '}

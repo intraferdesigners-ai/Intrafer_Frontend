@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { CheckCircle, Circle, ChevronRight, Lock } from 'lucide-react';
 
-export default function OnboardingChecklist({ vendor, projects }) {
+export default function OnboardingChecklist({ vendor, projects, user }) {
   // isListingEnabled (not a live Subscription query) is the canonical
   // "currently subscribed" signal used everywhere else in this app (and by
   // the backend gate on portfolio uploads) — some seeded demo vendors have
@@ -21,11 +21,25 @@ export default function OnboardingChecklist({ vendor, projects }) {
   const portfolioDone = publishedProjects.length >= 3;
   const photosDone = publishedProjects.some((p) => p.images?.length > 0);
 
-  // Build order: Profile -> Subscribe -> Portfolio. Going live has no admin
-  // review step — subscribing is the only gate. Portfolio (and its photos
-  // sub-step) stay locked until a subscription is active, since the backend
-  // rejects project uploads without one.
+  // Build order: Phone -> Profile -> Subscribe -> Portfolio. Going live has
+  // no admin review step — subscribing is the only gate. Portfolio (and its
+  // photos sub-step) stay locked until a subscription is active, since the
+  // backend rejects project uploads without one.
   const steps = [
+    // Only relevant for a Google signup — password signups already require
+    // phone up front (register()), so `user.phone` is always set by the
+    // time this renders for them and this step is immediately done. Google
+    // doesn't supply a phone number at all (User.phone is sparse, not
+    // required, for exactly this case — see the Google OAuth Enablement
+    // plan, §02/§05), so it's collected here instead.
+    {
+      id: 'phone',
+      label: 'Add your phone number',
+      desc: 'Needed so homeowners and Intrafer can reach you about leads.',
+      done: !!user?.phone,
+      href: '/vendor/dashboard/settings',
+      cta: 'Add phone',
+    },
     {
       id: 'profile',
       label: 'Complete your business profile',

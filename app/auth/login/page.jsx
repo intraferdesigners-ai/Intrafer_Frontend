@@ -12,6 +12,7 @@ import { setAuthTokens } from '../../../lib/auth';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import AuthSplitCard from '../../../components/auth/AuthSplitCard';
+import GoogleAuthButton from '../../../components/auth/GoogleAuthButton';
 
 // 'user' (homeowner) intentionally has no entry — that role has no login
 // surface anymore (see the homeowner-removal plan, Phase 4). A pre-existing
@@ -83,6 +84,13 @@ function LoginContent() {
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendingVerify,   setResendingVerify]   = useState(false);
 
+  // Set when POST /auth/google returns NO_ACCOUNT — no vendor account
+  // exists for the Google email the visitor picked. The backend
+  // deliberately does not auto-create one from the login page (see the
+  // Google OAuth Enablement plan, §03), so this shows a clean "sign up
+  // instead" state rather than the generic red error box.
+  const [googleNoAccount, setGoogleNoAccount] = useState(false);
+
   useEffect(() => { document.title = 'Login | Intrafer'; }, []);
 
   // Navigating between role params (e.g. clicking the mismatch banner's
@@ -94,6 +102,7 @@ function LoginContent() {
   useEffect(() => {
     setError('');
     setRoleMismatch(null);
+    setGoogleNoAccount(false);
   }, [roleParam]);
 
   const completeLogin = (user, accessToken) => {
@@ -127,6 +136,7 @@ function LoginContent() {
     setError('');
     setRoleMismatch(null);
     setNeedsVerification(false);
+    setGoogleNoAccount(false);
     try {
       const { data } = await api.post('/auth/login', { email, password });
       completeLogin(data.data.user, data.data.accessToken);
@@ -135,6 +145,26 @@ function LoginContent() {
       setNeedsVerification(err.response?.status === 403);
     }
     setLoading(false);
+  };
+
+  const handleGoogleSuccess = (result) => {
+    setError('');
+    setRoleMismatch(null);
+    setGoogleNoAccount(false);
+    completeLogin(result.user, result.accessToken);
+  };
+
+  const handleGoogleNoAccount = () => {
+    setError('');
+    setRoleMismatch(null);
+    setNeedsVerification(false);
+    setGoogleNoAccount(true);
+  };
+
+  const handleGoogleError = (message) => {
+    setGoogleNoAccount(false);
+    setRoleMismatch(null);
+    setError(message);
   };
 
   const handleResendVerification = async () => {
@@ -183,7 +213,18 @@ function LoginContent() {
         </Link>
       )}
 
-      {roleMismatch ? (
+      {googleNoAccount ? (
+        <div style={{
+          background: 'var(--primary-bg)', color: 'var(--text)',
+          fontSize: '13px', padding: '12px 14px', borderRadius: 'var(--r-md)',
+          marginBottom: '16px', lineHeight: 1.6,
+        }}>
+          No account found for this email.{' '}
+          <Link href={signUpHref} style={{ color: 'var(--primary)', fontWeight: 600 }}>
+            Sign up instead
+          </Link>.
+        </div>
+      ) : roleMismatch ? (
         <div style={{
           background: 'var(--danger-bg)', color: 'var(--danger)',
           fontSize: '13px', padding: '12px 14px', borderRadius: 'var(--r-md)',
@@ -245,32 +286,25 @@ function LoginContent() {
         </Button>
       </form>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
-        <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-        <span style={{ fontSize: '12px', color: 'var(--text-hint)' }}>or</span>
-        <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-      </div>
+      {/* Google auth is vendor-only — never offered in an admin context, on
+          top of (not instead of) the backend's own role-check lockdown
+          (see auth.controller.js's googleAuth()). */}
+      {!isAdminContext && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+            <span style={{ fontSize: '12px', color: 'var(--text-hint)' }}>or</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+          </div>
 
-      <button
-        type="button"
-        disabled
-        style={{
-          width: '100%', padding: '10px 16px',
-          background: 'var(--bg-parchment)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--r-md)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-          fontSize: '13px', fontWeight: 500, color: 'var(--text-sub)',
-          cursor: 'not-allowed', opacity: 0.6,
-        }}
-      >
-        <span style={{
-          width: '18px', height: '18px', borderRadius: '50%',
-          background: 'linear-gradient(135deg, #4285F4 25%, #34A853 50%, #FBBC05 75%, #EA4335 100%)',
-          display: 'inline-block', flexShrink: 0,
-        }} />
-        Continue with Google
-      </button>
+          <GoogleAuthButton
+            intent="login"
+            onSuccess={handleGoogleSuccess}
+            onNoAccount={handleGoogleNoAccount}
+            onError={handleGoogleError}
+          />
+        </>
+      )}
 
       {!isAdminContext && (
         <p style={{ fontSize: '13px', textAlign: 'center', color: 'var(--text-sub)', marginTop: '24px' }}>
