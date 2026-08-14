@@ -48,7 +48,7 @@ export default function AdminAuditLogsPage() {
           Audit logs
         </h1>
         <p style={{ fontSize: 14, color: 'var(--color-text-hint)', margin: 0 }}>
-          A record of every state-changing action taken by admins.
+          A record of every state-changing action taken by admins, plus security-relevant events on admin accounts (e.g. rejected sign-in attempts).
         </p>
       </div>
 
