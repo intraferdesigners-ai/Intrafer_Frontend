@@ -25,7 +25,6 @@ const ADMIN_NAV_PERMISSIONS = {
   '/admin/dashboard/analytics':       'view_analytics',
   '/admin/dashboard/coupons':         'manage_coupons',
   '/admin/dashboard/support':         'manage_support',
-  '/admin/dashboard/settings':        'manage_settings',
   '/admin/dashboard/categories':      'manage_taxonomy',
   '/admin/dashboard/reports':         'view_analytics',
   '/admin/dashboard/projects':        'manage_portfolio',
@@ -70,7 +69,6 @@ const NAV = {
     { label: 'Reports',      href: '/admin/dashboard/reports',       icon: FileBarChart,    group: 'INSIGHTS' },
 
     { label: 'Profile',      href: '/admin/dashboard/profile',       icon: User,            group: 'ACCOUNT' },
-    { label: 'Settings',     href: '/admin/dashboard/settings',      icon: Settings,        group: 'ACCOUNT' },
   ],
 };
 
