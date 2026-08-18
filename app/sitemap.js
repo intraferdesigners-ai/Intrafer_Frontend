@@ -22,3 +22,5 @@ export default function sitemap() {
     { url: `${baseUrl}/terms`, lastModified: now, priority: 0.3 },
   ];
 }
+
+
