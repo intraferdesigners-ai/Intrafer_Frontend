@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
-  User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Tag, LifeBuoy, Mail, Shield, Star,
+  User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Tag, LifeBuoy, Shield, Star,
   LayoutGrid, ScrollText, FileBarChart, Kanban, Sparkles,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
@@ -25,7 +25,6 @@ const ADMIN_NAV_PERMISSIONS = {
   '/admin/dashboard/analytics':       'view_analytics',
   '/admin/dashboard/coupons':         'manage_coupons',
   '/admin/dashboard/support':         'manage_support',
-  '/admin/dashboard/email-templates': 'manage_email_templates',
   '/admin/dashboard/settings':        'manage_settings',
   '/admin/dashboard/categories':      'manage_taxonomy',
   '/admin/dashboard/reports':         'view_analytics',
@@ -61,7 +60,6 @@ const NAV = {
 
     { label: 'CMS',          href: '/admin/dashboard/cms',           icon: Sparkles,        group: 'CONTENT' },
     { label: 'Categories',   href: '/admin/dashboard/categories',    icon: LayoutGrid,      group: 'CONTENT' },
-    { label: 'Email Templates', href: '/admin/dashboard/email-templates', icon: Mail,        group: 'CONTENT' },
 
     { label: 'Support',      href: '/admin/dashboard/support',       icon: LifeBuoy,        group: 'TRUST & SAFETY' },
     { label: 'Visitors',     href: '/admin/dashboard/visitors',      icon: UserCheck,       group: 'TRUST & SAFETY' },
