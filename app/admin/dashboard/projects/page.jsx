@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Building2, Clock, CheckCircle2, XCircle, Search, Star } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
@@ -33,14 +34,16 @@ const SELECT_STYLE = {
   fontFamily: 'var(--font-ui)', cursor: 'pointer',
 };
 
-export default function AdminProjectsPage() {
+function AdminProjectsPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [projects,   setProjects]   = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [page,       setPage]       = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total,      setTotal]      = useState(0);
 
-  const [status,       setStatus]       = useState('');
+  const [status,       setStatus]       = useState(searchParams.get('status') || '');
   const [searchInput,  setSearchInput]  = useState('');
   const [search,       setSearch]       = useState('');
   const [togglingId,   setTogglingId]   = useState(null);
@@ -146,11 +149,12 @@ export default function AdminProjectsPage() {
               <div
                 key={project._id}
                 className="admin-table-row"
+                onClick={() => router.push(`/admin/dashboard/projects/${project._id}`)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   background: 'var(--color-surface)', border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-lg)', padding: '12px 16px', marginBottom: 8,
-                  flexWrap: 'wrap',
+                  flexWrap: 'wrap', cursor: 'pointer',
                 }}
               >
                 {/* Thumbnail */}
@@ -204,7 +208,7 @@ export default function AdminProjectsPage() {
                     type="button"
                     title={project.isFeatured ? 'Remove from featured' : 'Feature on homepage'}
                     disabled={togglingId === project._id}
-                    onClick={() => handleToggleFeatured(project)}
+                    onClick={(e) => { e.stopPropagation(); handleToggleFeatured(project); }}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       width: 28, height: 28, borderRadius: 'var(--radius-sm)',
@@ -250,5 +254,13 @@ export default function AdminProjectsPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function AdminProjectsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminProjectsPageContent />
+    </Suspense>
   );
 }
