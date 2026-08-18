@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { ChevronLeft, MapPin, Star, Building2, ShieldCheck, ShieldX, Clock, XCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
-import DashboardLayout from '@/components/layout/DashboardLayout';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Spinner from '@/components/ui/Spinner';
@@ -73,25 +72,21 @@ export default function AdminVendorDetailPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '80px' }}>
-          <Spinner size={28} />
-        </div>
-      </DashboardLayout>
+      <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '80px' }}>
+        <Spinner size={28} />
+      </div>
     );
   }
 
   if (!vendor) {
     return (
-      <DashboardLayout>
-        <div style={{ textAlign: 'center', paddingTop: '80px' }}>
-          <Building2 size={48} color="var(--color-text-hint)" />
-          <p style={{ marginTop: '16px', color: 'var(--color-text-hint)' }}>Vendor not found.</p>
-          <Link href="/admin/dashboard/vendors" style={{ color: 'var(--color-primary)', fontSize: '13px' }}>
-            ← Back to vendors
-          </Link>
-        </div>
-      </DashboardLayout>
+      <div style={{ textAlign: 'center', paddingTop: '80px' }}>
+        <Building2 size={48} color="var(--color-text-hint)" />
+        <p style={{ marginTop: '16px', color: 'var(--color-text-hint)' }}>Vendor not found.</p>
+        <Link href="/admin/dashboard/vendors" style={{ color: 'var(--color-primary)', fontSize: '13px' }}>
+          ← Back to vendors
+        </Link>
+      </div>
     );
   }
 
@@ -100,7 +95,7 @@ export default function AdminVendorDetailPage() {
   const specs     = vendor.specializations || [];
 
   return (
-    <DashboardLayout>
+    <>
       <Link
         href="/admin/dashboard/vendors"
         style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-text-hint)', textDecoration: 'none', marginBottom: 24 }}
@@ -323,6 +318,6 @@ export default function AdminVendorDetailPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }
