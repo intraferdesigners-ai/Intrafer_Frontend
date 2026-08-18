@@ -5,6 +5,21 @@ import RevealItem from '../../../components/ui/RevealItem';
 
 export const metadata = { title: 'Compare Designers | Intrafer' };
 
+const PRICE_UNIT_LABEL = {
+  flat: '',
+  per_sqft: ' / sq. ft.',
+  per_room: ' / room',
+};
+
+// Cheapest listed service, not an average — a prospective client comparing
+// designers wants to know "what's the least I could pay to start", same
+// framing the vendor detail page's own services list uses per-service.
+function cheapestService(vendor) {
+  const priced = (vendor.services || []).filter((s) => s.startingPrice != null);
+  if (priced.length === 0) return null;
+  return priced.reduce((min, s) => (s.startingPrice < min.startingPrice ? s : min), priced[0]);
+}
+
 async function fetchVendors(ids) {
   if (!ids) return [];
   try {
@@ -73,6 +88,11 @@ export default async function ComparePage({ searchParams }) {
             const specs = vendor.specializations || [];
             const location = [vendor.location?.city, vendor.location?.state].filter(Boolean).join(', ') || 'India';
             const cover = vendor.portfolioImages?.[0];
+            const highlights = (vendor.portfolioImages || []).slice(1, 4);
+            const cities = vendor.serviceLocations?.length > 0
+              ? vendor.serviceLocations.map((loc) => loc.city)
+              : (vendor.location?.city ? [vendor.location.city] : []);
+            const cheapest = cheapestService(vendor);
 
             return (
               <RevealItem key={vendor._id} index={i} style={{
@@ -135,8 +155,30 @@ export default async function ComparePage({ searchParams }) {
                     )}
                   </div>
 
+                  {/* Experience + starting price */}
+                  <div style={{ display: 'flex', gap: 16, marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid var(--border)' }}>
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.08em', color: 'var(--text-hint)', textTransform: 'uppercase', margin: '0 0 3px' }}>
+                        Experience
+                      </p>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0 }}>
+                        {vendor.experienceYears ? `${vendor.experienceYears} yr${vendor.experienceYears !== 1 ? 's' : ''}` : '—'}
+                      </p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.08em', color: 'var(--text-hint)', textTransform: 'uppercase', margin: '0 0 3px' }}>
+                        Starting at
+                      </p>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0 }}>
+                        {cheapest
+                          ? `₹${Number(cheapest.startingPrice).toLocaleString('en-IN')}${PRICE_UNIT_LABEL[cheapest.priceUnit] ?? ''}`
+                          : '—'}
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Specializations */}
-                  <div style={{ marginBottom: 16, flex: 1 }}>
+                  <div style={{ marginBottom: 14 }}>
                     <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.08em', color: 'var(--text-hint)', textTransform: 'uppercase', margin: '0 0 6px' }}>
                       Specializations
                     </p>
@@ -150,6 +192,58 @@ export default async function ComparePage({ searchParams }) {
                       <span style={{ fontSize: 12, color: 'var(--text-hint)' }}>—</span>
                     )}
                   </div>
+
+                  {/* Cities served */}
+                  <div style={{ marginBottom: 14 }}>
+                    <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.08em', color: 'var(--text-hint)', textTransform: 'uppercase', margin: '0 0 6px' }}>
+                      Cities served
+                    </p>
+                    {cities.length > 0 ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                        {cities.slice(0, 3).map((c) => (
+                          <span key={c} className="spec-pill">{c}</span>
+                        ))}
+                        {cities.length > 3 && (
+                          <span style={{ fontSize: 11, color: 'var(--text-hint)', alignSelf: 'center' }}>
+                            +{cities.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 12, color: 'var(--text-hint)' }}>—</span>
+                    )}
+                  </div>
+
+                  {/* About */}
+                  {vendor.description && (
+                    <div style={{ marginBottom: 14 }}>
+                      <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.08em', color: 'var(--text-hint)', textTransform: 'uppercase', margin: '0 0 6px' }}>
+                        About
+                      </p>
+                      <p style={{
+                        fontSize: 12, color: 'var(--text-sub)', lineHeight: 1.6, margin: 0,
+                        display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                      }}>
+                        {vendor.description}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Portfolio highlights */}
+                  {highlights.length > 0 && (
+                    <div style={{ marginBottom: 16, flex: 1 }}>
+                      <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.08em', color: 'var(--text-hint)', textTransform: 'uppercase', margin: '0 0 6px' }}>
+                        Portfolio
+                      </p>
+                      <div style={{ display: 'flex', gap: 5 }}>
+                        {highlights.map((src, idx) => (
+                          <div key={idx} style={{ position: 'relative', width: 44, height: 44, borderRadius: 'var(--r-sm)', overflow: 'hidden', flexShrink: 0 }}>
+                            <Image src={src} alt="" fill style={{ objectFit: 'cover' }} sizes="44px" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Actions */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 'auto' }}>
