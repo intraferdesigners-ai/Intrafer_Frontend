@@ -177,7 +177,15 @@ html {
 
 body { background: var(--bg); min-height: 100vh; }
 
-html, body {
+/* overflow-x set on html only, not body — setting it on both forces
+   overflow-y to compute as 'auto' on both (CSS2.1 overflow interaction
+   rule), which creates two nested independently-scrollable boxes. That
+   breaks position:sticky for anything inside body (the dashboard sidebar,
+   the vendor/project detail pages' sticky side cards, etc.): the sticky
+   containing block ends up resolved against body's own (never-scrolling)
+   box while html silently does the actual scrolling, so a "stuck" element
+   drifts off-screen by exactly the scroll offset instead of staying put. */
+html {
   overflow-x: hidden;
   max-width: 100vw;
 }
