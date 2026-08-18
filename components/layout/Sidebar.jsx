@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
   User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Tag, LifeBuoy, Mail, Shield, Star,
-  MapPin, LayoutGrid, ScrollText, FileBarChart, Kanban, Sparkles,
+  LayoutGrid, ScrollText, FileBarChart, Kanban, Sparkles,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { clearAuthTokens } from '../../lib/auth';
@@ -27,7 +27,6 @@ const ADMIN_NAV_PERMISSIONS = {
   '/admin/dashboard/support':         'manage_support',
   '/admin/dashboard/email-templates': 'manage_email_templates',
   '/admin/dashboard/settings':        'manage_settings',
-  '/admin/dashboard/cities':          'manage_taxonomy',
   '/admin/dashboard/categories':      'manage_taxonomy',
   '/admin/dashboard/reports':         'view_analytics',
   '/admin/dashboard/projects':        'manage_portfolio',
@@ -61,7 +60,6 @@ const NAV = {
     { label: 'Coupons',      href: '/admin/dashboard/coupons',       icon: Tag,             group: 'FINANCIAL' },
 
     { label: 'CMS',          href: '/admin/dashboard/cms',           icon: Sparkles,        group: 'CONTENT' },
-    { label: 'Cities',       href: '/admin/dashboard/cities',        icon: MapPin,          group: 'CONTENT' },
     { label: 'Categories',   href: '/admin/dashboard/categories',    icon: LayoutGrid,      group: 'CONTENT' },
     { label: 'Email Templates', href: '/admin/dashboard/email-templates', icon: Mail,        group: 'CONTENT' },
 
