@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
   User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Tag, LifeBuoy, Mail, Shield, Star,
-  MapPin, LayoutGrid, ScrollText, FileBarChart, ClipboardCheck, Kanban, Sparkles,
+  MapPin, LayoutGrid, ScrollText, FileBarChart, Kanban, Sparkles,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { clearAuthTokens } from '../../lib/auth';
@@ -30,7 +30,6 @@ const ADMIN_NAV_PERMISSIONS = {
   '/admin/dashboard/cities':          'manage_taxonomy',
   '/admin/dashboard/categories':      'manage_taxonomy',
   '/admin/dashboard/reports':         'view_analytics',
-  '/admin/dashboard/portfolio-approvals': 'manage_portfolio',
   '/admin/dashboard/projects':        'manage_portfolio',
   '/admin/dashboard/subscriptions':   'view_analytics',
   '/admin/dashboard/cms':             'manage_settings',
@@ -57,7 +56,6 @@ const NAV = {
     { label: 'Leads',        href: '/admin/dashboard/leads',         icon: FileText,        group: 'OPERATIONS' },
     { label: 'Enquirers',    href: '/admin/dashboard/enquirers',     icon: Users,           group: 'OPERATIONS' },
     { label: 'All Projects', href: '/admin/dashboard/projects',      icon: Building2,       group: 'OPERATIONS' },
-    { label: 'Portfolio moderation', href: '/admin/dashboard/portfolio-approvals', icon: ClipboardCheck, group: 'OPERATIONS' },
 
     { label: 'Subscriptions', href: '/admin/dashboard/subscriptions', icon: Crown,          group: 'FINANCIAL' },
     { label: 'Coupons',      href: '/admin/dashboard/coupons',       icon: Tag,             group: 'FINANCIAL' },

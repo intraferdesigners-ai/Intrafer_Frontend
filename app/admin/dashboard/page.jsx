@@ -93,7 +93,7 @@ export default function AdminDashboard() {
               </Link>
             )}
             {stats.pendingPortfolio > 0 && (
-              <Link href="/admin/dashboard/portfolio-approvals" style={{
+              <Link href="/admin/dashboard/projects?status=pending" style={{
                 display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
                 color: 'var(--color-warning)', textDecoration: 'none',
               }}>
