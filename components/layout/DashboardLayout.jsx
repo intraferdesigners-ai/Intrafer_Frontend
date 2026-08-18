@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 import useAuthStore from '../../store/authStore';
 import { isAuthenticated } from '../../lib/auth';
 import Sidebar from './Sidebar';
@@ -12,10 +13,19 @@ import { useTheme } from '../../context/ThemeContext';
 import CompareBar from '../vendor/CompareBar';
 import PageTransition from '../ui/PageTransition';
 
+// Idle timeout, not absolute session length — logs out after this long with
+// zero user activity, regardless of how much of the 7-day refresh-token
+// window is left. This sits alongside the silent access-token refresh in
+// lib/api.js rather than replacing it: refresh keeps an ACTIVE session
+// seamless across the 15-minute access-token expiry, while this timer is the
+// thing that actually ends an abandoned one.
+const IDLE_LIMIT_MS = 60 * 60 * 1000; // 1 hour
+const ACTIVITY_EVENTS = ['mousedown', 'mousemove', 'keydown', 'wheel', 'touchstart'];
+
 export default function DashboardLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { initFromCookies, role } = useAuthStore();
+  const { initFromCookies, role, clearAuth } = useAuthStore();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -25,6 +35,29 @@ export default function DashboardLayout({ children }) {
       router.push('/auth/login');
     }
   }, []);
+
+  useEffect(() => {
+    let idleTimer;
+
+    const logoutForInactivity = () => {
+      clearAuth();
+      toast.error("You've been logged out due to inactivity.");
+      router.push(role ? `/auth/login?role=${role}` : '/auth/login');
+    };
+
+    const resetIdleTimer = () => {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(logoutForInactivity, IDLE_LIMIT_MS);
+    };
+
+    ACTIVITY_EVENTS.forEach((evt) => window.addEventListener(evt, resetIdleTimer, { passive: true }));
+    resetIdleTimer();
+
+    return () => {
+      clearTimeout(idleTimer);
+      ACTIVITY_EVENTS.forEach((evt) => window.removeEventListener(evt, resetIdleTimer));
+    };
+  }, [role, clearAuth, router]);
 
   useEffect(() => {
     setSidebarOpen(false);
