@@ -23,8 +23,19 @@ export default function AuthPortalPage() {
         .role-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow-md); transform: translateY(-1px); }
       `}</style>
 
+      {/* White backing box, same as every other logo.png placement sitewide
+          (Sidebar, VendorNavbar, Footer, RegisterSuccessScreen, etc.) — the
+          icon's line-work is dark navy with no fill, so without a light
+          backing it disappears against a dark page background. */}
       <Link href="/" style={{ display: 'inline-flex', marginBottom: '20px' }}>
-        <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain' }} />
+        <div style={{
+          width: '34px', height: '34px', borderRadius: '8px',
+          background: '#FFFFFF', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', flexShrink: 0,
+          boxShadow: '0 2px 6px rgba(0,0,0,.12)',
+        }}>
+          <Image src="/images/logo/logo.png" alt="Intrafer" width={26} height={26} style={{ objectFit: 'contain' }} />
+        </div>
       </Link>
       <div style={{ marginBottom: '28px' }}>
         <div style={{
