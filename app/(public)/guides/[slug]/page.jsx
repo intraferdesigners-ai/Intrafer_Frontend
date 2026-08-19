@@ -107,12 +107,20 @@ export default function GuideDetailPage({ params }) {
           <div className="cta-always-dark" style={{ borderRadius: '16px', padding: '32px', marginTop: '48px', textAlign: 'center' }}>
             <p style={{ fontSize: '18px', fontWeight: 500, color: '#FAFAF8', marginBottom: '8px' }}>Ready to start your project?</p>
             <p style={{ fontSize: '13px', color: 'rgba(255,255,255,.5)', marginBottom: '20px' }}>Find a verified {guide.category.toLowerCase()} specialist near you.</p>
-            <Link href="/vendors" style={{
-              display: 'inline-block', background: 'var(--primary)', color: '#fff',
-              padding: '11px 28px', borderRadius: 'var(--r-md)', fontSize: '13px',
-              fontWeight: 500, textDecoration: 'none',
-            }}>
-              Find designers →
+            {/* Wrapped in <button>, not styled directly on the <a>, because
+                .cta-always-dark's `a { color: #60A5FA !important }` carve-out
+                (globals.css) overrides any inline color set on the Link
+                itself — that carve-out is meant for plain text links, and
+                a solid-background button using it renders invisible text
+                in dark mode where --primary is also #60A5FA. */}
+            <Link href="/vendors">
+              <button style={{
+                background: 'var(--primary)', color: '#fff',
+                padding: '11px 28px', borderRadius: 'var(--r-md)', fontSize: '13px',
+                fontWeight: 500, border: 'none', cursor: 'pointer',
+              }}>
+                Find designers →
+              </button>
             </Link>
           </div>
         </div>

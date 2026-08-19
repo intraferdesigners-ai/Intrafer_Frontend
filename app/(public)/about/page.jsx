@@ -160,12 +160,20 @@ export default async function AboutPage() {
               Browse real portfolios from checked designers, or submit your requirements and let them come to you.
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <Link href="/vendors" style={{
-                display: 'inline-block', background: 'var(--primary)', color: '#fff',
-                padding: '13px 32px', borderRadius: 'var(--r-md)', fontSize: '14px',
-                fontWeight: 500, textDecoration: 'none',
-              }}>
-                Browse designers
+              {/* Wrapped in <button>, not styled directly on the <a>, because
+                  .cta-always-dark's `a { color: #60A5FA !important }` carve-out
+                  (globals.css) overrides any inline color set on the Link
+                  itself — that carve-out is meant for plain text links, and
+                  a solid-background button using it renders invisible text
+                  in dark mode where --primary is also #60A5FA. */}
+              <Link href="/vendors">
+                <button style={{
+                  background: 'var(--primary)', color: '#fff',
+                  padding: '13px 32px', borderRadius: 'var(--r-md)', fontSize: '14px',
+                  fontWeight: 500, border: 'none', cursor: 'pointer',
+                }}>
+                  Browse designers
+                </button>
               </Link>
               <Link href="/enquiry" style={{
                 display: 'inline-block', background: 'transparent', color: 'rgba(255,255,255,.6)',

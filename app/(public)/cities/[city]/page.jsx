@@ -209,12 +209,20 @@ export default async function CityPage({ params }) {
             Ready to transform your {cityData.name} home?
           </h2>
           <p style={{ fontSize: '14px', color: 'rgba(255,255,255,.5)', marginBottom: '24px' }}>Free to browse. Free to enquire. No commitment.</p>
-          <Link href="/enquiry" style={{
-            display: 'inline-block', background: 'var(--primary)', color: '#fff',
-            padding: '13px 32px', borderRadius: 'var(--r-md)', fontSize: '14px',
-            fontWeight: 500, textDecoration: 'none',
-          }}>
-            Submit an enquiry
+          {/* Wrapped in <button>, not styled directly on the <a>, because
+              .cta-always-dark's `a { color: #60A5FA !important }` carve-out
+              (globals.css) overrides any inline color set on the Link
+              itself — that carve-out is meant for plain text links, and
+              a solid-background button using it renders invisible text
+              in dark mode where --primary is also #60A5FA. */}
+          <Link href="/enquiry">
+            <button style={{
+              background: 'var(--primary)', color: '#fff',
+              padding: '13px 32px', borderRadius: 'var(--r-md)', fontSize: '14px',
+              fontWeight: 500, border: 'none', cursor: 'pointer',
+            }}>
+              Submit an enquiry
+            </button>
           </Link>
         </div>
       </div>

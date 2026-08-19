@@ -150,12 +150,23 @@ export default function HowItWorksPage() {
         </h2>
         <p style={{ fontSize: '14px', color: 'rgba(255,255,255,.5)', marginBottom: '24px' }}>Join 1,200+ homeowners who transformed their homes through Intrafer.</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <Link href="/vendors" style={{
-            display: 'inline-block', background: 'var(--primary)', color: '#fff',
-            padding: '13px 32px', borderRadius: 'var(--r-md)', fontSize: '14px',
-            fontWeight: 500, textDecoration: 'none',
-          }}>
-            Browse designers
+          {/* Wrapped in <button>, not styled directly on the <a>, because
+              .cta-always-dark's `a { color: #60A5FA !important }` carve-out
+              (globals.css) overrides any inline color set on the Link
+              itself — that carve-out is meant for plain text links, and
+              a solid-background button using it renders invisible text
+              in dark mode where --primary is also #60A5FA. Wrapping in
+              <button> sidesteps the `a` rule (falls to `* { #F0F6FF }`
+              instead), same pattern already used by this exact CTA on
+              /plans and /for-designers. */}
+          <Link href="/vendors">
+            <button style={{
+              background: 'var(--primary)', color: '#fff',
+              padding: '13px 32px', borderRadius: 'var(--r-md)', fontSize: '14px',
+              fontWeight: 500, border: 'none', cursor: 'pointer',
+            }}>
+              Browse designers
+            </button>
           </Link>
           <Link href="/enquiry" style={{
             display: 'inline-block', background: 'transparent', color: 'rgba(255,255,255,.6)',

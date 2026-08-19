@@ -65,8 +65,16 @@ export default function FAQPage() {
       <div className="cta-always-dark" style={{ marginTop: '60px', borderRadius: 'var(--r-xl)', padding: '40px', textAlign: 'center' }}>
         <p style={{ fontSize: '18px', fontWeight: 500, color: '#FAFAF8', marginBottom: '8px' }}>Still have questions?</p>
         <p style={{ fontSize: '13px', color: 'rgba(255,255,255,.5)', marginBottom: '20px' }}>Our team responds within 2 business hours.</p>
-        <Link href="/contact" style={{ display: 'inline-block', background: 'var(--primary)', color: '#fff', padding: '11px 28px', borderRadius: 'var(--r-md)', fontSize: '13px', fontWeight: 500, textDecoration: 'none' }}>
-          Contact us
+        {/* Wrapped in <button>, not styled directly on the <a>, because
+            .cta-always-dark's `a { color: #60A5FA !important }` carve-out
+            (globals.css) overrides any inline color set on the Link
+            itself — that carve-out is meant for plain text links, and
+            a solid-background button using it renders invisible text
+            in dark mode where --primary is also #60A5FA. */}
+        <Link href="/contact">
+          <button style={{ background: 'var(--primary)', color: '#fff', padding: '11px 28px', borderRadius: 'var(--r-md)', fontSize: '13px', fontWeight: 500, border: 'none', cursor: 'pointer' }}>
+            Contact us
+          </button>
         </Link>
       </div>
     </div>
