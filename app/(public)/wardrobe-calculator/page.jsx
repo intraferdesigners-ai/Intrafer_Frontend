@@ -121,7 +121,10 @@ export default function WardrobeCalculatorPage() {
           <div style={{ background: 'var(--surface)', border: '2px solid var(--primary)', borderRadius: '16px', padding: '28px' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.1em', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '8px' }}>YOUR ESTIMATE</p>
 
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '36px', color: 'var(--text)', lineHeight: 1, marginBottom: '4px' }}>
+            {/* Sans-serif with lining/tabular figures, not font-display —
+                the serif's old-style numerals are hard to parse at a glance
+                for a number visitors actually need to read correctly. */}
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '36px', fontWeight: 700, fontVariantNumeric: 'lining-nums tabular-nums', color: 'var(--text)', lineHeight: 1, marginBottom: '4px' }}>
               {fmtINR(cost)}
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text-hint)', marginBottom: '20px' }}>Estimate ± 15%</p>

@@ -181,7 +181,10 @@ export default function PlansPage() {
               <p className="caps-label-primary" style={{ marginBottom: '8px' }}>{(plan.displayName || plan.name).toUpperCase()}</p>
 
               <div style={{ marginBottom: '6px' }}>
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 400, color: 'var(--text)' }}>
+                {/* Sans-serif with lining/tabular figures, not font-display —
+                    the serif's old-style numerals are hard to parse at a
+                    glance for a price visitors actually need to read. */}
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '36px', fontWeight: 700, fontVariantNumeric: 'lining-nums tabular-nums', color: 'var(--text)' }}>
                   {formatINR(plan.price || 0)}
                 </span>
                 <span style={{ fontSize: '13px', color: 'var(--text-hint)', marginLeft: '4px' }}>

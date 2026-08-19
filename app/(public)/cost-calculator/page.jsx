@@ -308,9 +308,13 @@ export default function CostCalculatorPage() {
             <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.14em', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '10px' }}>
               ESTIMATED RANGE
             </p>
+            {/* Sans-serif with lining/tabular figures, not font-display —
+                the serif's old-style numerals are hard to parse at a glance
+                for a number visitors actually need to read correctly. */}
             <div style={{
-              fontFamily: 'var(--font-display)', fontSize: '40px', fontWeight: 400,
-              color: 'var(--primary)', letterSpacing: '-.02em', lineHeight: 1.1,
+              fontFamily: 'var(--font-ui)', fontSize: '40px', fontWeight: 600,
+              fontVariantNumeric: 'lining-nums tabular-nums',
+              color: 'var(--primary)', letterSpacing: '-.01em', lineHeight: 1.1,
               marginBottom: '10px',
             }}>
               {formatINR(estimate.min)} – {formatINR(estimate.max)}

@@ -213,7 +213,10 @@ export default async function Home() {
             { end: statsData?.enquiryCount ?? 15,                   suffix: '+', label: 'ENQUIRIES SUBMITTED' },
           ].map((s) => (
             <div key={s.label} style={{ padding: 'clamp(16px,3vw,28px) 16px', textAlign: 'center' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px,4vw,44px)', fontWeight: 400, color: 'var(--text)', lineHeight: 1 }}>
+              {/* Sans-serif with lining/tabular figures, not font-display —
+                  the serif's old-style numerals are hard to parse at a
+                  glance for a key stat. */}
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: 'clamp(32px,4vw,44px)', fontWeight: 700, fontVariantNumeric: 'lining-nums tabular-nums', color: 'var(--text)', lineHeight: 1 }}>
                 <AnimatedCounter end={s.end} suffix={s.suffix} decimals={s.decimals || 0} />
               </div>
               <div style={{ fontSize: '11px', letterSpacing: '.08em', color: 'var(--text-hint)', marginTop: '6px' }}>{s.label}</div>

@@ -116,11 +116,14 @@ export default function EMICalculator({ defaultAmount }) {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px' }}>
             <span style={{ fontSize: '13px', color: 'rgba(255,255,255,.7)' }}>Monthly EMI</span>
+            {/* Sans-serif with lining/tabular figures, not font-display —
+                the serif's old-style numerals are hard to parse at a glance
+                for a monthly payment visitors actually need to read. */}
             <AnimatedCounter
               end={Math.round(emi)}
               duration={700}
               format={fmtINR}
-              style={{ fontSize: '22px', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-display)' }}
+              style={{ fontSize: '22px', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-ui)', fontVariantNumeric: 'lining-nums tabular-nums' }}
             />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
