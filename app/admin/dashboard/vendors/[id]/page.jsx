@@ -105,7 +105,7 @@ export default function AdminVendorDetailPage() {
       </Link>
 
       {/* Profile header */}
-      <div style={{
+      <div className="admin-detail-header" style={{
         background: 'var(--color-surface)', border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-xl)', padding: '24px',
         display: 'flex', alignItems: 'center', gap: '20px',
@@ -120,7 +120,7 @@ export default function AdminVendorDetailPage() {
         }}>
           {getInitials(vendor.businessName || 'V')}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="admin-detail-header-info" style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 300, color: 'var(--color-text)', margin: '0 0 4px' }}>
             {vendor.businessName}
           </h1>
@@ -149,7 +149,7 @@ export default function AdminVendorDetailPage() {
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+        <div className="admin-detail-header-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
           {getApprovalStatus(vendor) !== 'approved' ? (
             <Button variant="success" size="sm" loading={updating} onClick={() => handleApprove(true)}>
               <ShieldCheck size={14} /> Reinstate

@@ -94,13 +94,13 @@ export default function AdminProjectDetailPage() {
       </Link>
 
       {/* Header */}
-      <div style={{
+      <div className="admin-detail-header" style={{
         background: 'var(--color-surface)', border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-xl)', padding: '24px',
         display: 'flex', alignItems: 'center', gap: '20px',
         marginBottom: '20px', flexWrap: 'wrap',
       }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="admin-detail-header-info" style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 300, color: 'var(--color-text)', margin: '0 0 4px' }}>
             {project.title}
           </h1>
@@ -123,7 +123,7 @@ export default function AdminProjectDetailPage() {
             {project.isPublished && <span style={{ fontSize: 11, color: 'var(--color-text-hint)' }}>Published</span>}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+        <div className="admin-detail-header-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
           <Button variant="secondary" size="sm" loading={updating} onClick={handleToggleFeatured}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Star size={14} fill={project.isFeatured ? '#F59E0B' : 'none'} color={project.isFeatured ? '#F59E0B' : undefined} />

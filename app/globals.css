@@ -1273,6 +1273,16 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .admin-table-row > div { flex: unset !important; width: 100% !important; }
   .admin-cell-actions { display: flex !important; gap: 8px !important; flex-wrap: wrap !important; }
 
+  /* Admin detail page header (vendor detail, project detail, etc.) — the
+     info block's flex:1 (flex-basis:0%) never contributes to flex-wrap's
+     line-breaking math, so the row never wraps on its own even though the
+     action button(s) (flex-shrink:0) leave it almost no room, squeezing its
+     text down until it overflows underneath the button instead of wrapping.
+     Force a real vertical stack below tablet width instead. */
+  .admin-detail-header { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; }
+  .admin-detail-header-info,
+  .admin-detail-header-actions { width: 100% !important; }
+
   /* Footer single column */
   .footer-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
 }
