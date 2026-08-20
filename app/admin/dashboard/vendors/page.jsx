@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CheckCircle, Clock, XCircle, ChevronRight, Star, Download, X } from 'lucide-react';
+import { CheckCircle, XCircle, ChevronRight, Star, Download, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
@@ -11,20 +11,22 @@ import { formatDate, getInitials } from '../../../../lib/utils';
 import { downloadCSV } from '../../../../lib/csv';
 
 const FILTERS = [
-  { key: 'all',      label: 'All'          },
-  { key: 'pending',  label: 'Never reviewed' },
-  { key: 'approved', label: 'Live'         },
-  { key: 'rejected', label: 'Taken down'   },
+  { key: 'all',      label: 'All'        },
+  { key: 'approved', label: 'Live'       },
+  { key: 'rejected', label: 'Taken down' },
 ];
 
 const STATUS_BADGE = {
-  pending:  { label: 'Not yet reviewed', Icon: Clock,      color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
   approved: { label: 'Live',             Icon: CheckCircle, color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
   rejected: { label: 'Taken down',       Icon: XCircle,    color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'  },
 };
 
+// No vendor can be in a 'pending' state today — isApproved/approvalStatus
+// default to true/'approved' on creation, and the only other writer is the
+// admin takedown/reinstate action below, which always lands on 'approved' or
+// 'rejected'. See Vendor.model.js.
 function getApprovalStatus(vendor) {
-  return vendor.approvalStatus || (vendor.isApproved ? 'approved' : 'pending');
+  return vendor.approvalStatus || (vendor.isApproved ? 'approved' : 'rejected');
 }
 
 // Vendors go live automatically now (subscription is the only gate) — this
@@ -94,7 +96,6 @@ function AdminVendorsPageContent() {
   useEffect(() => {
     setLoading(true);
     let url = '/admin/vendors';
-    if (filter === 'pending')  url += '?status=pending';
     if (filter === 'approved') url += '?status=approved';
     if (filter === 'rejected') url += '?status=rejected';
     api.get(url)
@@ -117,7 +118,7 @@ function AdminVendorsPageContent() {
           reviewedAt: updated?.reviewedAt || new Date().toISOString(),
         } : v)
       );
-      toast.success(approve ? 'Vendor approved.' : 'Vendor rejected.');
+      toast.success(approve ? 'Vendor reinstated.' : 'Vendor taken down.');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed.');
     }
@@ -375,24 +376,14 @@ function AdminVendorsPageContent() {
                 </button>
 
                 {!vendor.isApproved ? (
-                  <>
-                    <Button
-                      variant="success"
-                      size="sm"
-                      loading={updatingId === vendor._id}
-                      onClick={() => handleApprove(vendor._id, true)}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      loading={updatingId === vendor._id}
-                      onClick={() => openRejectModal(vendor)}
-                    >
-                      Reject
-                    </Button>
-                  </>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    loading={updatingId === vendor._id}
+                    onClick={() => handleApprove(vendor._id, true)}
+                  >
+                    Reinstate
+                  </Button>
                 ) : (
                   <Button
                     variant="ghost"

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, MapPin, Star, Building2, ShieldCheck, ShieldX, Clock, XCircle, CheckCircle } from 'lucide-react';
+import { ChevronLeft, MapPin, Star, Building2, ShieldCheck, ShieldX, XCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
@@ -12,13 +12,14 @@ import Spinner from '@/components/ui/Spinner';
 import { getInitials, formatDate } from '@/lib/utils';
 
 const STATUS_BADGE = {
-  pending:  { label: 'Not yet reviewed', Icon: Clock,       color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
   approved: { label: 'Live',             Icon: CheckCircle, color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
   rejected: { label: 'Taken down',       Icon: XCircle,     color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'  },
 };
 
+// No vendor can be in a 'pending' state today — see the matching comment in
+// ../page.jsx.
 function getApprovalStatus(vendor) {
-  return vendor.approvalStatus || (vendor.isApproved ? 'approved' : 'pending');
+  return vendor.approvalStatus || (vendor.isApproved ? 'approved' : 'rejected');
 }
 
 export default function AdminVendorDetailPage() {
@@ -60,7 +61,7 @@ export default function AdminVendorDetailPage() {
         rejectionReason: updated?.rejectionReason ?? (approve ? v.rejectionReason : reason),
         reviewedAt: updated?.reviewedAt || new Date().toISOString(),
       }));
-      toast.success(approve ? 'Vendor approved.' : 'Vendor rejected.');
+      toast.success(approve ? 'Vendor reinstated.' : 'Vendor taken down.');
       setShowRejectForm(false);
       setRejectionReason('');
     } catch (err) {
@@ -150,14 +151,9 @@ export default function AdminVendorDetailPage() {
         </div>
         <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
           {getApprovalStatus(vendor) !== 'approved' ? (
-            <>
-              <Button variant="success" size="sm" loading={updating} onClick={() => handleApprove(true)}>
-                <ShieldCheck size={14} /> Approve
-              </Button>
-              <Button variant="danger" size="sm" loading={updating} onClick={() => setShowRejectForm((s) => !s)}>
-                <ShieldX size={14} /> Reject
-              </Button>
-            </>
+            <Button variant="success" size="sm" loading={updating} onClick={() => handleApprove(true)}>
+              <ShieldCheck size={14} /> Reinstate
+            </Button>
           ) : (
             <Button variant="danger" size="sm" loading={updating} onClick={() => setShowRejectForm((s) => !s)}>
               <ShieldX size={14} /> Take down

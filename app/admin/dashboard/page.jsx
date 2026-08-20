@@ -72,10 +72,10 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      {/* Pending items banner — informational only. Vendors and portfolio
-          projects go live automatically (subscription is the only gate), so
-          nothing here is blocking anyone; it's just a queue for oversight. */}
-      {!loading && !dismissed && (stats?.pendingVendors > 0 || stats?.pendingPortfolio > 0) && (
+      {/* Attention items banner — informational only. Vendors go live
+          automatically (subscription is the only gate), so a taken-down
+          vendor isn't blocking anyone; it's just a flag for oversight. */}
+      {!loading && !dismissed && (stats?.takenDownVendors > 0 || stats?.pendingPortfolio > 0) && (
         <div style={{
           background: 'var(--color-warning-bg)', border: '1px solid var(--color-accent-bg)',
           borderRadius: 'var(--radius-lg)', padding: '16px 20px',
@@ -83,13 +83,13 @@ export default function AdminDashboard() {
           gap: 12, marginBottom: 20, flexWrap: 'wrap',
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
-            {stats.pendingVendors > 0 && (
-              <Link href="/admin/dashboard/vendors?filter=pending" style={{
+            {stats.takenDownVendors > 0 && (
+              <Link href="/admin/dashboard/vendors?filter=rejected" style={{
                 display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
                 color: 'var(--color-warning)', textDecoration: 'none',
               }}>
                 <AlertCircle size={18} />
-                {stats.pendingVendors} vendor{stats.pendingVendors === 1 ? '' : 's'} not yet reviewed (already live) →
+                {stats.takenDownVendors} vendor{stats.takenDownVendors === 1 ? '' : 's'} taken down →
               </Link>
             )}
             {stats.pendingPortfolio > 0 && (
