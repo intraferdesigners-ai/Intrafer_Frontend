@@ -65,9 +65,22 @@ export default function VendorEnquiryOverlay({ vendor }) {
     timerRef.current = setTimeout(() => {
       const { role, user } = useAuthStore.getState();
 
-      // Vendor previewing their own listing, or staff/admin — never prompt,
-      // and never auto-send on their behalf either.
-      if (role === 'admin') return;
+      // Vendor previewing their own listing — never prompt or auto-send on
+      // their own behalf, since that isn't a real customer.
+      //
+      // Deliberately NOT blocking role === 'admin' here anymore. It used to
+      // block every admin session site-wide, on the theory that an admin
+      // browsing vendor pages for QA shouldn't spam real vendors with fake
+      // leads. In practice this fired far more broadly than intended: the
+      // admin/vendor login cookie (intrafer_token / intrafer_role) has no
+      // path restriction and a 1-day expiry, so it's still present on the
+      // public site long after leaving the dashboard — any admin who logs
+      // into /admin and later browses the public site in the same browser
+      // (even the next day) had every real, OTP-verified lead they generated
+      // silently dropped with zero error or log. A missed real lead is worse
+      // than the rare test lead an admin generates while genuinely testing —
+      // those are easy to spot and delete from the admin panel. Test with a
+      // logged-out session (or incognito) to avoid generating one.
       if (role === 'vendor' && user?.id && vendorOwnerId && String(user.id) === vendorOwnerId) return;
 
       // Dedup is localStorage-only now (hasEngagedVendor above) — guest
@@ -87,10 +100,18 @@ export default function VendorEnquiryOverlay({ vendor }) {
       const saved = getSavedContact();
       if (saved) {
         // This browser already OTP-verified a contact — send this vendor's
-        // enquiry silently with it instead of showing the form again. No
-        // setVisible(true) at all: the overlay never appears once a
-        // verified contact exists anywhere on the site.
-        autoSendVendorEnquiry(vendor);
+        // enquiry silently with it instead of showing the form again.
+        // autoSendVendorEnquiry resolves null on ANY failure (invalid/
+        // rotated contactToken, vendor briefly unavailable, network blip) —
+        // previously that meant the visit just silently produced nothing,
+        // with no popup shown (since saved was truthy) and no signal
+        // anywhere that a lead was lost. Falling back to the visible form
+        // here means a failed silent send never dead-ends the visit: worst
+        // case the visitor has to hit "Send" once more (which re-verifies
+        // over OTP if the cached contact is no longer valid).
+        autoSendVendorEnquiry(vendor).then((lead) => {
+          if (!cancelled && !lead) setVisible(true);
+        });
         return;
       }
 
@@ -126,7 +147,12 @@ export default function VendorEnquiryOverlay({ vendor }) {
       const saved = getSavedContact();
       if (!saved) return;
       setVisible(false);
-      autoSendVendorEnquiry(vendor);
+      // Same fail-open as the mount-time path above: if the silent send
+      // fails for any reason, reopen the form instead of leaving the
+      // visitor with nothing on screen and the vendor never notified.
+      autoSendVendorEnquiry(vendor).then((lead) => {
+        if (!lead) setVisible(true);
+      });
     };
     document.addEventListener('visibilitychange', resync);
     window.addEventListener('pageshow', resync);
