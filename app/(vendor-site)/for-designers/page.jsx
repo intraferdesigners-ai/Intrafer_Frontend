@@ -252,7 +252,7 @@ export default function ForDesignersPage() {
                   </span>
                 )}
                 <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>{plan.name}</div>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 400, color: plan.highlight ? 'var(--primary)' : 'var(--text)', lineHeight: 1, marginBottom: '4px' }}>
+                <div style={{ fontFamily: 'var(--font-ui)', fontSize: '36px', fontWeight: 600, color: plan.highlight ? 'var(--primary)' : 'var(--text)', lineHeight: 1, marginBottom: '4px' }}>
                   {plan.price}<span style={{ fontSize: '14px', color: 'var(--text-hint)', fontFamily: 'var(--font-ui)' }}>{plan.period}</span>
                 </div>
                 <p style={{ fontSize: '13px', color: 'var(--text-mid)', marginBottom: '20px', lineHeight: 1.6 }}>{plan.desc}</p>

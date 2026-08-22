@@ -116,15 +116,18 @@ export default function VendorLeadsPage() {
       </div>
 
       {/* Filter tabs */}
-      <div style={{
-        display: 'flex', gap: 6, marginBottom: 24,
-        overflowX: 'auto', paddingBottom: 4,
-      }}>
-        {FILTER_TABS.map(({ key, label }) => (
-          <button key={key} type="button" style={tabStyle(key)} onClick={() => setFilter(key)}>
-            {label}
-          </button>
-        ))}
+      <div style={{ position: 'relative', marginBottom: 24 }}>
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
+          {FILTER_TABS.map(({ key, label }) => (
+            <button key={key} type="button" style={tabStyle(key)} onClick={() => setFilter(key)}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <div aria-hidden="true" style={{
+          position: 'absolute', top: 0, right: 0, bottom: 4, width: 32,
+          pointerEvents: 'none', background: 'linear-gradient(to right, transparent, var(--color-bg) 75%)',
+        }} />
       </div>
 
       {loading ? (

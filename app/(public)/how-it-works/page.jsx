@@ -61,22 +61,28 @@ export default function HowItWorksPage() {
       </Reveal>
 
       {/* Progress indicators */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '64px', overflowX: 'auto', paddingBottom: '8px' }}>
-        {STEPS.map((step, i) => (
-          <div key={step.num} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-            <div style={{
-              width: '36px', height: '36px', borderRadius: '50%',
-              background: 'var(--primary)', color: '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '12px', fontWeight: 700, flexShrink: 0,
-            }}>
-              {step.num}
+      <div style={{ position: 'relative', marginBottom: '64px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', overflowX: 'auto', paddingBottom: '8px' }}>
+          {STEPS.map((step, i) => (
+            <div key={step.num} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+              <div style={{
+                width: '36px', height: '36px', borderRadius: '50%',
+                background: 'var(--primary)', color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '12px', fontWeight: 700, flexShrink: 0,
+              }}>
+                {step.num}
+              </div>
+              {i < STEPS.length - 1 && (
+                <div style={{ width: '60px', height: '2px', background: 'var(--border-emp)', flexShrink: 0 }} />
+              )}
             </div>
-            {i < STEPS.length - 1 && (
-              <div style={{ width: '60px', height: '2px', background: 'var(--border-emp)', flexShrink: 0 }} />
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
+        <div aria-hidden="true" style={{
+          position: 'absolute', top: 0, right: 0, bottom: '8px', width: '40px',
+          pointerEvents: 'none', background: 'linear-gradient(to right, transparent, var(--bg) 75%)',
+        }} />
       </div>
 
       {/* Steps */}

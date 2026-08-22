@@ -77,7 +77,8 @@ export default async function ComparePage({ searchParams }) {
         {vendors.length} designer{vendors.length !== 1 ? 's' : ''} selected
       </p>
 
-      <div style={{ overflowX: 'auto' }}>
+      <div style={{ position: 'relative' }}>
+        <div style={{ overflowX: 'auto' }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${vendors.length}, minmax(240px, 1fr))`,
@@ -273,6 +274,11 @@ export default async function ComparePage({ searchParams }) {
             );
           })}
         </div>
+        </div>
+        <div aria-hidden="true" style={{
+          position: 'absolute', top: 0, right: 0, bottom: 0, width: 40,
+          pointerEvents: 'none', background: 'linear-gradient(to right, transparent, var(--bg) 75%)',
+        }} />
       </div>
     </main>
   );

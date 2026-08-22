@@ -88,7 +88,7 @@ export default function AdminCategoriesPage() {
       <form
         onSubmit={handleAdd}
         style={{
-          display: 'flex', gap: 8, marginBottom: 24,
+          display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap',
           background: 'var(--color-surface)', border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-lg)', padding: 12,
         }}
@@ -99,13 +99,13 @@ export default function AdminCategoriesPage() {
           onChange={(e) => setNewName(e.target.value)}
           placeholder="Category name"
           style={{
-            flex: 1, padding: '9px 12px', fontSize: 13,
+            flex: 1, minWidth: 0, padding: '9px 12px', fontSize: 13,
             background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-md)', color: 'var(--color-text)',
             fontFamily: 'var(--font-ui)',
           }}
         />
-        <Button type="submit" variant="primary" size="sm" loading={adding} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <Button type="submit" variant="primary" size="sm" loading={adding} style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <Plus size={14} /> Add category
         </Button>
       </form>

@@ -396,7 +396,7 @@ export default function SubscriptionPage() {
                       {formatINR(plan.price)}
                     </span>
                     <span style={{
-                      fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 300,
+                      fontFamily: 'var(--font-ui)', fontSize: 28, fontWeight: 600,
                       color: 'var(--color-success)',
                     }}>
                       {formatINR(couponResult.finalAmount)}
@@ -404,7 +404,7 @@ export default function SubscriptionPage() {
                   </>
                 ) : (
                   <span style={{
-                    fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 300,
+                    fontFamily: 'var(--font-ui)', fontSize: 28, fontWeight: 600,
                     color: 'var(--color-text)',
                   }}>
                     {formatINR(plan.price)}

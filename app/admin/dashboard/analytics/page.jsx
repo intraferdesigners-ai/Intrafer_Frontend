@@ -133,7 +133,7 @@ export default function AdminAnalyticsPage() {
               <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-primary)', marginBottom: 6 }}>
                 {planName || 'Unknown'}
               </div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 300, color: 'var(--color-text)', lineHeight: 1, marginBottom: 4 }}>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: 32, fontWeight: 600, color: 'var(--color-text)', lineHeight: 1, marginBottom: 4 }}>
                 {count}
               </div>
               <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-primary)' }}>
