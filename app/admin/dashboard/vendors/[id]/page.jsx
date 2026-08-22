@@ -16,6 +16,15 @@ const STATUS_BADGE = {
   rejected: { label: 'Taken down',       Icon: XCircle,     color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)'  },
 };
 
+const REJECTION_REASONS = [
+  'Fraudulent or fake business',
+  'Portfolio images are stolen or not the vendor\'s own work',
+  'Inappropriate or offensive content',
+  'Multiple verified customer complaints',
+  'Policy violation',
+  'Other (specify below)',
+];
+
 // No vendor can be in a 'pending' state today — see the matching comment in
 // ../page.jsx.
 function getApprovalStatus(vendor) {
@@ -30,6 +39,7 @@ export default function AdminVendorDetailPage() {
   const [updating,  setUpdating]      = useState(false);
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [customReason,    setCustomReason]    = useState('');
 
   useEffect(() => {
     if (!id) return;
@@ -64,6 +74,7 @@ export default function AdminVendorDetailPage() {
       toast.success(approve ? 'Vendor reinstated.' : 'Vendor taken down.');
       setShowRejectForm(false);
       setRejectionReason('');
+      setCustomReason('');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed.');
     } finally {
@@ -171,24 +182,49 @@ export default function AdminVendorDetailPage() {
           <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.08em', color: 'var(--color-text-hint)', textTransform: 'uppercase', marginBottom: '10px' }}>
             Reason for takedown
           </p>
-          <textarea
-            rows={3}
-            placeholder="Explain why this vendor's listing is being taken down..."
-            value={rejectionReason}
-            onChange={(e) => setRejectionReason(e.target.value)}
-            style={{
-              width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)', background: 'var(--color-surface-alt)',
-              fontSize: 13, color: 'var(--color-text)', resize: 'vertical',
-              fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
-              marginBottom: 14,
-            }}
-          />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+            {REJECTION_REASONS.map((reason) => (
+              <button
+                key={reason}
+                type="button"
+                onClick={() => setRejectionReason(reason)}
+                style={{
+                  padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  background: rejectionReason === reason ? 'var(--color-primary-bg)' : 'var(--color-surface)',
+                  color: rejectionReason === reason ? 'var(--color-primary)' : 'var(--color-text-mid, var(--color-text-sub))',
+                  border: rejectionReason === reason ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
+                }}
+              >
+                {reason}
+              </button>
+            ))}
+          </div>
+          {(rejectionReason === 'Other (specify below)' || !rejectionReason) && (
+            <textarea
+              rows={3}
+              placeholder="Explain why this vendor's listing is being taken down..."
+              value={customReason}
+              onChange={(e) => setCustomReason(e.target.value)}
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--color-border)', background: 'var(--color-surface-alt)',
+                fontSize: 13, color: 'var(--color-text)', resize: 'vertical',
+                fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+                marginBottom: 14,
+              }}
+            />
+          )}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <Button variant="secondary" size="sm" onClick={() => { setShowRejectForm(false); setRejectionReason(''); }}>
+            <Button variant="secondary" size="sm" onClick={() => { setShowRejectForm(false); setRejectionReason(''); setCustomReason(''); }}>
               Cancel
             </Button>
-            <Button variant="danger" size="sm" loading={updating} onClick={() => handleApprove(false, rejectionReason)}>
+            <Button
+              variant="danger"
+              size="sm"
+              loading={updating}
+              onClick={() => handleApprove(false, rejectionReason === 'Other (specify below)' ? customReason : rejectionReason)}
+            >
               Take down
             </Button>
           </div>
