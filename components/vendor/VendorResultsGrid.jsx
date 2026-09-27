@@ -29,7 +29,10 @@ export default function VendorResultsGrid({ vendors, resultsKey }) {
       >
         {vendors.map((v, i) => (
           <RevealItem key={v._id} index={i % 6}>
-            <VendorCard vendor={v} />
+            {/* Step 11: no hero image above this grid — the first card is
+                plausibly the LCP element. Eager-load just the first two,
+                lazy for the rest. */}
+            <VendorCard vendor={v} priority={i < 2} />
           </RevealItem>
         ))}
       </motion.div>

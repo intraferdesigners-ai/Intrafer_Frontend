@@ -242,7 +242,11 @@ export default async function CityHubPage({ params }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px,1fr))', gap: '20px' }}>
           {vendors.map((v, i) => (
             <RevealItem key={v._id} index={i % 6}>
-              <VendorCard vendor={v} />
+              {/* Step 11: no hero image above this grid on this page, so the
+                  first card is plausibly the LCP element — eager-load just
+                  that one (and the second, in case the first is off-viewport
+                  on a narrow layout), lazy for the rest. */}
+              <VendorCard vendor={v} priority={i < 2} />
             </RevealItem>
           ))}
         </div>

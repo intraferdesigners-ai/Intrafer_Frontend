@@ -8,7 +8,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { MapPin, ShieldCheck, Heart, Scale, Star, ArrowRight } from 'lucide-react';
 import QuickEnquiryModal from './QuickEnquiryModal';
 import VendorTooltip from './VendorTooltip';
-import ProjectImageSlider from './ProjectImageSlider';
+import VendorCardImage from './VendorCardImage';
 import { trackVendorInterest } from '@/lib/trackInterest';
 import { useCompare } from '@/context/CompareContext';
 import { getSavedContact, hasEngagedVendor } from '@/lib/session';
@@ -40,7 +40,13 @@ function VendorMonogram({ name, size }) {
 // similar-designers). variant="compact" keeps the original image-top +
 // white-body layout, used only on the account dashboard's saved-designers
 // list where the rest of the UI is utilitarian, not editorial.
-export default function VendorCard({ vendor, variant = 'editorial' }) {
+// `priority`: only the first 1-2 cards in a grid with no other competing
+// above-the-fold image (the [category]/[state]/[city] hub page, /vendors
+// listing) should set this — every other call site (vendor profile's
+// Similar Designers, cities/[city] and design-styles/[style], both of
+// which already have their own priority hero image) leaves it at the
+// default false, so lazy-loading applies as normal there.
+export default function VendorCard({ vendor, variant = 'editorial', priority = false }) {
   const specs   = vendor.specializations || [];
   const visible = specs.slice(0, 2);
   const extra   = specs.length - 2;
@@ -425,7 +431,7 @@ export default function VendorCard({ vendor, variant = 'editorial' }) {
           style={{ position: 'absolute', inset: 0 }}
         >
           {cardImages.length > 0 ? (
-            <ProjectImageSlider images={cardImages} alt={vendor.businessName} />
+            <VendorCardImage images={cardImages} alt={vendor.businessName} priority={priority} />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <VendorMonogram name={vendor.businessName} size={88} />
