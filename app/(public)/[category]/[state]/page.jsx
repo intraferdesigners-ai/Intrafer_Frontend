@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Breadcrumb from '@/components/seo/Breadcrumb';
 import Reveal from '@/components/ui/Reveal';
-import { slugify } from '@/lib/slug';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const SITE_URL = 'https://intrafer.in';
@@ -18,14 +17,20 @@ async function fetchCategory(slug) {
   }
 }
 
-async function fetchStates(slug) {
+// Returns { state, cities } on a real state (cities may be empty), or null
+// if the state segment doesn't match any real Indian state at all — the
+// caller uses that to tell "empty state" apart from "404".
+async function fetchCities(categorySlug, stateSlug) {
   try {
-    const res = await fetch(`${API}/public/states?category=${encodeURIComponent(slug)}`, { cache: 'no-store' });
-    if (!res.ok) return [];
+    const res = await fetch(
+      `${API}/public/category-cities?category=${encodeURIComponent(categorySlug)}&state=${encodeURIComponent(stateSlug)}`,
+      { cache: 'no-store' }
+    );
+    if (!res.ok) return null;
     const json = await res.json();
-    return json.data?.states || [];
+    return json.data ?? null;
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -33,23 +38,27 @@ export async function generateMetadata({ params }) {
   const category = await fetchCategory(params.category);
   if (!category) return { title: 'Category Not Found' };
 
+  const data = await fetchCities(params.category, params.state);
+  if (!data) return { title: 'State Not Found' };
+
   return {
     // Root layout's title template already appends " | Intrafer".
-    title: `${category.name} in India`,
-    // Dark build — this whole category -> state -> city chain stays
-    // noindex, for every category including interior-designers, until it's
-    // complete end-to-end with real per-city content. Indexation is a
-    // deliberate later step, not implicit once the pages exist.
+    title: `${category.name} in ${data.state}`,
+    // Dark build — same blanket noindex rule as Step 3, for every
+    // category/state combo, until the full chain + real content is ready.
     robots: { index: false, follow: true },
-    alternates: { canonical: `${SITE_URL}/${params.category}` },
+    alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}` },
   };
 }
 
-export default async function CategoryHubPage({ params }) {
+export default async function StateHubPage({ params }) {
   const category = await fetchCategory(params.category);
   if (!category) notFound();
 
-  const states = await fetchStates(params.category);
+  const data = await fetchCities(params.category, params.state);
+  if (!data) notFound();
+
+  const { state, cities } = data;
 
   const serviceJsonLd = {
     '@context': 'https://schema.org',
@@ -57,20 +66,20 @@ export default async function CategoryHubPage({ params }) {
     name: category.name,
     serviceType: category.name,
     provider: { '@id': `${SITE_URL}/#organization` },
-    areaServed: 'India',
+    areaServed: state,
   };
 
-  const collectionJsonLd = states.length === 0 ? null : {
+  const collectionJsonLd = cities.length === 0 ? null : {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: `${category.name} in India`,
+    name: `${category.name} in ${state}`,
     mainEntity: {
       '@type': 'ItemList',
-      itemListElement: states.map((s, i) => ({
+      itemListElement: cities.map((c, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        name: s.state,
-        url: `${SITE_URL}/${params.category}/${slugify(s.state)}`,
+        name: c.city,
+        url: `${SITE_URL}/${params.category}/${params.state}/${c.citySlug}`,
       })),
     },
   };
@@ -88,31 +97,35 @@ export default async function CategoryHubPage({ params }) {
         />
       )}
 
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: category.name }]} />
+      <Breadcrumb items={[
+        { label: 'Home', href: '/' },
+        { label: category.name, href: `/${params.category}` },
+        { label: state },
+      ]} />
 
       <Reveal>
         <p className="caps-label-primary" style={{ marginBottom: '10px' }}>SERVICE CATEGORY</p>
-        <h1 className="section-heading" style={{ marginBottom: '16px' }}>{category.name} in India</h1>
+        <h1 className="section-heading" style={{ marginBottom: '16px' }}>{category.name} in {state}</h1>
         <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.8, maxWidth: '680px', marginBottom: '40px' }}>
-          Find verified {category.name.toLowerCase()} across India, browsable by state and city.
+          Find verified {category.name.toLowerCase()} in {state}, browsable by city.
         </p>
       </Reveal>
 
-      {states.length > 0 ? (
+      {cities.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: '16px' }}>
-          {states.map((s) => (
+          {cities.map((c) => (
             <Link
-              key={s.state}
-              href={`/${params.category}/${slugify(s.state)}`}
+              key={c.citySlug}
+              href={`/${params.category}/${params.state}/${c.citySlug}`}
               style={{
                 display: 'block', padding: '20px', borderRadius: 'var(--r-md)',
                 border: '1px solid var(--border)', background: 'var(--surface)',
                 textDecoration: 'none', color: 'var(--text)',
               }}
             >
-              <div style={{ fontSize: '15px', fontWeight: 500 }}>{s.state}</div>
+              <div style={{ fontSize: '15px', fontWeight: 500 }}>{c.city}</div>
               <div style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '4px' }}>
-                {s.cityCount} {s.cityCount === 1 ? 'city' : 'cities'}
+                {c.vendorCount} {c.vendorCount === 1 ? 'vendor' : 'vendors'}
               </div>
             </Link>
           ))}
@@ -123,7 +136,7 @@ export default async function CategoryHubPage({ params }) {
           padding: '48px', textAlign: 'center',
         }}>
           <p style={{ fontSize: '15px', color: 'var(--text-mid)' }}>
-            No cities listed yet in this category.
+            No cities listed yet in {state} for {category.name}.
           </p>
         </div>
       )}
