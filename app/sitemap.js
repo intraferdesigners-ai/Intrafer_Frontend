@@ -25,7 +25,6 @@ const STATIC_PAGES = [
   { url: `${baseUrl}/gallery/`, priority: 0.8 },
   { url: `${baseUrl}/cost-calculator/`, priority: 0.8 },
   { url: `${baseUrl}/wardrobe-calculator/`, priority: 0.7 },
-  { url: `${baseUrl}/blog/`, priority: 0.7 },
   { url: `${baseUrl}/guides/`, priority: 0.7 },
   { url: `${baseUrl}/design-styles/`, priority: 0.7 },
   { url: `${baseUrl}/plans/`, priority: 0.8 },
