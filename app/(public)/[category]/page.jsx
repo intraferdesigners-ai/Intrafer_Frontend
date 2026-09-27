@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Breadcrumb from '@/components/seo/Breadcrumb';
 import Reveal from '@/components/ui/Reveal';
 import { slugify } from '@/lib/slug';
+import { getCategoryFaq } from '@/lib/categoryFaq';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const SITE_URL = 'https://intrafer.in';
@@ -54,6 +55,12 @@ export default async function CategoryHubPage({ params }) {
   if (!category) notFound();
 
   const states = await fetchStates(params.category);
+  // Step 13: the client-approved 5-question FAQ set, adapted per category
+  // (see lib/categoryFaq.js for sourcing/exclusions). Every one of the 12
+  // known category slugs resolves to a real set; null only if params.category
+  // somehow isn't one of them despite fetchCategory having already resolved
+  // it above — defensive, not expected in practice.
+  const faq = getCategoryFaq(params.category);
 
   const serviceJsonLd = {
     '@context': 'https://schema.org',
@@ -79,6 +86,16 @@ export default async function CategoryHubPage({ params }) {
     },
   };
 
+  const faqJsonLd = !faq ? null : {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    })),
+  };
+
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
       <script
@@ -89,6 +106,12 @@ export default async function CategoryHubPage({ params }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+        />
+      )}
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
       )}
 
@@ -130,6 +153,18 @@ export default async function CategoryHubPage({ params }) {
             No cities listed yet in this category.
           </p>
         </div>
+      )}
+
+      {faq && (
+        <section style={{ marginTop: '60px' }}>
+          <h2 className="page-heading" style={{ marginBottom: '24px' }}>Frequently asked questions</h2>
+          {faq.map((item, i) => (
+            <div key={i} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--border)' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 500, marginBottom: '8px', color: 'var(--text)' }}>{item.question}</h3>
+              <p style={{ fontSize: '14px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{item.answer}</p>
+            </div>
+          ))}
+        </section>
       )}
     </div>
   );
