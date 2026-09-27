@@ -50,6 +50,7 @@ export const metadata = {
 const ORGANIZATION_JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  '@id': 'https://intrafer.in/#organization',
   name: 'Intrafer',
   url: 'https://intrafer.in',
   logo: 'https://intrafer.in/images/logo/logo.png',
