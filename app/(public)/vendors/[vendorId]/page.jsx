@@ -10,6 +10,8 @@ import VendorProfileTracker from '../../../../components/vendor/VendorProfileTra
 import VendorMobileCTA from '../../../../components/vendor/VendorMobileCTA';
 import VendorEnquiryOverlay from '../../../../components/vendor/VendorEnquiryOverlay';
 import Reveal from '../../../../components/ui/Reveal';
+import Breadcrumb from '../../../../components/seo/Breadcrumb';
+import { slugify } from '../../../../lib/slug';
 
 const PRICE_UNIT_LABEL = {
   flat: '',
@@ -18,6 +20,7 @@ const PRICE_UNIT_LABEL = {
 };
 
 const API = process.env.NEXT_PUBLIC_API_URL;
+const SITE_URL = 'https://intrafer.in';
 
 async function fetchVendor(id) {
   try {
@@ -70,6 +73,12 @@ export async function generateMetadata({ params }) {
     return {
       title: vendor.businessName,
       description: (vendor.description || '').slice(0, 155),
+      // Step 6 of the SEO restructuring project: this page is now reachable
+      // from multiple parents (city pages, search, /vendors, ...) and needs
+      // to state its own canonical explicitly. No robots override here —
+      // this page was never noindex before this step and step 6 is
+      // internal linking + schema only, not a go-live/indexation change.
+      alternates: { canonical: `${SITE_URL}/vendors/${params.vendorId}` },
     };
   } catch {
     return { title: 'Vendor not found' };
@@ -122,6 +131,48 @@ export default async function VendorProfilePage({ params }) {
   // already shown unconditionally on this page.
   const vendorContactEmail = vendor.businessEmail || vendor.userId?.email || '';
 
+  // Step 6 of the SEO restructuring project: links this profile back up
+  // into the /[category]/[state]/[city]/ hierarchy from Steps 3-5, using
+  // the vendor's populated primaryCategory (Step 1) and
+  // location.placeId (Step 2). Either can be unset — a vendor signed up
+  // before category collection existed, or a free-text city that never
+  // resolved during Step 2's backfill — so the breadcrumb (and its
+  // matching JSON-LD, emitted by the Breadcrumb component itself) is
+  // omitted entirely rather than ever linking to a slug we can't be sure
+  // resolves. ServiceCategory already stores its own slug (Step 1); state
+  // and city slugs are derived with the same lib/slug.js helper Steps 4-5
+  // used to build those pages' real URLs.
+  const category = vendor.primaryCategory;
+  const place = vendor.location?.placeId;
+  const breadcrumbItems = (category?.slug && category?.name && place?.name && place?.state)
+    ? [
+        { label: 'Home', href: '/' },
+        { label: category.name, href: `/${category.slug}` },
+        { label: place.state, href: `/${category.slug}/${slugify(place.state)}` },
+        { label: place.name, href: `/${category.slug}/${slugify(place.state)}/${slugify(place.name)}` },
+        { label: vendor.businessName },
+      ]
+    : null;
+
+  // Category's own schema.org business type (Step 1's ServiceCategory) when
+  // known; a generic LocalBusiness type otherwise — never fabricates a
+  // specific category the vendor doesn't actually have set.
+  const vendorJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': category?.schemaOrgType || 'LocalBusiness',
+    name: vendor.businessName,
+    url: `${SITE_URL}/vendors/${vendor._id}`,
+    ...(vendor.description && { description: vendor.description }),
+    ...(vendor.profilePhoto && { image: vendor.profilePhoto }),
+    ...(location && { areaServed: location }),
+    // Only real review data earns an aggregateRating — an unrated vendor
+    // gets none, rather than fabricated 0-star markup (same rule Step 5's
+    // city-page vendor listings already follow).
+    ...(vendor.rating > 0 && vendor.reviewCount > 0 && {
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: vendor.rating, reviewCount: vendor.reviewCount },
+    }),
+  };
+
   // Top padding matches the fixed Navbar's height (same clamp() the sibling
   // /vendors listing page uses) — the flat 40px here left the "All
   // designers" back-link tucked directly under the fixed navbar, overlapping
@@ -131,6 +182,11 @@ export default async function VendorProfilePage({ params }) {
       <VendorProfileTracker vendorId={String(vendor._id)} />
       <VendorMobileCTA vendorId={String(vendor._id)} />
       <VendorEnquiryOverlay vendor={vendor} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(vendorJsonLd) }}
+      />
+      {breadcrumbItems && <Breadcrumb items={breadcrumbItems} />}
       <Link
         href="/vendors"
         className="back-link"
