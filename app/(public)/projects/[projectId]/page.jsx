@@ -4,8 +4,10 @@ import { Building2 } from 'lucide-react';
 import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
 import ProjectsSection from '../../../../components/vendor/ProjectsSection';
 import Reveal from '../../../../components/ui/Reveal';
+import Breadcrumb from '../../../../components/seo/Breadcrumb';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
+const SITE_URL = 'https://intrafer.in';
 
 async function fetchProject(id) {
   try {
@@ -29,12 +31,40 @@ async function fetchRelatedProjects(id) {
   }
 }
 
+// getProjectById's populated vendorId sub-document doesn't include
+// primaryCategory (public.controller.js, untouched this step). Rather than
+// extend that endpoint — this step explicitly excludes touching any Step
+// 1-7 backend file — this reuses GET /api/public/vendors/:id, which Step 6
+// already populates primaryCategory on, for the one extra field the
+// breadcrumb needs. Returns null (not thrown) if the vendor has none set
+// or the fetch fails, so the page falls back to the shorter breadcrumb
+// rather than breaking.
+async function fetchVendorCategory(vendorId) {
+  try {
+    const res = await fetch(`${API}/public/vendors/${vendorId}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data?.vendor?.primaryCategory ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function generateMetadata({ params }) {
   const project = await fetchProject(params.projectId);
   if (!project) return { title: 'Project not found' };
   return {
-    title: `${project.title} | Intrafer`,
+    // Root layout's title template already appends " | Intrafer" — this
+    // used to append it a second time too, rendering "X | Intrafer |
+    // Intrafer" (same bug already fixed on the category page in Step 3).
+    title: project.title,
     description: (project.description || '').slice(0, 155),
+    // Step 8 of the SEO restructuring project: this page is now reachable
+    // from more places (vendor profile, related projects, ...) and needs
+    // to state its own canonical explicitly. No robots override — this
+    // page had no robots meta before this step and still doesn't; that's
+    // an indexation decision out of scope here.
+    alternates: { canonical: `${SITE_URL}/projects/${params.projectId}` },
   };
 }
 
@@ -68,8 +98,64 @@ export default async function ProjectDetailPage({ params }) {
     );
   }
 
+  // Step 8 of the SEO restructuring project: Home > Category > Vendor >
+  // Project, falling back to Home > Vendor > Project when the vendor has
+  // no primaryCategory set (never omitted entirely — a fallback shape is
+  // always renderable once we know project+vendor exist, unlike Step 6's
+  // vendor-page breadcrumb which needs a resolvable Place too).
+  const category = await fetchVendorCategory(vendor._id);
+  const breadcrumbItems = category?.slug && category?.name
+    ? [
+        { label: 'Home', href: '/' },
+        { label: category.name, href: `/${category.slug}` },
+        { label: vendor.businessName, href: `/vendors/${vendor._id}` },
+        { label: project.title },
+      ]
+    : [
+        { label: 'Home', href: '/' },
+        { label: vendor.businessName, href: `/vendors/${vendor._id}` },
+        { label: project.title },
+      ];
+
+  // Real fields only — no rating/review, no fabricated date beyond the
+  // project's own createdAt (the one real timestamp Project.model.js has;
+  // completedYear is just a year number, not precise enough for
+  // datePublished). ImageObject entries per image/before/after — the
+  // "CreativeWork+ImageObject combination" the task calls for when
+  // before/after images exist.
+  // Deduped: beforeImage/afterImage are sometimes the same URL as one of
+  // the gallery images (real data can double up), and repeating an
+  // identical ImageObject entry would just be redundant structured data.
+  const allImages = [...new Set([
+    ...(project.images || []),
+    ...(project.beforeImage ? [project.beforeImage] : []),
+    ...(project.afterImage ? [project.afterImage] : []),
+  ])];
+  const projectJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: project.title,
+    url: `${SITE_URL}/projects/${project._id}`,
+    ...(project.description && { description: project.description }),
+    ...(project.createdAt && { datePublished: new Date(project.createdAt).toISOString() }),
+    creator: {
+      '@type': 'Organization',
+      name: vendor.businessName,
+      url: `${SITE_URL}/vendors/${vendor._id}`,
+    },
+    ...(allImages.length > 0 && {
+      image: allImages.map((url) => ({ '@type': 'ImageObject', contentUrl: url })),
+    }),
+  };
+
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: 'clamp(80px,10vw,120px) clamp(16px,5vw,40px) 80px' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(projectJsonLd) }}
+      />
+      <Breadcrumb items={breadcrumbItems} />
+
       {/* Back link */}
       <Link
         href={`/vendors/${vendor._id}`}
