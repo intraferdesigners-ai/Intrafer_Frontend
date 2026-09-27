@@ -124,10 +124,16 @@ export async function generateMetadata({ params }) {
   return {
     // Root layout's title template already appends " | Intrafer".
     title: `${category.name} in ${data.city}, ${data.state}`,
-    // Dark build — same blanket noindex rule as Steps 3-4, for every
-    // category/state/city combo, until the full chain + real content is
-    // ready and an explicit later step turns indexation on.
-    robots: { index: false, follow: true },
+    // Step 12: real threshold-based indexation, replacing Step 5's
+    // hardcoded blanket noindex. `data.meetsThreshold` comes straight from
+    // GET /public/vendors (computed backend-side by
+    // meetsIndexThreshold/MIN_VENDORS_TO_INDEX, src/utils/indexThreshold.js
+    // — kept in one place rather than duplicating that constant here),
+    // using the real, pagination-unaffected vendor count for this exact
+    // category+state+city. Below threshold: keep the noindex override.
+    // At/above threshold: omit the robots key entirely, matching how
+    // indexable pages elsewhere (Steps 6/8/9) declare it.
+    ...(!data.meetsThreshold && { robots: { index: false, follow: true } }),
     alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}/${params.city}` },
   };
 }

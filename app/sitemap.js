@@ -41,10 +41,18 @@ const STATIC_PAGES = [
 // ("Category and state hub pages stay indexable always"), reversing Steps
 // 3-4's blanket dark-build noindex for just these two levels — so they're
 // added to the sitemap below, per spec section 12 ("Only indexable URLs
-// listed"). City pages (/[category]/[state]/[city]/, Step 5) are
-// untouched and still noindex — deliberately excluded here, same as
-// before. A future step adds them once per-city threshold-based
-// indexation (meetsIndexThreshold, scaffolded in Step 5) is wired up.
+// listed").
+//
+// Step 12: city pages (/[category]/[state]/[city]/) are also included now,
+// but only once real threshold-based indexation (meetsIndexThreshold,
+// backend src/utils/indexThreshold.js, MIN_VENDORS_TO_INDEX = 3) says a
+// given city actually qualifies — most don't yet, so this adds zero city
+// URLs today, but the check runs for real on every category+state pair so
+// it's correct the moment one does. Reuses whether GET /public/vendors
+// (the same call the city page itself makes for its listing) reports
+// meetsThreshold: true for that exact combo, rather than re-implementing
+// the ">= 3" comparison here — keeps the threshold logic in the one
+// backend source of truth.
 //
 // The 12 category slugs are hardcoded rather than fetched from a "list all
 // categories" endpoint — no such public endpoint exists, and adding one
@@ -128,12 +136,14 @@ async function fetchAllVendors() {
 }
 
 // For each real, active category: one entry for the category hub itself,
-// plus one per state it has vendor presence in (GET /public/states?category=
-// — the same endpoint Step 3's category page already uses). A 404 on the
-// category lookup means inactive/nonexistent — skipped, not a failure. Any
-// other non-ok status or a thrown network error propagates up so the
-// caller's try/catch falls back to omitting category/state entries
-// entirely, same safety pattern as fetchAllVendors above.
+// one per state it has vendor presence in (GET /public/states?category=
+// — the same endpoint Step 3's category page already uses), and (Step 12)
+// one per city within that state whose real vendor count crosses the
+// indexation threshold. A 404 on the category lookup means
+// inactive/nonexistent — skipped, not a failure. Any other non-ok status
+// or a thrown network error propagates up so the caller's try/catch falls
+// back to omitting category/state/city entries entirely, same safety
+// pattern as fetchAllVendors above.
 async function fetchCategoryStateEntries() {
   const entries = [];
 
@@ -150,7 +160,31 @@ async function fetchCategoryStateEntries() {
     const states = statesJson.data?.states || [];
     for (const s of states) {
       if (!s.state) continue; // guards against a malformed <loc>, same rule Step 7 applied to vendors
-      entries.push({ url: `${baseUrl}/${slug}/${slugify(s.state)}`, priority: 0.6 });
+      const stateSlug = slugify(s.state);
+      entries.push({ url: `${baseUrl}/${slug}/${stateSlug}`, priority: 0.6 });
+
+      // Step 12: which cities exist in this category+state at all (Step 4's
+      // endpoint, same one the state page and Step 10's linking already
+      // use). A non-ok response here would be surprising (this state just
+      // resolved via the states call above) — skip this state's cities
+      // rather than fail the whole sitemap over it.
+      const citiesRes = await fetch(`${API}/public/category-cities?category=${slug}&state=${stateSlug}`, { next: { revalidate } });
+      if (!citiesRes.ok) continue;
+      const citiesJson = await citiesRes.json();
+      const cities = citiesJson.data?.cities || [];
+
+      for (const c of cities) {
+        if (!c.citySlug) continue; // guards against a malformed <loc>
+        const vendorsRes = await fetch(
+          `${API}/public/vendors?category=${slug}&state=${stateSlug}&city=${c.citySlug}`,
+          { next: { revalidate } }
+        );
+        if (!vendorsRes.ok) continue; // same reasoning as citiesRes above
+        const vendorsJson = await vendorsRes.json();
+        if (vendorsJson.data?.meetsThreshold) {
+          entries.push({ url: `${baseUrl}/${slug}/${stateSlug}/${c.citySlug}`, priority: 0.5 });
+        }
+      }
     }
   }
 
