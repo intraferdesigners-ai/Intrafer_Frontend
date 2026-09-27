@@ -1,17 +1,17 @@
 const API = process.env.NEXT_PUBLIC_API_URL;
 const baseUrl = 'https://intrafer.in';
 
-// Regenerate at most once an hour: a newly-listed vendor shows up in the
-// sitemap within an hour without a full redeploy, and a crawler hitting
+// Regenerate at most every 5 minutes — a newly-listed vendor shows up in
+// the sitemap quickly without a full redeploy, and a crawler hitting
 // /sitemap.xml repeatedly doesn't hammer the backend on every request.
-// Before this step, sitemap.js had no fetch calls and Next prerendered it
-// once at build time as a fully static route (the ○ marker in `next
-// build`'s route table). Adding a live vendor fetch would otherwise make
-// Next treat this as a fully dynamic per-request route — nothing else in
-// next.config.js or this route changes that default — so this export is
-// what opts back into cached, periodically-refreshed output instead of
-// either extreme (rebuild-only, or hitting the backend on every crawl).
-export const revalidate = 3600;
+// Originally 3600s (1 hour); lowered after a production incident where a
+// transient backend-fetch failure got served as the static-only fallback
+// (see fetchAllVendors' try/catch below) — at 3600s, a single bad render
+// could plausibly get cached and served to every visitor for up to an
+// hour before self-healing. 300s caps that worst case much tighter while
+// still meaningfully reducing backend load vs. every request. Revisit
+// once the retry logic below has some track record of not needing it.
+export const revalidate = 300;
 
 // Existing static pages — URLs/priorities unchanged from before this step.
 const STATIC_PAGES = [
@@ -50,6 +50,37 @@ const STATIC_PAGES = [
 // vendors/projects controllers were already touched in Steps 5-6, off
 // limits this step) — a known gap to revisit.
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Fetches one page, retrying once on failure (network blip, backend
+// cold-start) before giving up — a single transient failure shouldn't be
+// enough to fall back to the static-only sitemap and have that fallback
+// cached for the full revalidate window.
+async function fetchVendorPage(page, limit) {
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      // IMPORTANT: no `cache: 'no-store'` here. That was the actual bug
+      // behind a production incident where this route never cached at all
+      // (verified via x-vercel-cache: MISS on every single request) —
+      // Next.js treats any no-store fetch inside a route as disqualifying
+      // that whole route from the `export const revalidate` above, so the
+      // route was re-fetching from the backend on every crawl hit instead
+      // of the intended "cache for a few minutes" behavior. `next:
+      // { revalidate }` (reusing the same constant, so the two can't
+      // drift) is what actually lets this fetch participate in the
+      // route's ISR window.
+      const res = await fetch(`${API}/public/vendors?page=${page}&limit=${limit}`, {
+        next: { revalidate },
+      });
+      if (!res.ok) throw new Error(`GET /public/vendors failed: ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      if (attempt === 2) throw err;
+      await sleep(300);
+    }
+  }
+}
+
 // GET /api/public/vendors already filters to isApproved+isListingEnabled
 // server-side and supports real pagination (page/limit/total/totalPages,
 // capped at 50/page by utils/paginate.js) — loops through every page
@@ -62,9 +93,7 @@ async function fetchAllVendors() {
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const res = await fetch(`${API}/public/vendors?page=${page}&limit=${limit}`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`GET /public/vendors failed: ${res.status}`);
-    const json = await res.json();
+    const json = await fetchVendorPage(page, limit);
     const pageVendors = json.data?.vendors || [];
     vendors.push(...pageVendors);
 
