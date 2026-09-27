@@ -46,7 +46,7 @@ export async function generateMetadata({ params }) {
     // (Step 8) pages already declare "indexable" in this app — Next omits
     // the <meta name="robots"> tag entirely when the key is absent, which
     // is the indexable default.
-    alternates: { canonical: `${SITE_URL}/${params.category}` },
+    alternates: { canonical: `${SITE_URL}/${params.category}/` },
   };
 }
 
@@ -81,7 +81,7 @@ export default async function CategoryHubPage({ params }) {
         '@type': 'ListItem',
         position: i + 1,
         name: s.state,
-        url: `${SITE_URL}/${params.category}/${slugify(s.state)}`,
+        url: `${SITE_URL}/${params.category}/${slugify(s.state)}/`,
       })),
     },
   };
@@ -130,7 +130,7 @@ export default async function CategoryHubPage({ params }) {
           {states.map((s) => (
             <Link
               key={s.state}
-              href={`/${params.category}/${slugify(s.state)}`}
+              href={`/${params.category}/${slugify(s.state)}/`}
               style={{
                 display: 'block', padding: '20px', borderRadius: 'var(--r-md)',
                 border: '1px solid var(--border)', background: 'var(--surface)',

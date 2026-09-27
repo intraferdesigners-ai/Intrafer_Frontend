@@ -51,7 +51,7 @@ export async function generateMetadata({ params }) {
     // reasoning as the category page above — matches how the vendor
     // profile (Step 6) and project (Step 8) pages already declare
     // "indexable" here (absent robots key, not an explicit index: true).
-    alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}` },
+    alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}/` },
   };
 }
 
@@ -83,7 +83,7 @@ export default async function StateHubPage({ params }) {
         '@type': 'ListItem',
         position: i + 1,
         name: c.city,
-        url: `${SITE_URL}/${params.category}/${params.state}/${c.citySlug}`,
+        url: `${SITE_URL}/${params.category}/${params.state}/${c.citySlug}/`,
       })),
     },
   };
@@ -103,7 +103,7 @@ export default async function StateHubPage({ params }) {
 
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
-        { label: category.name, href: `/${params.category}` },
+        { label: category.name, href: `/${params.category}/` },
         { label: state },
       ]} />
 
@@ -120,7 +120,7 @@ export default async function StateHubPage({ params }) {
           {cities.map((c) => (
             <Link
               key={c.citySlug}
-              href={`/${params.category}/${params.state}/${c.citySlug}`}
+              href={`/${params.category}/${params.state}/${c.citySlug}/`}
               style={{
                 display: 'block', padding: '20px', borderRadius: 'var(--r-md)',
                 border: '1px solid var(--border)', background: 'var(--surface)',

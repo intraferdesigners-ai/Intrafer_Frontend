@@ -78,7 +78,7 @@ export async function generateMetadata({ params }) {
       // to state its own canonical explicitly. No robots override here —
       // this page was never noindex before this step and step 6 is
       // internal linking + schema only, not a go-live/indexation change.
-      alternates: { canonical: `${SITE_URL}/vendors/${params.vendorId}` },
+      alternates: { canonical: `${SITE_URL}/vendors/${params.vendorId}/` },
     };
   } catch {
     return { title: 'Vendor not found' };
@@ -106,7 +106,7 @@ export default async function VendorProfilePage({ params }) {
         <h1 style={{ fontSize: 24, fontWeight: 400, color: 'var(--text)', margin: '16px 0 8px' }}>
           Designer not found
         </h1>
-        <Link href="/vendors" style={{ fontSize: 14, color: 'var(--primary)', textDecoration: 'none' }}>
+        <Link href="/vendors/" style={{ fontSize: 14, color: 'var(--primary)', textDecoration: 'none' }}>
           ← Browse all designers
         </Link>
       </main>
@@ -147,9 +147,9 @@ export default async function VendorProfilePage({ params }) {
   const breadcrumbItems = (category?.slug && category?.name && place?.name && place?.state)
     ? [
         { label: 'Home', href: '/' },
-        { label: category.name, href: `/${category.slug}` },
-        { label: place.state, href: `/${category.slug}/${slugify(place.state)}` },
-        { label: place.name, href: `/${category.slug}/${slugify(place.state)}/${slugify(place.name)}` },
+        { label: category.name, href: `/${category.slug}/` },
+        { label: place.state, href: `/${category.slug}/${slugify(place.state)}/` },
+        { label: place.name, href: `/${category.slug}/${slugify(place.state)}/${slugify(place.name)}/` },
         { label: vendor.businessName },
       ]
     : null;
@@ -161,7 +161,7 @@ export default async function VendorProfilePage({ params }) {
     '@context': 'https://schema.org',
     '@type': category?.schemaOrgType || 'LocalBusiness',
     name: vendor.businessName,
-    url: `${SITE_URL}/vendors/${vendor._id}`,
+    url: `${SITE_URL}/vendors/${vendor._id}/`,
     ...(vendor.description && { description: vendor.description }),
     ...(vendor.profilePhoto && { image: vendor.profilePhoto }),
     ...(location && { areaServed: location }),
@@ -188,7 +188,7 @@ export default async function VendorProfilePage({ params }) {
       />
       {breadcrumbItems && <Breadcrumb items={breadcrumbItems} />}
       <Link
-        href="/vendors"
+        href="/vendors/"
         className="back-link"
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -538,7 +538,7 @@ export default async function VendorProfilePage({ params }) {
               ))}
             </div>
 
-            <Link href={`/enquiry?vendorId=${vendor._id}`} style={{ display: 'block' }}>
+            <Link href={`/enquiry/?vendorId=${vendor._id}`} style={{ display: 'block' }}>
               <Button variant="primary" size="lg" style={{ width: '100%' }}>
                 Submit enquiry →
               </Button>

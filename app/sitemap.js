@@ -17,23 +17,26 @@ export const revalidate = 300;
 
 // Existing static pages — URLs/priorities unchanged from before this step.
 const STATIC_PAGES = [
-  { url: baseUrl, priority: 1.0 },
-  { url: `${baseUrl}/vendors`, priority: 0.9 },
-  { url: `${baseUrl}/gallery`, priority: 0.8 },
-  { url: `${baseUrl}/cost-calculator`, priority: 0.8 },
-  { url: `${baseUrl}/wardrobe-calculator`, priority: 0.7 },
-  { url: `${baseUrl}/blog`, priority: 0.7 },
-  { url: `${baseUrl}/guides`, priority: 0.7 },
-  { url: `${baseUrl}/design-styles`, priority: 0.7 },
-  { url: `${baseUrl}/plans`, priority: 0.8 },
-  { url: `${baseUrl}/for-designers`, priority: 0.8 },
-  { url: `${baseUrl}/how-it-works`, priority: 0.6 },
-  { url: `${baseUrl}/about`, priority: 0.6 },
-  { url: `${baseUrl}/contact`, priority: 0.6 },
-  { url: `${baseUrl}/faq`, priority: 0.6 },
-  { url: `${baseUrl}/testimonials`, priority: 0.6 },
-  { url: `${baseUrl}/privacy`, priority: 0.3 },
-  { url: `${baseUrl}/terms`, priority: 0.3 },
+  // Homepage: bare domain + a single trailing slash, not `baseUrl` alone
+  // (no slash — the old canonical form) and not `${baseUrl}/` concatenated
+  // with another path segment's leading slash (which would double up).
+  { url: `${baseUrl}/`, priority: 1.0 },
+  { url: `${baseUrl}/vendors/`, priority: 0.9 },
+  { url: `${baseUrl}/gallery/`, priority: 0.8 },
+  { url: `${baseUrl}/cost-calculator/`, priority: 0.8 },
+  { url: `${baseUrl}/wardrobe-calculator/`, priority: 0.7 },
+  { url: `${baseUrl}/blog/`, priority: 0.7 },
+  { url: `${baseUrl}/guides/`, priority: 0.7 },
+  { url: `${baseUrl}/design-styles/`, priority: 0.7 },
+  { url: `${baseUrl}/plans/`, priority: 0.8 },
+  { url: `${baseUrl}/for-designers/`, priority: 0.8 },
+  { url: `${baseUrl}/how-it-works/`, priority: 0.6 },
+  { url: `${baseUrl}/about/`, priority: 0.6 },
+  { url: `${baseUrl}/contact/`, priority: 0.6 },
+  { url: `${baseUrl}/faq/`, priority: 0.6 },
+  { url: `${baseUrl}/testimonials/`, priority: 0.6 },
+  { url: `${baseUrl}/privacy/`, priority: 0.3 },
+  { url: `${baseUrl}/terms/`, priority: 0.3 },
 ];
 
 // Step 9: category (/[category]/) and state (/[category]/[state]/) hub
@@ -151,7 +154,7 @@ async function fetchCategoryStateEntries() {
     const catRes = await fetch(`${API}/public/service-categories/${slug}`, { next: { revalidate } });
     if (catRes.status === 404) continue;
     if (!catRes.ok) throw new Error(`GET /public/service-categories/${slug} failed: ${catRes.status}`);
-    entries.push({ url: `${baseUrl}/${slug}`, priority: 0.8 });
+    entries.push({ url: `${baseUrl}/${slug}/`, priority: 0.8 });
 
     const statesRes = await fetch(`${API}/public/states?category=${slug}`, { next: { revalidate } });
     if (statesRes.status === 404) continue;
@@ -161,7 +164,7 @@ async function fetchCategoryStateEntries() {
     for (const s of states) {
       if (!s.state) continue; // guards against a malformed <loc>, same rule Step 7 applied to vendors
       const stateSlug = slugify(s.state);
-      entries.push({ url: `${baseUrl}/${slug}/${stateSlug}`, priority: 0.6 });
+      entries.push({ url: `${baseUrl}/${slug}/${stateSlug}/`, priority: 0.6 });
 
       // Step 12: which cities exist in this category+state at all (Step 4's
       // endpoint, same one the state page and Step 10's linking already
@@ -182,7 +185,7 @@ async function fetchCategoryStateEntries() {
         if (!vendorsRes.ok) continue; // same reasoning as citiesRes above
         const vendorsJson = await vendorsRes.json();
         if (vendorsJson.data?.meetsThreshold) {
-          entries.push({ url: `${baseUrl}/${slug}/${stateSlug}/${c.citySlug}`, priority: 0.5 });
+          entries.push({ url: `${baseUrl}/${slug}/${stateSlug}/${c.citySlug}/`, priority: 0.5 });
         }
       }
     }
@@ -205,7 +208,7 @@ export default async function sitemap() {
       // filter. _id is required for a well-formed <loc>.
       .filter((v) => v.isApproved === true && v.isListingEnabled === true && v._id)
       .map((v) => ({
-        url: `${baseUrl}/vendors/${v._id}`,
+        url: `${baseUrl}/vendors/${v._id}/`,
         lastModified: v.updatedAt ? new Date(v.updatedAt).toISOString() : now,
         priority: 0.7,
       }));

@@ -134,7 +134,7 @@ export async function generateMetadata({ params }) {
     // At/above threshold: omit the robots key entirely, matching how
     // indexable pages elsewhere (Steps 6/8/9) declare it.
     ...(!data.meetsThreshold && { robots: { index: false, follow: true } }),
-    alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}/${params.city}` },
+    alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}/${params.city}/` },
   };
 }
 
@@ -186,7 +186,7 @@ export default async function CityHubPage({ params }) {
           item: {
             '@type': category.schemaOrgType,
             name: v.businessName,
-            url: `${SITE_URL}/vendors/${v._id}`,
+            url: `${SITE_URL}/vendors/${v._id}/`,
             ...(image && { image }),
             ...(aggregateRating && { aggregateRating }),
           },
@@ -226,8 +226,8 @@ export default async function CityHubPage({ params }) {
 
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
-        { label: category.name, href: `/${params.category}` },
-        { label: state, href: `/${params.category}/${params.state}` },
+        { label: category.name, href: `/${params.category}/` },
+        { label: state, href: `/${params.category}/${params.state}/` },
         { label: city },
       ]} />
 
@@ -292,7 +292,7 @@ export default async function CityHubPage({ params }) {
             {nearbyCities.map((c) => (
               <Link
                 key={c.citySlug}
-                href={`/${params.category}/${params.state}/${c.citySlug}`}
+                href={`/${params.category}/${params.state}/${c.citySlug}/`}
                 style={{
                   display: 'block', padding: '10px 16px', borderRadius: 'var(--r-md)',
                   border: '1px solid var(--border)', background: 'var(--surface)',
@@ -316,7 +316,7 @@ export default async function CityHubPage({ params }) {
             {relatedCategories.map((c) => (
               <Link
                 key={c.slug}
-                href={`/${c.slug}/${params.state}/${params.city}`}
+                href={`/${c.slug}/${params.state}/${params.city}/`}
                 style={{
                   display: 'block', padding: '10px 16px', borderRadius: 'var(--r-md)',
                   border: '1px solid var(--border)', background: 'var(--surface)',

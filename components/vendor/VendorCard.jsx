@@ -155,7 +155,7 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
           overflow: 'visible',
         }}>
           {/* Image area — outer allows avatar to overflow, inner clips the photo */}
-          <Link href={`/vendors/${vendor._id}`} style={{ textDecoration: 'none', display: 'block' }}
+          <Link href={`/vendors/${vendor._id}/`} style={{ textDecoration: 'none', display: 'block' }}
             onClick={() => trackVendorInterest(vendor._id, 'card')}>
             <div style={{ position: 'relative', height: '210px', overflow: 'visible' }}>
 
@@ -304,7 +304,7 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
 
           {/* Body — extra top padding clears the avatar overlap */}
           <div style={{ padding: '36px 16px 16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <Link href={`/vendors/${vendor._id}`} style={{ textDecoration: 'none' }}>
+            <Link href={`/vendors/${vendor._id}/`} style={{ textDecoration: 'none' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '3px' }}>
                 <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', margin: 0 }}>
                   {vendor.businessName}
@@ -339,7 +339,7 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 {vendor.rating > 0 ? (
                   <Link
-                    href={`/vendors/${vendor._id}#reviews`}
+                    href={`/vendors/${vendor._id}/#reviews`}
                     onClick={e => e.stopPropagation()}
                     className="rating-link"
                     style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
@@ -360,7 +360,7 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
               </div>
 
               <div style={{ display: 'flex', gap: '6px' }}>
-                <Link href={`/vendors/${vendor._id}`} onClick={e => e.stopPropagation()}>
+                <Link href={`/vendors/${vendor._id}/`} onClick={e => e.stopPropagation()}>
                   <button style={{
                     padding: '6px 12px', borderRadius: 'var(--r-sm)',
                     background: 'var(--surface)', color: 'var(--text-sub)',
@@ -401,7 +401,7 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
   return (
     <>
       <Link
-        href={`/vendors/${vendor._id}`}
+        href={`/vendors/${vendor._id}/`}
         onClick={() => trackVendorInterest(vendor._id, 'card')}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

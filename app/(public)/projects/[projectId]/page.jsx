@@ -64,7 +64,7 @@ export async function generateMetadata({ params }) {
     // to state its own canonical explicitly. No robots override — this
     // page had no robots meta before this step and still doesn't; that's
     // an indexation decision out of scope here.
-    alternates: { canonical: `${SITE_URL}/projects/${params.projectId}` },
+    alternates: { canonical: `${SITE_URL}/projects/${params.projectId}/` },
   };
 }
 
@@ -91,7 +91,7 @@ export default async function ProjectDetailPage({ params }) {
         <h1 style={{ fontSize: 24, fontWeight: 400, color: 'var(--text)', margin: '16px 0 8px' }}>
           Project not found
         </h1>
-        <Link href="/vendors" style={{ fontSize: 14, color: 'var(--primary)', textDecoration: 'none' }}>
+        <Link href="/vendors/" style={{ fontSize: 14, color: 'var(--primary)', textDecoration: 'none' }}>
           ← Browse designers
         </Link>
       </main>
@@ -107,13 +107,13 @@ export default async function ProjectDetailPage({ params }) {
   const breadcrumbItems = category?.slug && category?.name
     ? [
         { label: 'Home', href: '/' },
-        { label: category.name, href: `/${category.slug}` },
-        { label: vendor.businessName, href: `/vendors/${vendor._id}` },
+        { label: category.name, href: `/${category.slug}/` },
+        { label: vendor.businessName, href: `/vendors/${vendor._id}/` },
         { label: project.title },
       ]
     : [
         { label: 'Home', href: '/' },
-        { label: vendor.businessName, href: `/vendors/${vendor._id}` },
+        { label: vendor.businessName, href: `/vendors/${vendor._id}/` },
         { label: project.title },
       ];
 
@@ -135,13 +135,13 @@ export default async function ProjectDetailPage({ params }) {
     '@context': 'https://schema.org',
     '@type': 'CreativeWork',
     name: project.title,
-    url: `${SITE_URL}/projects/${project._id}`,
+    url: `${SITE_URL}/projects/${project._id}/`,
     ...(project.description && { description: project.description }),
     ...(project.createdAt && { datePublished: new Date(project.createdAt).toISOString() }),
     creator: {
       '@type': 'Organization',
       name: vendor.businessName,
-      url: `${SITE_URL}/vendors/${vendor._id}`,
+      url: `${SITE_URL}/vendors/${vendor._id}/`,
     },
     ...(allImages.length > 0 && {
       image: allImages.map((url) => ({ '@type': 'ImageObject', contentUrl: url })),
@@ -158,7 +158,7 @@ export default async function ProjectDetailPage({ params }) {
 
       {/* Back link */}
       <Link
-        href={`/vendors/${vendor._id}`}
+        href={`/vendors/${vendor._id}/`}
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 4,
           fontSize: 13, color: 'var(--text-hint)', textDecoration: 'none',
@@ -293,7 +293,7 @@ export default async function ProjectDetailPage({ params }) {
             </div>
 
             {/* CTAs */}
-            <Link href={`/enquiry?vendorId=${vendor._id}`} style={{ display: 'block', marginBottom: 8 }}>
+            <Link href={`/enquiry/?vendorId=${vendor._id}`} style={{ display: 'block', marginBottom: 8 }}>
               <button style={{
                 width: '100%', height: 48,
                 background: 'var(--primary)', color: '#fff',
@@ -304,7 +304,7 @@ export default async function ProjectDetailPage({ params }) {
               </button>
             </Link>
 
-            <Link href={`/vendors/${vendor._id}`} style={{ display: 'block' }}>
+            <Link href={`/vendors/${vendor._id}/`} style={{ display: 'block' }}>
               <button style={{
                 width: '100%', height: 44,
                 background: 'transparent',
