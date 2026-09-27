@@ -36,11 +36,15 @@ export async function generateMetadata({ params }) {
   return {
     // Root layout's title template already appends " | Intrafer".
     title: `${category.name} in India`,
-    // Dark build — this whole category -> state -> city chain stays
-    // noindex, for every category including interior-designers, until it's
-    // complete end-to-end with real per-city content. Indexation is a
-    // deliberate later step, not implicit once the pages exist.
-    robots: { index: false, follow: true },
+    // Step 9: indexable per the client's sign-off on SEO spec section 11
+    // ("Category and state hub pages stay indexable always — they are
+    // aggregation pages, not empty listings") — this reverses the Step 3
+    // blanket dark-build noindex for this page level only; city pages
+    // (Step 5) stay noindex. No robots key at all, not an explicit
+    // { index: true }: matches how the vendor profile (Step 6) and project
+    // (Step 8) pages already declare "indexable" in this app — Next omits
+    // the <meta name="robots"> tag entirely when the key is absent, which
+    // is the indexable default.
     alternates: { canonical: `${SITE_URL}/${params.category}` },
   };
 }

@@ -1,3 +1,5 @@
+import { slugify } from '@/lib/slug';
+
 const API = process.env.NEXT_PUBLIC_API_URL;
 const baseUrl = 'https://intrafer.in';
 
@@ -34,12 +36,32 @@ const STATIC_PAGES = [
   { url: `${baseUrl}/terms`, priority: 0.3 },
 ];
 
-// Pages Steps 3-5 built (/[category]/, /[category]/[state]/,
-// /[category]/[state]/[city]/) are deliberately excluded here — they're
-// still noindex, and listing a noindexed URL in the sitemap is
-// contradictory signaling to search engines. A later go-live step adds
-// them back in once indexation is actually turned on.
+// Step 9: category (/[category]/) and state (/[category]/[state]/) hub
+// pages became indexable per the client's sign-off on SEO spec section 11
+// ("Category and state hub pages stay indexable always"), reversing Steps
+// 3-4's blanket dark-build noindex for just these two levels — so they're
+// added to the sitemap below, per spec section 12 ("Only indexable URLs
+// listed"). City pages (/[category]/[state]/[city]/, Step 5) are
+// untouched and still noindex — deliberately excluded here, same as
+// before. A future step adds them once per-city threshold-based
+// indexation (meetsIndexThreshold, scaffolded in Step 5) is wired up.
 //
+// The 12 category slugs are hardcoded rather than fetched from a "list all
+// categories" endpoint — no such public endpoint exists, and adding one
+// would mean touching serviceCategory.controller.js/public.routes.js,
+// both Step 1/3 files this step is scoped to leave alone. Matches Step
+// 1's seed script (scripts/seedCategoryTaxonomy.js on the backend) — if
+// that list ever changes, this one needs updating by hand. Each slug is
+// still verified live against the real GET /public/service-categories/:slug
+// endpoint (which already 404s for inactive/missing categories) before
+// being included, so an inactive category is correctly skipped without
+// needing a dedicated "isActive" listing endpoint.
+const CATEGORY_SLUGS = [
+  'interior-designers', 'architects', 'home-decorators', 'home-renovation',
+  'modular-kitchen', 'furniture', 'lighting', 'false-ceiling', 'wallpaper',
+  'painting', 'home-automation', 'landscaping',
+];
+
 // Project/portfolio pages (/projects/[projectId]/) are also excluded: the
 // only public listing endpoint, GET /api/public/gallery, hardcodes
 // .limit(50) with no pagination, so there's no way to enumerate every
@@ -105,6 +127,36 @@ async function fetchAllVendors() {
   return vendors;
 }
 
+// For each real, active category: one entry for the category hub itself,
+// plus one per state it has vendor presence in (GET /public/states?category=
+// — the same endpoint Step 3's category page already uses). A 404 on the
+// category lookup means inactive/nonexistent — skipped, not a failure. Any
+// other non-ok status or a thrown network error propagates up so the
+// caller's try/catch falls back to omitting category/state entries
+// entirely, same safety pattern as fetchAllVendors above.
+async function fetchCategoryStateEntries() {
+  const entries = [];
+
+  for (const slug of CATEGORY_SLUGS) {
+    const catRes = await fetch(`${API}/public/service-categories/${slug}`, { next: { revalidate } });
+    if (catRes.status === 404) continue;
+    if (!catRes.ok) throw new Error(`GET /public/service-categories/${slug} failed: ${catRes.status}`);
+    entries.push({ url: `${baseUrl}/${slug}`, priority: 0.8 });
+
+    const statesRes = await fetch(`${API}/public/states?category=${slug}`, { next: { revalidate } });
+    if (statesRes.status === 404) continue;
+    if (!statesRes.ok) throw new Error(`GET /public/states?category=${slug} failed: ${statesRes.status}`);
+    const statesJson = await statesRes.json();
+    const states = statesJson.data?.states || [];
+    for (const s of states) {
+      if (!s.state) continue; // guards against a malformed <loc>, same rule Step 7 applied to vendors
+      entries.push({ url: `${baseUrl}/${slug}/${slugify(s.state)}`, priority: 0.6 });
+    }
+  }
+
+  return entries;
+}
+
 export default async function sitemap() {
   const now = new Date().toISOString();
   const staticEntries = STATIC_PAGES.map((p) => ({ ...p, lastModified: now }));
@@ -130,5 +182,15 @@ export default async function sitemap() {
     vendorEntries = [];
   }
 
-  return [...staticEntries, ...vendorEntries];
+  let categoryStateEntries = [];
+  try {
+    categoryStateEntries = (await fetchCategoryStateEntries()).map((e) => ({ ...e, lastModified: now }));
+  } catch {
+    // Same fallback idea as the vendor fetch above — omit category/state
+    // entries rather than break the whole sitemap; static + vendor entries
+    // still render.
+    categoryStateEntries = [];
+  }
+
+  return [...staticEntries, ...vendorEntries, ...categoryStateEntries];
 }

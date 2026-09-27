@@ -44,9 +44,13 @@ export async function generateMetadata({ params }) {
   return {
     // Root layout's title template already appends " | Intrafer".
     title: `${category.name} in ${data.state}`,
-    // Dark build — same blanket noindex rule as Step 3, for every
-    // category/state combo, until the full chain + real content is ready.
-    robots: { index: false, follow: true },
+    // Step 9: indexable per the client's sign-off on SEO spec section 11
+    // ("Category and state hub pages stay indexable always") — reverses
+    // Step 4's blanket dark-build noindex for this page level. City pages
+    // (Step 5) are untouched and stay noindex. No robots key at all, same
+    // reasoning as the category page above — matches how the vendor
+    // profile (Step 6) and project (Step 8) pages already declare
+    // "indexable" here (absent robots key, not an explicit index: true).
     alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}` },
   };
 }
