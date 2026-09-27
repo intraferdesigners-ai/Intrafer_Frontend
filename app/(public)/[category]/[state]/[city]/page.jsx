@@ -1,8 +1,10 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Breadcrumb from '@/components/seo/Breadcrumb';
 import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
 import VendorCard from '@/components/vendor/VendorCard';
+import { SERVICE_CATEGORIES } from '@/lib/categories';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const SITE_URL = 'https://intrafer.in';
@@ -52,6 +54,66 @@ async function fetchFAQ(categorySlug, stateSlug, citySlug) {
   }
 }
 
+// Step 10: "nearby cities, same category" — other cities in the SAME STATE
+// with real vendor presence in this category, excluding the current city.
+// Reuses GET /public/category-cities as-is (Step 4) — no new backend
+// endpoint needed. Bounded to same-state rather than a looser cross-state
+// fallback: Place has no lat/lng or adjacency data, and presenting an
+// unrelated-state city (e.g. Delhi) as "nearby" a South Indian city (e.g.
+// Bengaluru) would be a geographic claim with no real data behind it —
+// same-state membership is the one defensible proximity signal actually
+// available, and matches the SEO doc's own example (Ahmedabad <-> Vadodara,
+// both Gujarat). Renders nothing when the state has no other city in this
+// category — true for most states today (only Maharashtra and Uttar
+// Pradesh currently have 2+ interior-designers cities each).
+async function fetchNearbyCities(categorySlug, stateSlug, currentCitySlug) {
+  try {
+    const res = await fetch(
+      `${API}/public/category-cities?category=${encodeURIComponent(categorySlug)}&state=${encodeURIComponent(stateSlug)}`,
+      { cache: 'no-store' }
+    );
+    if (!res.ok) return [];
+    const json = await res.json();
+    const cities = json.data?.cities || [];
+    return cities.filter((c) => c.citySlug !== currentCitySlug);
+  } catch {
+    return [];
+  }
+}
+
+// Step 10: "related categories, same city" — which OTHER categories have
+// real vendor presence in this exact city (same state). No existing
+// endpoint answers "which categories exist in city X" directly, and
+// GET /public/vendors/category-cities are both scoped to one category at a
+// time — but looping the existing category-cities endpoint over every
+// other category (12 parallel requests, cheap) answers it without adding
+// new backend surface. A category's own real/active check comes for free:
+// category-cities 404s for an inactive or nonexistent category slug, which
+// this treats as "no match" rather than an error. Given today's real data
+// (only interior-designers has any vendor presence at all, per Steps 1-9),
+// this returns [] for every city right now — expected, not a bug; designed
+// for when other categories gain real vendors, not to look populated today.
+async function fetchRelatedCategories(currentCategorySlug, stateSlug, citySlug) {
+  const others = SERVICE_CATEGORIES.filter((c) => c.slug !== currentCategorySlug);
+  const results = await Promise.all(
+    others.map(async (c) => {
+      try {
+        const res = await fetch(
+          `${API}/public/category-cities?category=${encodeURIComponent(c.slug)}&state=${encodeURIComponent(stateSlug)}`,
+          { cache: 'no-store' }
+        );
+        if (!res.ok) return null;
+        const json = await res.json();
+        const cities = json.data?.cities || [];
+        return cities.some((city) => city.citySlug === citySlug) ? c : null;
+      } catch {
+        return null;
+      }
+    })
+  );
+  return results.filter(Boolean);
+}
+
 export async function generateMetadata({ params }) {
   const category = await fetchCategory(params.category);
   if (!category) return { title: 'Category Not Found' };
@@ -80,6 +142,11 @@ export default async function CityHubPage({ params }) {
   const { state, city, vendors } = data;
   const faq = await fetchFAQ(params.category, params.state, params.city);
   const hasFaq = faq && faq.questions?.length > 0;
+
+  const [nearbyCities, relatedCategories] = await Promise.all([
+    fetchNearbyCities(params.category, params.state, params.city),
+    fetchRelatedCategories(params.category, params.state, params.city),
+  ]);
 
   // Category's own schema.org business type (e.g. HomeAndConstructionBusiness,
   // GeneralContractor, FurnitureStore) — not the generic Service block the
@@ -199,6 +266,57 @@ export default async function CityHubPage({ params }) {
               <p style={{ fontSize: '14px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{q.answer}</p>
             </div>
           ))}
+        </section>
+      )}
+
+      {/* Step 10: contextual internal linking (SEO doc section 15) — both
+          sections render nothing when there's genuinely no related
+          content, never a placeholder/empty heading. */}
+      {nearbyCities.length > 0 && (
+        <section style={{ marginTop: '48px' }}>
+          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>NEARBY CITIES</p>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--text)', marginBottom: '16px' }}>
+            {category.name} in other {state} cities
+          </h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            {nearbyCities.map((c) => (
+              <Link
+                key={c.citySlug}
+                href={`/${params.category}/${params.state}/${c.citySlug}`}
+                style={{
+                  display: 'block', padding: '10px 16px', borderRadius: 'var(--r-md)',
+                  border: '1px solid var(--border)', background: 'var(--surface)',
+                  textDecoration: 'none', color: 'var(--text)', fontSize: '13px',
+                }}
+              >
+                {category.name} in {c.city}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {relatedCategories.length > 0 && (
+        <section style={{ marginTop: '48px' }}>
+          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>RELATED SERVICES IN {city.toUpperCase()}</p>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--text)', marginBottom: '16px' }}>
+            Other services available in {city}
+          </h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            {relatedCategories.map((c) => (
+              <Link
+                key={c.slug}
+                href={`/${c.slug}/${params.state}/${params.city}`}
+                style={{
+                  display: 'block', padding: '10px 16px', borderRadius: 'var(--r-md)',
+                  border: '1px solid var(--border)', background: 'var(--surface)',
+                  textDecoration: 'none', color: 'var(--text)', fontSize: '13px',
+                }}
+              >
+                {c.name} in {city}
+              </Link>
+            ))}
+          </div>
         </section>
       )}
     </div>
