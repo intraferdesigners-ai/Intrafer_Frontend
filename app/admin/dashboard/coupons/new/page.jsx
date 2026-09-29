@@ -20,7 +20,7 @@ const FIELD_LABEL = {
   color: 'var(--color-text-sub)', marginBottom: 6, letterSpacing: '0.01em',
 };
 
-const PLAN_NAMES = ['3 Month', '6 Month', '12 Month'];
+const PLAN_NAMES = ['1 Month', '6 Month', '12 Month'];
 
 export default function NewCouponPage() {
   const router = useRouter();

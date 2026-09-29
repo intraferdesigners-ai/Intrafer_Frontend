@@ -102,7 +102,7 @@ export default function VendorTermsPage() {
         </p>
         <ul style={{ paddingLeft: '20px' }}>
           {[
-            'You choose a 3, 6, or 12-month plan, each with a flat subscription fee and zero commission on your project revenue',
+            'You choose a 1, 6, or 12-month plan, each with a flat subscription fee and zero commission on your project revenue',
             'You authorize Razorpay to charge your selected payment method for the full plan amount',
             'Plans are prepaid in full for their term and do not auto-renew — you choose to resubscribe at the end of your term',
             'Payments are non-refundable once a term has started',

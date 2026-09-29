@@ -9,9 +9,6 @@ import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
 
 
-// TEMP test pricing for live Razorpay flow verification — real prices were
-// 799900 / 1499900 / 1999900. Revert once testing is done.
-//
 // Every plan shows this same feature list — price/duration is the only
 // distinction between tiers, so the list is the union of what used to be
 // spread unevenly across the three (the strongest phrasing wins where two
@@ -32,18 +29,18 @@ const PLAN_FEATURES = [
 
 const FALLBACK_PLANS = [
   {
-    name: '3 Month',
-    displayName: '3 Months',
-    price: 100,
-    period: '3 months',
+    name: '1 Month',
+    displayName: '1 Month',
+    price: 599900,
+    period: '1 month',
     leadsPerMonth: 10,
-    durationDays: 90,
+    durationDays: 30,
     features: PLAN_FEATURES,
   },
   {
     name: '6 Month',
     displayName: '6 Months',
-    price: 100,
+    price: 1499900,
     period: '6 months',
     leadsPerMonth: 10,
     durationDays: 180,
@@ -53,7 +50,7 @@ const FALLBACK_PLANS = [
   {
     name: '12 Month',
     displayName: '12 Months',
-    price: 100,
+    price: 1999900,
     period: '12 months',
     leadsPerMonth: 10,
     durationDays: 365,
@@ -64,7 +61,7 @@ const FALLBACK_PLANS = [
 const FAQS = [
   {
     q: 'Can I cancel my subscription anytime?',
-    a: "You can stop renewing at any time from your dashboard. Plans are prepaid for their full 3, 6, or 12-month term and are non-refundable, but your listing stays live for the term you've already paid for.",
+    a: "You can stop renewing at any time from your dashboard. Plans are prepaid for their full 1, 6, or 12-month term and are non-refundable, but your listing stays live for the term you've already paid for.",
   },
   {
     q: 'What counts as a "lead"?',
@@ -76,7 +73,7 @@ const FAQS = [
   },
   {
     q: 'Is there a free trial?',
-    a: 'We don\'t offer a free trial, but the 3 Month plan at ₹1 is a low-risk way to evaluate the platform. Most designers recoup this within their first accepted project.',
+    a: 'We don\'t offer a free trial, but the 1 Month plan at ₹5,999 is a low-risk way to evaluate the platform. Most designers recoup this within their first accepted project.',
   },
   {
     q: 'How do I get paid — do you take a commission?',
