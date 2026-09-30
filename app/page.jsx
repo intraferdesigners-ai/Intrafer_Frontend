@@ -2,7 +2,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import WhatsAppButton from '../components/ui/WhatsAppButton';
 import StickyMobileCTA from '../components/ui/StickyMobileCTA';
 import BeforeAfterShowcase from '../components/public/BeforeAfterShowcase';
 import EMICalculator from '../components/ui/EMICalculator';
@@ -506,7 +505,6 @@ export default async function Home() {
       <div style={{ height: '80px', background: 'var(--bg)' }} />
 
       <Footer />
-      <WhatsAppButton />
       <StickyMobileCTA />
     </div>
   );

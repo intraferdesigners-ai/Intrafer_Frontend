@@ -10,6 +10,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Honeypot from '@/components/ui/Honeypot';
 import Reveal from '@/components/ui/Reveal';
+import WhatsAppButton from '@/components/ui/WhatsAppButton';
 
 const CONTACT_INFO = [
   { Icon: Mail,           label: 'Email',    value: 'Intraferpvtltd@gmail.com' },
@@ -60,6 +61,7 @@ export default function ContactPage() {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
+      <WhatsAppButton />
 
       {/* Header */}
       <Reveal>
