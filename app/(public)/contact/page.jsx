@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, Phone, MapPin, MessageCircle, User, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MessageCircle, User, CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import { isAuthenticated } from '@/lib/auth';
@@ -12,10 +12,9 @@ import Honeypot from '@/components/ui/Honeypot';
 import Reveal from '@/components/ui/Reveal';
 
 const CONTACT_INFO = [
-  { Icon: Mail,           label: 'Email',    value: 'support@intrafer.in' },
-  { Icon: Phone,          label: 'Phone',    value: '+91 80 4567 8900 (Mon–Sat, 9am–6pm)' },
-  { Icon: MessageCircle,  label: 'WhatsApp', value: '+91 98765 00000' },
-  { Icon: MapPin,         label: 'Office',   value: '123 Koramangala, Bangalore 560034' },
+  { Icon: Mail,           label: 'Email',    value: 'Intraferpvtltd@gmail.com' },
+  { Icon: Phone,          label: 'Phone',    value: '+91 92172 11408' },
+  { Icon: MessageCircle,  label: 'WhatsApp', value: '+91 92172 11408' },
 ];
 
 const SUBJECTS = ['General enquiry', 'Find a designer', 'List my studio', 'Report an issue', 'Partnership'];
@@ -111,28 +110,6 @@ export default function ContactPage() {
             <MessageCircle size={16} />
             Chat on WhatsApp
           </a>
-
-          <div className="caps-label" style={{ marginTop: '24px', marginBottom: '8px' }}>
-            FIND US
-          </div>
-          <div style={{
-            width: '100%',
-            height: '320px',
-            borderRadius: 'var(--r-xl)',
-            overflow: 'hidden',
-            border: '1px solid var(--border)',
-          }}>
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.0!2d77.5946!3d12.9716!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTLCsDU4JzE3LjgiTiA3N8KwMzUnNDAuNiJF!5e0!3m2!1sen!2sin!4v1234567890"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Intrafer Office Location"
-            />
-          </div>
         </div>
 
         {/* Right — Form */}
