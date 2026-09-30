@@ -106,7 +106,6 @@ export default function VendorTermsPage() {
             'You authorize Razorpay to charge your selected payment method for the full plan amount',
             'Plans are prepaid in full for their term and do not auto-renew — you choose to resubscribe at the end of your term',
             'Payments are non-refundable once a term has started',
-            'Lead credits do not carry over to the next billing period',
           ].map((item, i) => (
             <li key={i} style={{ marginBottom: '8px' }}>{item}</li>
           ))}
