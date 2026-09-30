@@ -7,11 +7,11 @@ import { usePathname } from 'next/navigation';
 // homeowner-removal plan, Phase 4).
 const TABS = {
   vendor: [
-    { href: '/vendor/dashboard',              label: 'Home',      icon: 'home'        },
-    { href: '/vendor/dashboard/leads',        label: 'Leads',     icon: 'inbox'       },
-    { href: '/vendor/dashboard/projects',     label: 'Portfolio', icon: 'photo'       },
-    { href: '/vendor/dashboard/subscription', label: 'Plans',     icon: 'credit-card' },
-    { href: '/vendor/dashboard/profile',      label: 'Profile',   icon: 'user'        },
+    { href: '/vendor/dashboard',              label: 'Home',         icon: 'home'        },
+    { href: '/vendor/dashboard/leads',        label: 'Leads',        icon: 'inbox'       },
+    { href: '/vendor/dashboard/projects',     label: 'Add Projects', icon: 'photo'       },
+    { href: '/vendor/dashboard/subscription', label: 'Plans',        icon: 'credit-card' },
+    { href: '/vendor/dashboard/profile',      label: 'Profile',      icon: 'user'        },
   ],
   admin: [
     { href: '/admin/dashboard',           label: 'Home',      icon: 'home'      },
@@ -46,7 +46,7 @@ export default function MobileTabBar({ role }) {
     <nav className="mobile-tab-bar" role="navigation" aria-label="Dashboard navigation">
       {tabs.map((tab) => {
         const active = tab.href === dashRoot
-          ? pathname === dashRoot
+          ? pathname.replace(/\/$/, '') === dashRoot // trailingSlash is on
           : pathname.startsWith(tab.href);
         return (
           <Link

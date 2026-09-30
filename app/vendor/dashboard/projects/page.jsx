@@ -101,7 +101,7 @@ export default function VendorProjectsPage() {
           fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 300,
           color: 'var(--color-text)', margin: 0,
         }}>
-          Portfolio
+          Add Project
         </h1>
         {!loading && (hasActiveSubscription ? (
           <Link href="/vendor/dashboard/projects/new" style={{ textDecoration: 'none' }}>

@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
   User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Tag, LifeBuoy, Shield, Star,
-  LayoutGrid, ScrollText, FileBarChart, Kanban, Sparkles,
+  LayoutGrid, ScrollText, FileBarChart, Sparkles,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { clearAuthTokens } from '../../lib/auth';
@@ -36,15 +36,14 @@ const ADMIN_NAV_PERMISSIONS = {
 // homeowner-removal plan, Phase 4).
 const NAV = {
   vendor: [
-    { label: 'Dashboard',    href: '/vendor/dashboard',              icon: LayoutDashboard, group: 'OVERVIEW' },
-    { label: 'Leads',        href: '/vendor/dashboard/leads',        icon: FileText,        group: 'BUSINESS' },
-    { label: 'Pipeline',     href: '/vendor/dashboard/pipeline',     icon: Kanban,          group: 'BUSINESS' },
-    { label: 'Portfolio',    href: '/vendor/dashboard/projects',     icon: Building2,       group: 'BUSINESS' },
-    { label: 'Reviews',      href: '/vendor/dashboard/reviews',      icon: Star,            group: 'GROWTH'   },
-    { label: 'Subscription', href: '/vendor/dashboard/subscription', icon: Crown,           group: 'GROWTH'   },
-    { label: 'Analytics',    href: '/vendor/dashboard/analytics',    icon: BarChart3,       group: 'GROWTH'   },
-    { label: 'Profile',      href: '/vendor/dashboard/profile',      icon: User,            group: 'ACCOUNT'  },
-    { label: 'Settings',     href: '/vendor/dashboard/settings',     icon: Settings,        group: 'ACCOUNT'  },
+    { label: 'Dashboard',     href: '/vendor/dashboard',              icon: LayoutDashboard, group: 'OVERVIEW' },
+    { label: 'Profile',       href: '/vendor/dashboard/profile',      icon: User,            group: 'ACCOUNT'  },
+    { label: 'Add Projects',  href: '/vendor/dashboard/projects',     icon: Building2,       group: 'ACCOUNT'  },
+    { label: 'Leads',         href: '/vendor/dashboard/leads',        icon: FileText,        group: 'ACCOUNT'  },
+    { label: 'Reviews',       href: '/vendor/dashboard/reviews',      icon: Star,            group: 'GROWTH'   },
+    { label: 'Subscriptions', href: '/vendor/dashboard/subscription', icon: Crown,           group: 'GROWTH'   },
+    // No group — renders standalone, separated by a spacer instead of a header.
+    { label: 'Settings',      href: '/vendor/dashboard/settings',     icon: Settings,        group: null       },
   ],
   admin: [
     { label: 'Dashboard',    href: '/admin/dashboard',               icon: LayoutDashboard, group: 'OVERVIEW' },
@@ -79,6 +78,12 @@ export default function Sidebar({ onClose }) {
   const router                    = useRouter();
   const { user, role, clearAuth } = useAuthStore();
   const { theme, toggleTheme }    = useTheme();
+
+  // Every dashboard page starts with the dashboard root, so the root item
+  // needs an exact match — same rule as MobileTabBar.jsx. trailingSlash is on
+  // (next.config.js), so usePathname() returns '/vendor/dashboard/' — strip it
+  // before comparing.
+  const dashRoot = `/${role}/dashboard`;
 
   const items = useMemo(() => {
     const base = NAV[role] || [];
@@ -181,12 +186,15 @@ export default function Sidebar({ onClose }) {
       {/* Nav items */}
       <nav style={{ flex: 1, padding: '0 10px' }}>
         {items.map((item, i) => {
-          const active = pathname.startsWith(item.href);
+          const active = item.href === dashRoot
+            ? pathname.replace(/\/$/, '') === dashRoot
+            : pathname.startsWith(item.href);
           const Icon   = item.icon;
           const showGroupHeader = item.group !== items[i - 1]?.group;
           return (
             <Fragment key={item.href}>
-              {showGroupHeader && (
+              {showGroupHeader && !item.group && <div style={{ height: '16px' }} />}
+              {showGroupHeader && item.group && (
                 <div style={{
                   fontSize: '10px', fontWeight: 600, letterSpacing: '.08em',
                   textTransform: 'uppercase', color: 'var(--text-hint)',
