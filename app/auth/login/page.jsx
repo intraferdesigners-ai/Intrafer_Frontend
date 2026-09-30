@@ -84,13 +84,6 @@ function LoginContent() {
   const [needsVerification, setNeedsVerification] = useState(false);
   const [resendingVerify,   setResendingVerify]   = useState(false);
 
-  // Set when POST /auth/google returns NO_ACCOUNT — no vendor account
-  // exists for the Google email the visitor picked. The backend
-  // deliberately does not auto-create one from the login page (see the
-  // Google OAuth Enablement plan, §03), so this shows a clean "sign up
-  // instead" state rather than the generic red error box.
-  const [googleNoAccount, setGoogleNoAccount] = useState(false);
-
   useEffect(() => { document.title = 'Login | Intrafer'; }, []);
 
   // Navigating between role params (e.g. clicking the mismatch banner's
@@ -102,10 +95,9 @@ function LoginContent() {
   useEffect(() => {
     setError('');
     setRoleMismatch(null);
-    setGoogleNoAccount(false);
   }, [roleParam]);
 
-  const completeLogin = (user, accessToken) => {
+  const completeLogin = (user, accessToken, isNewUser = false) => {
     // If the visitor picked a specific role card (or arrived with ?role= from
     // a role-specific entry point), block sign-in when the real account is a
     // different role — e.g. picking "Admin" but authenticating as a vendor —
@@ -116,7 +108,7 @@ function LoginContent() {
     }
     setAuthTokens(accessToken, user.role);
     setAuth(user, accessToken);
-    toast.success('Welcome back, ' + user.name + '!');
+    toast.success((isNewUser ? 'Welcome, ' : 'Welcome back, ') + user.name + '!');
     const dest = isSafeRedirect(redirectParam) ? redirectParam : (ROLE_DASHBOARDS[user.role] || '/');
     // A hard navigation, not router.push(dest) — the App Router's client
     // cache can hold a *stale, pre-login* entry for `dest` (e.g. from an
@@ -136,7 +128,6 @@ function LoginContent() {
     setError('');
     setRoleMismatch(null);
     setNeedsVerification(false);
-    setGoogleNoAccount(false);
     try {
       const { data } = await api.post('/auth/login', { email, password });
       completeLogin(data.data.user, data.data.accessToken);
@@ -147,22 +138,16 @@ function LoginContent() {
     setLoading(false);
   };
 
+  // intent="signup" below: a Google email with no account yet gets a vendor
+  // account created and is signed straight in (isNewUser: true), same as
+  // the register page's button — no separate "no account found" state.
   const handleGoogleSuccess = (result) => {
     setError('');
     setRoleMismatch(null);
-    setGoogleNoAccount(false);
-    completeLogin(result.user, result.accessToken);
-  };
-
-  const handleGoogleNoAccount = () => {
-    setError('');
-    setRoleMismatch(null);
-    setNeedsVerification(false);
-    setGoogleNoAccount(true);
+    completeLogin(result.user, result.accessToken, result.isNewUser);
   };
 
   const handleGoogleError = (message) => {
-    setGoogleNoAccount(false);
     setRoleMismatch(null);
     setError(message);
   };
@@ -224,18 +209,7 @@ function LoginContent() {
         </Link>
       )}
 
-      {googleNoAccount ? (
-        <div style={{
-          background: 'var(--primary-bg)', color: 'var(--text)',
-          fontSize: '13px', padding: '12px 14px', borderRadius: 'var(--r-md)',
-          marginBottom: '16px', lineHeight: 1.6,
-        }}>
-          No account found for this email.{' '}
-          <Link href={signUpHref} style={{ color: 'var(--primary)', fontWeight: 600 }}>
-            Sign up instead
-          </Link>.
-        </div>
-      ) : roleMismatch ? (
+      {roleMismatch ? (
         <div style={{
           background: 'var(--danger-bg)', color: 'var(--danger)',
           fontSize: '13px', padding: '12px 14px', borderRadius: 'var(--r-md)',
@@ -309,9 +283,9 @@ function LoginContent() {
           </div>
 
           <GoogleAuthButton
-            intent="login"
+            intent="signup"
+            label="signin_with"
             onSuccess={handleGoogleSuccess}
-            onNoAccount={handleGoogleNoAccount}
             onError={handleGoogleError}
           />
         </>

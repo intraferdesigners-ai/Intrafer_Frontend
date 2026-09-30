@@ -42,13 +42,19 @@ const googleMarkStyle = {
 // security boundary, so this component stays identical between the login
 // and register pages beyond that one prop.
 //
-// onSuccess({ accessToken, user, isNewUser }) — credential accepted.
-// onNoAccount() — login-page case: no account exists for this email; the
-// backend deliberately does not auto-create one (see the Google OAuth
-// Enablement plan, §03), so the caller shows a "sign up instead" state.
+// Both the login and register pages pass intent="signup", so an unknown
+// email gets a vendor account created and signed in — the login page just
+// overrides `label` so its button still reads "Sign in with Google".
+//
+// label — optional GIS button text ('signin_with' | 'signup_with' |
+// 'continue_with'); defaults to one derived from `intent`.
+// onSuccess({ accessToken, user, isNewUser }) — credential accepted
+// (isNewUser: true when the account was just created).
+// onNoAccount() — only reachable with intent="login", which no page
+// currently sends: the backend returns NO_ACCOUNT instead of creating one.
 // onError(message) — anything else (invalid/expired credential, admin
 // lockdown, rate limit, etc).
-export default function GoogleAuthButton({ intent, onSuccess, onNoAccount, onError }) {
+export default function GoogleAuthButton({ intent, label, onSuccess, onNoAccount, onError }) {
   const buttonRef = useRef(null);
   const [ready, setReady] = useState(false);
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -82,7 +88,7 @@ export default function GoogleAuthButton({ intent, onSuccess, onNoAccount, onErr
           theme: 'outline',
           size: 'large',
           width: 320,
-          text: intent === 'signup' ? 'signup_with' : 'signin_with',
+          text: label || (intent === 'signup' ? 'signup_with' : 'signin_with'),
         });
       }
       setReady(true);
@@ -90,7 +96,7 @@ export default function GoogleAuthButton({ intent, onSuccess, onNoAccount, onErr
 
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientId, intent]);
+  }, [clientId, intent, label]);
 
   // No client ID configured yet — same visibly-dead placeholder the login
   // page always had, rather than hiding the row or throwing at runtime.
