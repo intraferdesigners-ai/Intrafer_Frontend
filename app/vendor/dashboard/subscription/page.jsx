@@ -210,8 +210,8 @@ export default function SubscriptionPage() {
             // client-side navigation shows the same result without touching
             // auth state at all.
             router.push('/vendor/dashboard');
-          } catch {
-            toast.error('Payment verification failed. Contact support.');
+          } catch (err) {
+            toast.error(err.response?.data?.message || 'Payment verification failed. Contact support.');
           }
         },
         prefill: {
