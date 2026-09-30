@@ -24,7 +24,6 @@ export default function VendorLeadsPage() {
   const [loadError,        setLoadError]        = useState(false);
   const [filter,           setFilter]           = useState('all');
   const [acceptingId,      setAcceptingId]      = useState(null);
-  const [creditsRemaining, setCreditsRemaining] = useState(null);
 
   const fetchLeads = useCallback(() => {
     setLoading(true);
@@ -44,20 +43,10 @@ export default function VendorLeadsPage() {
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
 
-  // Fetch credits on mount
-  useEffect(() => {
-    api.get('/vendor/analytics')
-      .then(({ data }) => {
-        const d = data.data;
-        if (d?.creditsTotal > 0) setCreditsRemaining(d.creditsRemaining);
-      })
-      .catch(() => {});
-  }, []);
-
   const handleQuickAccept = async (leadId, e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!window.confirm('Accept this lead? 1 lead credit will be used.')) return;
+    if (!window.confirm('Accept this lead?')) return;
     setAcceptingId(leadId);
     try {
       await api.put(`/leads/${leadId}/accept`);
@@ -85,7 +74,7 @@ export default function VendorLeadsPage() {
 
   return (
     <div>
-      {/* Heading + credits counter */}
+      {/* Heading */}
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
           <h1 style={{
@@ -104,15 +93,6 @@ export default function VendorLeadsPage() {
             </span>
           )}
         </div>
-        {creditsRemaining !== null && (
-          <span style={{
-            fontSize: 12, fontWeight: 500,
-            background: 'var(--color-primary-bg)', color: 'var(--color-primary)',
-            padding: '4px 10px', borderRadius: 20,
-          }}>
-            {creditsRemaining} leads remaining
-          </span>
-        )}
       </div>
 
       {/* Filter tabs */}

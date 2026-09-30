@@ -17,7 +17,7 @@ import RevealItem from '@/components/ui/RevealItem';
 // billing" was dropped rather than generalized — it's a claim about the
 // 12-month plan specifically, not a feature every tier can honestly list.
 const PLAN_FEATURES = [
-  'Upto 10 qualified leads per month',
+  'Unlimited leads sent directly to you',
   'Verified designer badge',
   'Portfolio showcase',
   'Top featured placement in search',
@@ -177,7 +177,7 @@ export default function PlansPage() {
 
               <p className="caps-label-primary" style={{ marginBottom: '8px' }}>{(plan.displayName || plan.name).toUpperCase()}</p>
 
-              <div style={{ marginBottom: '6px' }}>
+              <div style={{ marginBottom: '20px' }}>
                 {/* Sans-serif with lining/tabular figures, not font-display —
                     the serif's old-style numerals are hard to parse at a
                     glance for a price visitors actually need to read. */}
@@ -187,15 +187,6 @@ export default function PlansPage() {
                 <span style={{ fontSize: '13px', color: 'var(--text-hint)', marginLeft: '4px' }}>
                   for {plan.period}
                 </span>
-              </div>
-
-              <div style={{
-                display: 'inline-block', marginBottom: '20px',
-                background: 'var(--primary-bg)', color: 'var(--primary)',
-                fontSize: '11px', fontWeight: 600, padding: '4px 10px',
-                borderRadius: '20px', letterSpacing: '.04em',
-              }}>
-                Upto {plan.leadsPerMonth} leads / month
               </div>
 
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px', marginBottom: '24px' }}>

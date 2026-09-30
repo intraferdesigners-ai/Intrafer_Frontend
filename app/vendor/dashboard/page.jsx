@@ -8,7 +8,6 @@ import {
 import api from '../../../lib/api';
 import Badge from '../../../components/ui/Badge';
 import Spinner from '../../../components/ui/Spinner';
-import Button from '../../../components/ui/Button';
 import OnboardingChecklist from '../../../components/vendor/OnboardingChecklist';
 import { formatDate } from '../../../lib/utils';
 import HoverLift from '../../../components/ui/HoverLift';
@@ -140,43 +139,6 @@ export default function VendorDashboard() {
       {/* Onboarding checklist */}
       {!loading && (
         <OnboardingChecklist vendor={vendor} projects={projects} subscription={subscription} user={user} />
-      )}
-
-      {/* Lead credits bar */}
-      {!loading && analytics?.creditsTotal > 0 && (
-        <div style={{
-          background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-lg)', padding: '16px 20px', marginBottom: 20,
-          display: 'flex', alignItems: 'center', gap: 16,
-        }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>
-                Lead credits this month
-              </span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-primary)' }}>
-                {analytics.creditsRemaining} of {analytics.creditsTotal} remaining
-              </span>
-            </div>
-            <div style={{ background: 'var(--color-border)', borderRadius: 4, height: 8 }}>
-              <div style={{
-                background: analytics.creditsRemaining === 0 ? 'var(--color-danger)' : 'var(--color-primary)',
-                width: `${Math.min(100, (analytics.creditsUsed / analytics.creditsTotal) * 100)}%`,
-                borderRadius: 4, height: '100%', transition: 'width 600ms ease',
-              }} />
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--color-text-hint)', marginTop: 4 }}>
-              {analytics.creditsRemaining === 0
-                ? 'No credits left — upgrade your plan to accept more leads this month'
-                : `${analytics.creditsUsed} leads accepted · resets on plan renewal`}
-            </div>
-          </div>
-          {analytics.creditsRemaining === 0 && (
-            <Link href="/vendor/dashboard/subscription">
-              <Button variant="primary" size="sm">Upgrade plan</Button>
-            </Link>
-          )}
-        </div>
       )}
 
       {/* Stats row */}

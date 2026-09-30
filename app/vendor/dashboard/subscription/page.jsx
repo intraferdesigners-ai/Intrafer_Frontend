@@ -30,7 +30,7 @@ const PLANS = [
     durationDays: 30,
     badge: null,
     features: [
-      'Upto 10 leads per month',
+      'Unlimited leads sent directly to you',
       'Profile listing',
       'Portfolio showcase',
       'WhatsApp alerts',
@@ -47,7 +47,7 @@ const PLANS = [
     durationDays: 180,
     badge: 'MOST POPULAR',
     features: [
-      'Upto 10 leads per month',
+      'Unlimited leads sent directly to you',
       'Profile listing',
       'Portfolio showcase',
       'WhatsApp alerts',
@@ -65,7 +65,7 @@ const PLANS = [
     durationDays: 365,
     badge: 'BEST VALUE',
     features: [
-      'Upto 10 leads per month',
+      'Unlimited leads sent directly to you',
       'Profile listing',
       'Portfolio showcase',
       'WhatsApp alerts',
@@ -387,7 +387,7 @@ export default function SubscriptionPage() {
               </p>
 
               {/* Price */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
                 {hasDiscount ? (
                   <>
                     <span style={{ fontSize: 15, color: 'var(--color-text-hint)', textDecoration: 'line-through' }}>
@@ -415,16 +415,6 @@ export default function SubscriptionPage() {
                   Coupon not valid for this plan.
                 </p>
               )}
-
-              {/* Leads badge */}
-              <span style={{
-                display: 'inline-block', marginBottom: 12,
-                fontSize: 11, padding: '3px 10px', borderRadius: 20,
-                background: 'var(--color-accent-bg)', color: 'var(--color-primary)',
-                fontWeight: 600,
-              }}>
-                Upto {plan.leadsPerMonth} leads / month
-              </span>
 
               {/* Features */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>

@@ -22,7 +22,6 @@ export default function VendorPipelinePage() {
   const [leads,            setLeads]            = useState([]);
   const [loading,          setLoading]          = useState(true);
   const [loadError,        setLoadError]        = useState(false);
-  const [creditsRemaining, setCreditsRemaining] = useState(null);
   const [draggedId,        setDraggedId]        = useState(null);
   const [dragOverKey,      setDragOverKey]      = useState(null);
   const [movingId,         setMovingId]         = useState(null);
@@ -44,15 +43,6 @@ export default function VendorPipelinePage() {
   }, []);
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
-
-  useEffect(() => {
-    api.get('/vendor/analytics')
-      .then(({ data }) => {
-        const d = data.data;
-        if (d?.creditsTotal > 0) setCreditsRemaining(d.creditsRemaining);
-      })
-      .catch(() => {});
-  }, []);
 
   const handleDragStart = (e, lead) => {
     if (movingId) { e.preventDefault(); return; }
@@ -92,7 +82,7 @@ export default function VendorPipelinePage() {
     }
 
     if (targetStatus === 'accepted' && sourceStatus === 'new') {
-      if (!window.confirm('Accept this lead? 1 lead credit will be used.')) return;
+      if (!window.confirm('Accept this lead?')) return;
     }
 
     // Optimistic move
@@ -116,7 +106,7 @@ export default function VendorPipelinePage() {
 
   return (
     <div>
-      {/* Heading + credits counter */}
+      {/* Heading */}
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
           <h1 style={{
@@ -135,15 +125,6 @@ export default function VendorPipelinePage() {
             </span>
           )}
         </div>
-        {creditsRemaining !== null && (
-          <span style={{
-            fontSize: 12, fontWeight: 500,
-            background: 'var(--color-primary-bg)', color: 'var(--color-primary)',
-            padding: '4px 10px', borderRadius: 20,
-          }}>
-            {creditsRemaining} leads remaining
-          </span>
-        )}
       </div>
 
       {loading ? (

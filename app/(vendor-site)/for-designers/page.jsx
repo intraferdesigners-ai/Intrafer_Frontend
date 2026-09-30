@@ -28,24 +28,24 @@ const PLANS = [
   {
     name: '1 Month', price: '₹5,999', period: ' for 1 month', highlight: false,
     desc: 'Perfect for designers just getting started.',
-    features: ['Upto 10 leads/month', 'Profile listing', 'Portfolio showcase', 'Email support'],
+    features: ['Unlimited leads', 'Profile listing', 'Portfolio showcase', 'Email support'],
   },
   {
     name: '6 Months', price: '₹14,999', period: ' for 6 months', highlight: true,
     desc: 'For active designers who want to grow.',
-    features: ['Upto 10 leads/month', 'Priority listing', 'WhatsApp + Email alerts', 'Analytics dashboard', 'Priority support'],
+    features: ['Unlimited leads', 'Priority listing', 'WhatsApp + Email alerts', 'Analytics dashboard', 'Priority support'],
   },
   {
     name: '12 Months', price: '₹19,999', period: ' for 12 months', highlight: false,
     desc: 'For established studios managing high volume.',
-    features: ['Upto 10 leads/month', 'Top of search listing', 'Featured badge', 'Dedicated account manager', 'Custom portfolio pages'],
+    features: ['Unlimited leads', 'Top of search listing', 'Featured badge', 'Dedicated account manager', 'Custom portfolio pages'],
   },
 ];
 
 const FAQS = [
   { q: 'How are leads verified?',              a: 'Every user submits an OTP-verified enquiry. We confirm phone and email before the lead reaches you.' },
   { q: 'Can I cancel my subscription?',        a: 'Yes, cancel anytime. Your listing stays active until the end of your current billing period.' },
-  { q: 'How many leads will I get?',           a: 'Depends on your location and specialization — all plans offer upto 10 leads/month.' },
+  { q: 'How many leads will I get?',           a: "Depends on your location and specialization — there's no monthly lead cap on any plan." },
   { q: 'What happens after I accept a lead?',  a: "The client's phone and email are instantly revealed. You contact them directly — Intrafer is not involved." },
   { q: 'Is my portfolio public?',              a: 'Yes, your profile and portfolio are publicly visible on the marketplace, which also helps your own SEO.' },
 ];
@@ -86,7 +86,7 @@ export default function ForDesignersPage() {
             {/* Stats row */}
             <div style={{ display: 'flex', gap: '32px', marginTop: '28px', flexWrap: 'wrap' }}>
               {[
-                { val: 'Up to 10',    label: 'LEADS/MONTH' },
+                { val: 'Unlimited',   label: 'LEADS' },
                 { val: 'Zero',        label: 'COMMISSION' },
                 { val: `${avgRating}★`, label: 'DESIGNER RATING' },
               ].map((s) => (
