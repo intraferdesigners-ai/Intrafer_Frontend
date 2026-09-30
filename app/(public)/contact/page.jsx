@@ -13,7 +13,7 @@ import Reveal from '@/components/ui/Reveal';
 
 const CONTACT_INFO = [
   { Icon: Mail,           label: 'Email',    value: 'Intraferpvtltd@gmail.com' },
-  { Icon: Phone,          label: 'Phone',    value: '+91 92172 11408' },
+  { Icon: Phone,          label: 'Phone',    value: '+91 92172 11408 (Mon–Sat, 9am–6pm)' },
   { Icon: MessageCircle,  label: 'WhatsApp', value: '+91 92172 11408' },
 ];
 
