@@ -34,6 +34,68 @@ test('fully-passing example', () => {
   assert.ok(checks.every((c) => c.hint === ''));
 });
 
+const labels = (checks) => Object.fromEntries(checks.map((c) => [c.id, c.label]));
+const IDS = ['metaTitle', 'metaDescription', 'bannerImage', 'bannerHeadline', 'cta', 'words', 'faq', 'localities', 'tokens', 'vendors', 'indexing', 'heading'];
+
+test('pass labels describe what is there', () => {
+  const checks = evaluateChecklist(good(), ctx);
+  assert.deepEqual(checks.map((c) => c.id), IDS);
+  assert.deepEqual(labels(checks), {
+    metaTitle: 'Meta title fits in search results (≤ 60 characters)',
+    metaDescription: 'Meta description is 120–160 characters',
+    bannerImage: 'Banner image added',
+    bannerHeadline: 'Banner headline added',
+    cta: 'CTA button added',
+    words: 'Enough text (162 words)', // intro 100 + 'Why Ghaziabad' 2 + body 60
+    faq: 'FAQ has 2 questions',
+    localities: '3 localities listed',
+    tokens: 'No unknown placeholders',
+    vendors: '7 vendors listed for this city',
+    indexing: 'Indexing: automatic',
+    heading: 'Heading (H1) is 70 characters or fewer',
+  });
+  assert.equal(labels(evaluateChecklist(good(), { ...ctx, vendorCount: 1 })).vendors, '1 vendor listed for this city');
+});
+
+test('warn labels say what is missing; ids, hints and count unchanged', () => {
+  const form = good();
+  form.banner = { imageUrl: '', headline: '', subheadline: '', ctaLabel: 'Get quotes', ctaUrl: '' };
+  form.heading = 'h'.repeat(71);
+  form.intro = words(10);
+  form.sections = [
+    { type: 'faq', enabled: true, faqItems: [{ question: 'Q1?', answer: 'A1' }, { question: 'Q2?', answer: '' }] },
+    { type: 'localities', enabled: true, localities: ['A', 'B'] },
+  ];
+  form.seo = { metaTitle: 'x'.repeat(60), metaDescription: 'Too short {{phone}}', ogImage: '', indexing: 'index' };
+  const checks = evaluateChecklist(form, { ...ctx, vendorCount: 0 });
+  assert.deepEqual(checks.map((c) => c.id), IDS);
+  assert.ok(checks.every((c) => c.level === 'warn' && c.hint), JSON.stringify(checks.filter((c) => c.level !== 'warn' || !c.hint)));
+  assert.deepEqual(labels(checks), {
+    metaTitle: 'Meta title is too long for search results',
+    metaDescription: 'Meta description is too short',
+    bannerImage: 'Add a banner image',
+    bannerHeadline: 'Add a banner headline',
+    cta: 'Finish the CTA button', // half-filled; empty reads "Add a CTA button (optional)"
+    words: 'Add more text — 10 of 150 words',
+    faq: 'Add an FAQ with at least 2 questions',
+    localities: 'List at least 3 localities',
+    tokens: 'Unknown placeholders found',
+    vendors: 'No vendors yet — the page will show an empty list',
+    indexing: 'Forced indexing on a thin page',
+    heading: 'Heading (H1) is too long',
+  });
+
+  form.banner.ctaLabel = '';
+  form.seo.metaTitle = '';
+  form.seo.metaDescription = 'x'.repeat(161);
+  const more = labels(evaluateChecklist(form, ctx));
+  assert.equal(more.cta, 'Add a CTA button (optional)');
+  assert.equal(more.metaTitle, 'Meta title not set');
+  assert.equal(more.metaDescription, 'Meta description is too long');
+  form.seo.metaDescription = '';
+  assert.equal(labels(evaluateChecklist(form, ctx)).metaDescription, 'Meta description not set');
+});
+
 test('countWords strips Markdown syntax', () => {
   assert.equal(countWords('# Heading here\n\n- one two\n- three\n\n1. four\n\n> five'), 7);
   assert.equal(countWords('See [our guides](/guides/) and ![alt text](https://x/y.jpg) **bold** _it_'), 8);

@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import { getSessionId, shouldShowPopup, markPopupDismissed, getSavedContact, recordFirstVisit, getSecondsSinceFirstVisit } from '@/lib/session';
 import CitySelect from './CitySelect';
@@ -25,10 +25,25 @@ const EXCLUDED_PATHS = [
   '/review/',
 ];
 
+// useSearchParams() needs a Suspense boundary or statically rendered pages
+// fail to build; the popup renders nothing on the server anyway.
 export default function LeadCapturePopup() {
+  return (
+    <Suspense fallback={null}>
+      <LeadCapturePopupInner />
+    </Suspense>
+  );
+}
+
+function LeadCapturePopupInner() {
   const pathname = usePathname();
   const router    = useRouter();
-  const isExcluded = EXCLUDED_PATHS.some(p => pathname.startsWith(p));
+  // ?preview=<token> is an admin's landing-page preview (see
+  // components/seo/LandingPreviewStrip.jsx): never pitch them, and — since
+  // an excluded page returns before shouldShowPopup()/recordFirstVisit() —
+  // never touch the popup's localStorage state from there either.
+  const isPreview  = useSearchParams().has('preview');
+  const isExcluded = isPreview || EXCLUDED_PATHS.some(p => pathname.startsWith(p));
 
   const [visible,  setVisible]  = useState(false);
   const [isMobile, setIsMobile] = useState(false);
