@@ -1,4 +1,5 @@
 import { slugify } from '@/lib/slug';
+import { fetchLandingSitemapPages, mergeLandingPages } from '@/lib/landingSitemap';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const baseUrl = 'https://intrafer.in';
@@ -228,5 +229,10 @@ export default async function sitemap() {
     categoryStateEntries = [];
   }
 
-  return [...staticEntries, ...vendorEntries, ...categoryStateEntries];
+  // Admin-authored landing pages (Phase 2): adds indexable ones, and drops
+  // any threshold-qualified city above whose authored page forces noindex.
+  // A failed fetch returns null, which leaves everything above unchanged —
+  // same fallback idea as the two blocks above.
+  const landingPages = await fetchLandingSitemapPages(API, { next: { revalidate } });
+  return mergeLandingPages([...staticEntries, ...vendorEntries, ...categoryStateEntries], landingPages, baseUrl, now);
 }

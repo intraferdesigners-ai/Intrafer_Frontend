@@ -1,10 +1,14 @@
+import { cache } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Breadcrumb from '@/components/seo/Breadcrumb';
+import LandingBanner from '@/components/seo/LandingBanner';
+import LandingMarkdown from '@/components/seo/LandingMarkdown';
 import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
 import VendorCard from '@/components/vendor/VendorCard';
 import { SERVICE_CATEGORIES } from '@/lib/categories';
+import { resolveLandingPage } from '@/lib/landingPlaceholders';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const SITE_URL = 'https://intrafer.in';
@@ -38,6 +42,63 @@ async function fetchVendors(categorySlug, stateSlug, citySlug) {
   } catch {
     return null;
   }
+}
+
+// Admin-managed landing pages, Phase 2: GET /public/landing-page returns
+// { page, vendors, vendorCount, indexable }. `page` is null when there's no
+// record or only a draft — the caller then renders the automatic page
+// exactly as before. Any failure also returns null, i.e. falls back to the
+// automatic page rather than erroring.
+async function fetchLandingPage(categorySlug, stateSlug, citySlug) {
+  try {
+    const res = await fetch(
+      `${API}/public/landing-page?category=${encodeURIComponent(categorySlug)}&state=${encodeURIComponent(stateSlug)}&city=${encodeURIComponent(citySlug)}`,
+      { cache: 'no-store' }
+    );
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// React cache() so generateMetadata and the page share one fetch of each
+// per request. The landing page and the automatic page's vendor lookup run
+// in parallel — which one renders isn't known until the landing response
+// arrives. Everything stays no-store: the page is dynamic, so an admin's
+// save shows on the next request with nothing to revalidate.
+const loadCategory = cache(fetchCategory);
+const loadCity = cache(async (categorySlug, stateSlug, citySlug) => {
+  const [landing, data] = await Promise.all([
+    fetchLandingPage(categorySlug, stateSlug, citySlug),
+    fetchVendors(categorySlug, stateSlug, citySlug),
+  ]);
+  return { landing, data };
+});
+
+async function load(params) {
+  const [category, { landing, data }] = await Promise.all([
+    loadCategory(params.category),
+    loadCity(params.category, params.state, params.city),
+  ]);
+  return { category, landing, data };
+}
+
+// Display names come from the record (state/city are free text there, and
+// the city may not exist in Place at all); every authored text field has
+// its placeholders resolved. Banner/OG image URLs must be https — the
+// backend enforces that on save, re-checked so a bad value means "no image"
+// rather than a broken one.
+function authoredContent(category, landing) {
+  const { page, vendorCount } = landing;
+  const content = resolveLandingPage(page, {
+    city: page.city, state: page.state, category: category.name, vendorCount,
+  });
+  const https = (url) => (/^https:\/\//i.test(url) ? url : '');
+  content.banner.imageUrl = https(content.banner.imageUrl);
+  content.seo.ogImage = https(content.seo.ogImage);
+  return { ...content, city: page.city, state: page.state };
 }
 
 async function fetchFAQ(categorySlug, stateSlug, citySlug) {
@@ -114,59 +175,23 @@ async function fetchRelatedCategories(currentCategorySlug, stateSlug, citySlug) 
   return results.filter(Boolean);
 }
 
-export async function generateMetadata({ params }) {
-  const category = await fetchCategory(params.category);
-  if (!category) return { title: 'Category Not Found' };
-
-  const data = await fetchVendors(params.category, params.state, params.city);
-  if (!data) return { title: 'City Not Found' };
-
-  return {
-    // Root layout's title template already appends " | Intrafer".
-    title: `${category.name} in ${data.city}, ${data.state}`,
-    // Step 12: real threshold-based indexation, replacing Step 5's
-    // hardcoded blanket noindex. `data.meetsThreshold` comes straight from
-    // GET /public/vendors (computed backend-side by
-    // meetsIndexThreshold/MIN_VENDORS_TO_INDEX, src/utils/indexThreshold.js
-    // — kept in one place rather than duplicating that constant here),
-    // using the real, pagination-unaffected vendor count for this exact
-    // category+state+city. Below threshold: keep the noindex override.
-    // At/above threshold: omit the robots key entirely, matching how
-    // indexable pages elsewhere (Steps 6/8/9) declare it.
-    ...(!data.meetsThreshold && { robots: { index: false, follow: true } }),
-    alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}/${params.city}/` },
-  };
-}
-
-export default async function CityHubPage({ params }) {
-  const category = await fetchCategory(params.category);
-  if (!category) notFound();
-
-  const data = await fetchVendors(params.category, params.state, params.city);
-  if (!data) notFound();
-
-  const { state, city, vendors } = data;
-  const faq = await fetchFAQ(params.category, params.state, params.city);
-  const hasFaq = faq && faq.questions?.length > 0;
-
-  const [nearbyCities, relatedCategories] = await Promise.all([
-    fetchNearbyCities(params.category, params.state, params.city),
-    fetchRelatedCategories(params.category, params.state, params.city),
-  ]);
-
+function buildBusinessJsonLd(category, city) {
   // Category's own schema.org business type (e.g. HomeAndConstructionBusiness,
   // GeneralContractor, FurnitureStore) — not the generic Service block the
   // category/state pages use, per the SEO doc's section 5. Product/Offer
   // schema intentionally doesn't belong here (only /pricing/ per the doc).
-  const businessJsonLd = {
+  return {
     '@context': 'https://schema.org',
     '@type': category.schemaOrgType,
     name: `${category.name} in ${city}`,
     areaServed: city,
     provider: { '@id': `${SITE_URL}/#organization` },
   };
+}
 
-  const collectionJsonLd = vendors.length === 0 ? null : {
+function buildCollectionJsonLd(category, city, state, vendors) {
+  if (vendors.length === 0) return null;
+  return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: `${category.name} in ${city}, ${state}`,
@@ -194,16 +219,155 @@ export default async function CityHubPage({ params }) {
       }),
     },
   };
+}
 
-  const faqJsonLd = !hasFaq ? null : {
+// `questions`: [{ question, answer }] — must be exactly the visible text.
+function buildFaqJsonLd(questions) {
+  return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: faq.questions.map((q) => ({
+    mainEntity: questions.map((q) => ({
       '@type': 'Question',
       name: q.question,
       acceptedAnswer: { '@type': 'Answer', text: q.answer },
     })),
   };
+}
+
+// Shared by the automatic page's CityFAQ and authored FAQ sections.
+function FaqSection({ title, questions }) {
+  return (
+    <section style={{ marginTop: '60px' }}>
+      <h2 className="page-heading" style={{ marginBottom: '24px' }}>{title}</h2>
+      {questions.map((q, i) => (
+        <div key={i} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--border)' }}>
+          <h3 style={{ fontSize: '15px', fontWeight: 500, marginBottom: '8px', color: 'var(--text)' }}>{q.question}</h3>
+          <p style={{ fontSize: '14px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{q.answer}</p>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+// Nearby cities + related services, shared by both page variants.
+function RelatedLinks({ params, category, state, city, nearbyCities, relatedCategories }) {
+  return (
+    <>
+      {/* Step 10: contextual internal linking (SEO doc section 15) — both
+          sections render nothing when there's genuinely no related
+          content, never a placeholder/empty heading. */}
+      {nearbyCities.length > 0 && (
+        <section style={{ marginTop: '48px' }}>
+          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>NEARBY CITIES</p>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--text)', marginBottom: '16px' }}>
+            {category.name} in other {state} cities
+          </h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            {nearbyCities.map((c) => (
+              <Link
+                key={c.citySlug}
+                href={`/${params.category}/${params.state}/${c.citySlug}/`}
+                style={{
+                  display: 'block', padding: '10px 16px', borderRadius: 'var(--r-md)',
+                  border: '1px solid var(--border)', background: 'var(--surface)',
+                  textDecoration: 'none', color: 'var(--text)', fontSize: '13px',
+                }}
+              >
+                {category.name} in {c.city}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {relatedCategories.length > 0 && (
+        <section style={{ marginTop: '48px' }}>
+          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>RELATED SERVICES IN {city.toUpperCase()}</p>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--text)', marginBottom: '16px' }}>
+            Other services available in {city}
+          </h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            {relatedCategories.map((c) => (
+              <Link
+                key={c.slug}
+                href={`/${c.slug}/${params.state}/${params.city}/`}
+                style={{
+                  display: 'block', padding: '10px 16px', borderRadius: 'var(--r-md)',
+                  border: '1px solid var(--border)', background: 'var(--surface)',
+                  textDecoration: 'none', color: 'var(--text)', fontSize: '13px',
+                }}
+              >
+                {c.name} in {city}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+export async function generateMetadata({ params }) {
+  const { category, landing, data } = await load(params);
+  if (!category) return { title: 'Category Not Found' };
+
+  if (landing?.page) {
+    const { city, state, seo, banner } = authoredContent(category, landing);
+    const ogImage = seo.ogImage || banner.imageUrl;
+    return {
+      // Root layout's title template appends " | Intrafer" — strip it if
+      // the admin typed it too, so it never doubles.
+      title: seo.metaTitle.replace(/\s*[|\-–]\s*Intrafer\s*$/i, '') || `${category.name} in ${city}, ${state}`,
+      ...(seo.metaDescription && { description: seo.metaDescription }),
+      ...(ogImage && { openGraph: { images: [ogImage] } }),
+      // `indexable` is computed backend-side from the page's seo.indexing
+      // (auto = the same vendor threshold as the automatic page).
+      ...(!landing.indexable && { robots: { index: false, follow: true } }),
+      alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}/${params.city}/` },
+    };
+  }
+
+  if (!data) return { title: 'City Not Found' };
+
+  return {
+    // Root layout's title template already appends " | Intrafer".
+    title: `${category.name} in ${data.city}, ${data.state}`,
+    // Step 12: real threshold-based indexation, replacing Step 5's
+    // hardcoded blanket noindex. `data.meetsThreshold` comes straight from
+    // GET /public/vendors (computed backend-side by
+    // meetsIndexThreshold/MIN_VENDORS_TO_INDEX, src/utils/indexThreshold.js
+    // — kept in one place rather than duplicating that constant here),
+    // using the real, pagination-unaffected vendor count for this exact
+    // category+state+city. Below threshold: keep the noindex override.
+    // At/above threshold: omit the robots key entirely, matching how
+    // indexable pages elsewhere (Steps 6/8/9) declare it.
+    ...(!data.meetsThreshold && { robots: { index: false, follow: true } }),
+    alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}/${params.city}/` },
+  };
+}
+
+export default async function CityHubPage({ params }) {
+  const { category, landing, data } = await load(params);
+  if (!category) notFound();
+
+  // A published authored page renders even when the city isn't in Place
+  // (the automatic page's 404 rule); the category 404 above still applies.
+  if (landing?.page) return <AuthoredCityPage params={params} category={category} landing={landing} />;
+
+  if (!data) notFound();
+
+  const { state, city, vendors } = data;
+  const faq = await fetchFAQ(params.category, params.state, params.city);
+  const hasFaq = faq && faq.questions?.length > 0;
+
+  const [nearbyCities, relatedCategories] = await Promise.all([
+    fetchNearbyCities(params.category, params.state, params.city),
+    fetchRelatedCategories(params.category, params.state, params.city),
+  ]);
+
+  const businessJsonLd = buildBusinessJsonLd(category, city);
+  const collectionJsonLd = buildCollectionJsonLd(category, city, state, vendors);
+  const faqJsonLd = !hasFaq ? null : buildFaqJsonLd(faq.questions);
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
@@ -267,68 +431,133 @@ export default async function CityHubPage({ params }) {
         </div>
       )}
 
-      {hasFaq && (
-        <section style={{ marginTop: '60px' }}>
-          <h2 className="page-heading" style={{ marginBottom: '24px' }}>Frequently asked questions</h2>
-          {faq.questions.map((q, i) => (
-            <div key={i} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--border)' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 500, marginBottom: '8px', color: 'var(--text)' }}>{q.question}</h3>
-              <p style={{ fontSize: '14px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{q.answer}</p>
-            </div>
+      {hasFaq && <FaqSection title="Frequently asked questions" questions={faq.questions} />}
+
+      <RelatedLinks params={params} category={category} state={state} city={city} nearbyCities={nearbyCities} relatedCategories={relatedCategories} />
+    </div>
+  );
+}
+
+// Admin-authored version of this page (landing pages, Phase 2): banner,
+// authored h1/intro, the landing response's vendor list, then the authored
+// sections in order. Disabled or empty sections render nothing.
+async function AuthoredCityPage({ params, category, landing }) {
+  const { city, state, banner, heading, intro, sections } = authoredContent(category, landing);
+  const { vendors } = landing;
+  const visibleSections = sections.filter((sec) => sec.enabled && (
+    (sec.type === 'text' && (sec.title || sec.body))
+    || (sec.type === 'faq' && sec.faqItems.length > 0)
+    || (sec.type === 'localities' && sec.localities.length > 0)
+  ));
+
+  const [nearbyCities, relatedCategories] = await Promise.all([
+    fetchNearbyCities(params.category, params.state, params.city),
+    fetchRelatedCategories(params.category, params.state, params.city),
+  ]);
+
+  const businessJsonLd = buildBusinessJsonLd(category, city);
+  const collectionJsonLd = buildCollectionJsonLd(category, city, state, vendors);
+  // Every enabled FAQ section's items, exactly as rendered below.
+  const faqItems = visibleSections.filter((sec) => sec.type === 'faq').flatMap((sec) => sec.faqItems);
+  const faqJsonLd = faqItems.length === 0 ? null : buildFaqJsonLd(faqItems);
+
+  // With a banner image, that image is the LCP — no vendor card competes
+  // for priority. Without one, same first-two-cards rule as the automatic page.
+  const hasBannerImage = Boolean(banner.imageUrl);
+
+  return (
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }}
+      />
+      {collectionJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+        />
+      )}
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
+
+      <Breadcrumb items={[
+        { label: 'Home', href: '/' },
+        { label: category.name, href: `/${params.category}/` },
+        { label: state, href: `/${params.category}/${params.state}/` },
+        { label: city },
+      ]} />
+
+      <LandingBanner banner={banner} />
+
+      <Reveal>
+        <p className="caps-label-primary" style={{ marginBottom: '10px' }}>SERVICE CATEGORY</p>
+        <h1 className="section-heading" style={{ marginBottom: '16px' }}>{heading || `${category.name} in ${city}, ${state}`}</h1>
+        {intro ? (
+          <div style={{ marginBottom: '26px' }}><LandingMarkdown>{intro}</LandingMarkdown></div>
+        ) : (
+          <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.8, maxWidth: '680px', marginBottom: '40px' }}>
+            Find verified {category.name.toLowerCase()} in {city}.
+          </p>
+        )}
+      </Reveal>
+
+      {vendors.length > 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px,1fr))', gap: '20px' }}>
+          {vendors.map((v, i) => (
+            <RevealItem key={v._id} index={i % 6}>
+              <VendorCard vendor={v} priority={!hasBannerImage && i < 2} />
+            </RevealItem>
           ))}
-        </section>
+        </div>
+      ) : (
+        <div style={{
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px',
+          padding: '48px', textAlign: 'center',
+        }}>
+          <p style={{ fontSize: '15px', color: 'var(--text-mid)' }}>
+            No {category.name.toLowerCase()} listed yet in {city}, {state}.
+          </p>
+        </div>
       )}
 
-      {/* Step 10: contextual internal linking (SEO doc section 15) — both
-          sections render nothing when there's genuinely no related
-          content, never a placeholder/empty heading. */}
-      {nearbyCities.length > 0 && (
-        <section style={{ marginTop: '48px' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>NEARBY CITIES</p>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--text)', marginBottom: '16px' }}>
-            {category.name} in other {state} cities
-          </h2>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {nearbyCities.map((c) => (
-              <Link
-                key={c.citySlug}
-                href={`/${params.category}/${params.state}/${c.citySlug}/`}
-                style={{
-                  display: 'block', padding: '10px 16px', borderRadius: 'var(--r-md)',
-                  border: '1px solid var(--border)', background: 'var(--surface)',
-                  textDecoration: 'none', color: 'var(--text)', fontSize: '13px',
-                }}
-              >
-                {category.name} in {c.city}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      {visibleSections.map((sec, i) => {
+        if (sec.type === 'faq') {
+          return <FaqSection key={i} title={sec.title || 'Frequently asked questions'} questions={sec.faqItems} />;
+        }
+        if (sec.type === 'localities') {
+          // Plain names, not links — no locality pages exist to link to.
+          return (
+            <section key={i} style={{ marginTop: '60px' }}>
+              <h2 className="page-heading" style={{ marginBottom: '20px' }}>{sec.title || `Localities in ${city}`}</h2>
+              <ul style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', listStyle: 'none', padding: 0, margin: 0 }}>
+                {sec.localities.map((name, j) => (
+                  <li
+                    key={j}
+                    style={{
+                      padding: '8px 14px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)',
+                      background: 'var(--surface)', color: 'var(--text)', fontSize: '13px',
+                    }}
+                  >
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        }
+        return (
+          <section key={i} style={{ marginTop: '60px' }}>
+            {sec.title && <h2 className="page-heading" style={{ marginBottom: '20px' }}>{sec.title}</h2>}
+            <LandingMarkdown>{sec.body}</LandingMarkdown>
+          </section>
+        );
+      })}
 
-      {relatedCategories.length > 0 && (
-        <section style={{ marginTop: '48px' }}>
-          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>RELATED SERVICES IN {city.toUpperCase()}</p>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, color: 'var(--text)', marginBottom: '16px' }}>
-            Other services available in {city}
-          </h2>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {relatedCategories.map((c) => (
-              <Link
-                key={c.slug}
-                href={`/${c.slug}/${params.state}/${params.city}/`}
-                style={{
-                  display: 'block', padding: '10px 16px', borderRadius: 'var(--r-md)',
-                  border: '1px solid var(--border)', background: 'var(--surface)',
-                  textDecoration: 'none', color: 'var(--text)', fontSize: '13px',
-                }}
-              >
-                {c.name} in {city}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      <RelatedLinks params={params} category={category} state={state} city={city} nearbyCities={nearbyCities} relatedCategories={relatedCategories} />
     </div>
   );
 }
