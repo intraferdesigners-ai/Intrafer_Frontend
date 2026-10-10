@@ -5,6 +5,7 @@ import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
 import Spinner from '../../../../components/ui/Spinner';
 import { formatDate } from '../../../../lib/utils';
+import { formatAuditDetails } from '../../../../lib/auditDetails';
 
 const HEADER_CELL = {
   fontSize: 11, fontWeight: 600, color: 'var(--color-text-hint)',
@@ -82,53 +83,73 @@ export default function AdminAuditLogsPage() {
             <div style={{ ...HEADER_CELL, flex: 1.4 }}>Target ID</div>
           </div>
 
-          {logs.map((log) => (
-            <div
-              key={log._id}
-              className="admin-table-row"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-lg)', padding: '14px 16px', marginBottom: 8,
-              }}
-            >
-              {/* Timestamp */}
-              <div style={{ flex: 1.4, fontSize: 12, color: 'var(--color-text-sub)' }}>
-                {formatDate(log.createdAt)} · {formatTime(log.createdAt)}
-              </div>
-
-              {/* Admin */}
-              <div style={{ flex: 2, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>
-                  {log.adminName}
+          {logs.map((log) => {
+            // Optional structured context (e.g. bulk counts) — rows without
+            // it render exactly as before.
+            const details = formatAuditDetails(log.action, log.details);
+            return (
+              <div
+                key={log._id}
+                className="admin-table-row"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  ...(details && { flexWrap: 'wrap' }),
+                  background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)', padding: '14px 16px', marginBottom: 8,
+                }}
+              >
+                {/* Timestamp */}
+                <div style={{ flex: 1.4, fontSize: 12, color: 'var(--color-text-sub)' }}>
+                  {formatDate(log.createdAt)} · {formatTime(log.createdAt)}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--color-text-hint)' }}>
-                  {log.adminEmail}
+
+                {/* Admin */}
+                <div style={{ flex: 2, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>
+                    {log.adminName}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--color-text-hint)' }}>
+                    {log.adminEmail}
+                  </div>
                 </div>
-              </div>
 
-              {/* Action */}
-              <div style={{ flex: 1.8, fontSize: 13, color: 'var(--color-text)' }}>
-                {log.action}
-              </div>
+                {/* Action */}
+                <div style={{ flex: 1.8, fontSize: 13, color: 'var(--color-text)' }}>
+                  {log.action}
+                </div>
 
-              {/* Method */}
-              <div style={{ flex: 0.8 }}>
-                <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 600,
-                  color: 'var(--color-primary)', background: 'var(--color-primary-bg)',
-                  padding: '2px 8px', borderRadius: 4,
-                }}>
-                  {log.method}
-                </span>
-              </div>
+                {/* Method */}
+                <div style={{ flex: 0.8 }}>
+                  <span style={{
+                    fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 600,
+                    color: 'var(--color-primary)', background: 'var(--color-primary-bg)',
+                    padding: '2px 8px', borderRadius: 4,
+                  }}>
+                    {log.method}
+                  </span>
+                </div>
 
-              {/* Target ID */}
-              <div style={{ flex: 1.4, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-hint)' }}>
-                {log.targetId || '—'}
+                {/* Target ID */}
+                <div style={{ flex: 1.4, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-hint)' }}>
+                  {log.targetId || '—'}
+                </div>
+
+                {/* Details — full-width second line; hover for the full list */}
+                {details && (
+                  <div
+                    title={details.title}
+                    style={{
+                      flexBasis: '100%', fontSize: 12, color: 'var(--color-text-sub)', lineHeight: 1.5,
+                      paddingTop: 8, borderTop: '1px dashed var(--color-border)', wordBreak: 'break-word',
+                    }}
+                  >
+                    <span style={{ ...HEADER_CELL, fontSize: 10, marginRight: 8 }}>Details</span>
+                    {details.text}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Pagination */}
           {totalPages > 1 && (
