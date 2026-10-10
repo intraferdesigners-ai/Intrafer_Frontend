@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, FileText, Building2, Crown,
   User, Users, BarChart3, LogOut, ChevronRight, UserCheck, Settings, Tag, LifeBuoy, Shield, Star,
-  LayoutGrid, ScrollText, FileBarChart, Sparkles,
+  LayoutGrid, ScrollText, FileBarChart, Sparkles, PanelsTopLeft,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { clearAuthTokens } from '../../lib/auth';
@@ -30,6 +30,7 @@ const ADMIN_NAV_PERMISSIONS = {
   '/admin/dashboard/projects':        'manage_portfolio',
   '/admin/dashboard/subscriptions':   'view_analytics',
   '/admin/dashboard/cms':             'manage_settings',
+  '/admin/dashboard/landing-pages':   'manage_pages',
 };
 
 // No 'user' entry — the homeowner dashboard no longer exists (see the
@@ -58,6 +59,7 @@ const NAV = {
 
     { label: 'CMS',          href: '/admin/dashboard/cms',           icon: Sparkles,        group: 'CONTENT' },
     { label: 'Categories',   href: '/admin/dashboard/categories',    icon: LayoutGrid,      group: 'CONTENT' },
+    { label: 'Landing Pages', href: '/admin/dashboard/landing-pages', icon: PanelsTopLeft,  group: 'CONTENT' },
 
     { label: 'Support',      href: '/admin/dashboard/support',       icon: LifeBuoy,        group: 'TRUST & SAFETY' },
     { label: 'Visitors',     href: '/admin/dashboard/visitors',      icon: UserCheck,       group: 'TRUST & SAFETY' },

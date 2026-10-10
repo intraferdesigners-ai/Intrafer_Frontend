@@ -21,6 +21,7 @@ const PERMISSIONS = [
   { key: 'manage_settings',        label: 'Manage Settings'        },
   { key: 'manage_taxonomy',        label: 'Manage Cities & Categories' },
   { key: 'manage_portfolio',       label: 'Portfolio Moderation'   },
+  { key: 'manage_pages',           label: 'Manage Landing Pages'   },
 ];
 
 const CAPS_LABEL = {
