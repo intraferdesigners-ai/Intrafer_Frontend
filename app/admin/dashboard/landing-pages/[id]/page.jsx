@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ExternalLink, Eye, Trash2 } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, Copy, ExternalLink, Eye, Trash2, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import {
   CARD, SECTION_LABEL, HINT, SELECT_STYLE, LIMITS, PLACEHOLDERS, StatusBadge, useMatchCheck, ctaPairError,
+  takeDuplicateWarnings,
 } from '../_components/shared';
 import { TextField, TextArea } from '../_components/Fields';
 import BannerFields from '../_components/BannerFields';
@@ -17,6 +18,7 @@ import SectionsEditor, { withKeys } from '../_components/SectionsEditor';
 import SeoFields from '../_components/SeoFields';
 import QualityChecklist from '../_components/QualityChecklist';
 import DeleteLandingPageModal from '../_components/DeleteLandingPageModal';
+import DuplicateLandingPageModal from '../_components/DuplicateLandingPageModal';
 
 // Server document -> editable form state. Only the fields this editor
 // writes; category/state/city are fixed once created.
@@ -74,6 +76,14 @@ export default function LandingPageEditor() {
   const [busy, setBusy] = useState(null);          // 'save' | 'publish' | 'unpublish'
   const [previewing, setPreviewing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  // Set when this draft was just made by Duplicate / Bulk create.
+  const [copyWarnings, setCopyWarnings] = useState([]);
+
+  useEffect(() => {
+    const warnings = takeDuplicateWarnings(id);
+    if (warnings.length) setCopyWarnings(warnings);
+  }, [id]);
 
   const applyServerPage = useCallback((p) => {
     const f = toForm(p);
@@ -169,6 +179,15 @@ export default function LandingPageEditor() {
     setPreviewing(false);
   };
 
+  // Duplicates the SAVED page, so unsaved edits would silently not be copied.
+  const openDuplicate = () => {
+    if (dirty) {
+      toast.error('Save your changes first — duplicate copies the saved version');
+      return;
+    }
+    setDuplicating(true);
+  };
+
   if (loadError) {
     return (
       <div>
@@ -185,6 +204,30 @@ export default function LandingPageEditor() {
   return (
     <div style={{ maxWidth: 860 }}>
       <BackLink />
+
+      {copyWarnings.length > 0 && (
+        <div role="alert" style={{
+          display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 16,
+          padding: '12px 14px', borderRadius: 'var(--radius-lg)',
+          background: 'var(--warning-bg)', color: 'var(--warning)', fontSize: 13, lineHeight: 1.6,
+        }}>
+          <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600 }}>Review before publishing — this draft was copied from another city:</div>
+            <ul style={{ margin: '4px 0 0', paddingLeft: 18, listStyle: 'disc' }}>
+              {copyWarnings.map((w, i) => <li key={i}>{w.message}</li>)}
+            </ul>
+          </div>
+          <button
+            type="button"
+            aria-label="Dismiss"
+            onClick={() => setCopyWarnings([])}
+            style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 2, minHeight: 0, flexShrink: 0 }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ ...CARD, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -222,6 +265,9 @@ export default function LandingPageEditor() {
               <Button variant="outline" size="sm"><ExternalLink size={13} /> View live</Button>
             </a>
           )}
+          <Button variant="outline" size="sm" disabled={Boolean(busy)} onClick={openDuplicate}>
+            <Copy size={13} /> Duplicate
+          </Button>
           <Button variant="danger" size="sm" disabled={Boolean(busy)} onClick={() => setDeleting(true)} style={{ marginLeft: 'auto' }}>
             <Trash2 size={13} /> Delete
           </Button>
@@ -320,6 +366,8 @@ export default function LandingPageEditor() {
         vendorCount={vendorCount}
         snippet={{ categoryName: page.category?.name, city: page.city, state: page.state, path }}
       />
+
+      <DuplicateLandingPageModal page={duplicating ? page : null} onClose={() => setDuplicating(false)} />
 
       <DeleteLandingPageModal
         page={deleting ? page : null}

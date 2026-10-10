@@ -65,6 +65,23 @@ export function ctaPairError(banner) {
   return { [hasLabel ? 'banner.ctaUrl' : 'banner.ctaLabel']: CTA_PAIR_MESSAGE };
 }
 
+// Duplicate/bulk-create warnings ("your intro mentions 'Pune'") travel to
+// the new draft's editor through sessionStorage, shown there once.
+const warningsKey = (id) => `intrafer_lp_copy_warnings:${id}`;
+export function storeDuplicateWarnings(pageId, warnings) {
+  if (!warnings?.length) return;
+  try { sessionStorage.setItem(warningsKey(pageId), JSON.stringify(warnings)); } catch { /* storage full/blocked: skip */ }
+}
+export function takeDuplicateWarnings(pageId) {
+  try {
+    const raw = sessionStorage.getItem(warningsKey(pageId));
+    sessionStorage.removeItem(warningsKey(pageId));
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
 export const INDEXING_LABELS = { auto: 'Auto', index: 'Force index', noindex: 'Noindex' };
 
 export const PLACEHOLDERS = ['{{city}}', '{{state}}', '{{category}}', '{{vendorCount}}'];

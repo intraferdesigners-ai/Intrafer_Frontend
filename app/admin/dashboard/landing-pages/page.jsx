@@ -2,24 +2,30 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Pencil, Trash2, Plus, ExternalLink, Search } from 'lucide-react';
+import { Pencil, Trash2, Plus, ExternalLink, Search, Copy, Layers, X } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
+import Modal from '@/components/ui/Modal';
 import Spinner from '@/components/ui/Spinner';
 import { formatDate } from '@/lib/utils';
 import {
   SELECT_STYLE, ICON_BUTTON, INDEXING_LABELS, StatusBadge, useLandingCategories,
 } from './_components/shared';
 import DeleteLandingPageModal from './_components/DeleteLandingPageModal';
+import DuplicateLandingPageModal from './_components/DuplicateLandingPageModal';
 
 const COL = {
+  select:   { width: 20, flexShrink: 0 },
   category: { flex: 2 },
   state:    { flex: 2 },
   city:     { flex: 2 },
   status:   { flex: 1 },
   indexing: { flex: 1 },
   updated:  { flex: 1 },
-  actions:  { flex: 1, display: 'flex', justifyContent: 'flex-end', gap: 6 },
+  // Fixed width: rows have 3-4 icons (View live only when published), and
+  // a flexible column would shift every other column on those rows.
+  actions:  { flex: '0 0 136px', display: 'flex', justifyContent: 'flex-end', gap: 6 },
 };
 
 const HEADER_CELL = {
@@ -28,6 +34,24 @@ const HEADER_CELL = {
 };
 
 const livePath = (p) => `/${p.category?.slug}/${p.stateSlug}/${p.citySlug}/`;
+
+const CHECKBOX = { width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--color-accent)', margin: 0 };
+
+const BULK_VERBS = {
+  publish: { done: 'published', confirm: (n) => `Publish ${n} page${n === 1 ? '' : 's'}?` },
+  unpublish: { done: 'unpublished', confirm: (n) => `Unpublish ${n} page${n === 1 ? '' : 's'}?` },
+  delete: { done: 'deleted' },
+};
+
+// "12 published · 2 unchanged · 1 failed"
+function bulkSummaryText(action, summary) {
+  return [
+    summary.ok && `${summary.ok} ${BULK_VERBS[action].done}`,
+    summary.unchanged && `${summary.unchanged} unchanged`,
+    summary.failed && `${summary.failed} failed`,
+    summary.not_found && `${summary.not_found} not found`,
+  ].filter(Boolean).join(' · ') || 'Nothing changed';
+}
 
 export default function AdminLandingPagesPage() {
   const categories = useLandingCategories();
@@ -45,7 +69,17 @@ export default function AdminLandingPagesPage() {
   const [q,           setQ]           = useState('');
 
   const [deleting, setDeleting] = useState(null);
+  const [duplicating, setDuplicating] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
+
+  // Bulk selection: ids on the current page of results. Cleared when the
+  // filters or page change, so an action never hits rows you can't see.
+  const [selected, setSelected] = useState(() => new Set());
+  const [confirming, setConfirming] = useState(null);  // 'publish' | 'unpublish' | 'delete'
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);  // { action, summary, failed: [{ id, label, message }] }
+
+  useEffect(() => { setSelected(new Set()); }, [category, status, q, page]);
 
   useEffect(() => {
     // Filters can change faster than responses arrive; only the latest
@@ -89,6 +123,41 @@ export default function AdminLandingPagesPage() {
 
   const filtered = Boolean(category || status || q);
 
+  const toggle = (id) => setSelected((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const allOnPage = pages.length > 0 && pages.every((p) => selected.has(p._id));
+  const toggleAll = () => setSelected(allOnPage ? new Set() : new Set(pages.map((p) => p._id)));
+  const selectedPages = pages.filter((p) => selected.has(p._id));
+
+  // One bulk-action call for the selection. Failed ids stay selected so
+  // they can be fixed and retried; everything else is cleared.
+  const runBulk = async (action) => {
+    const ids = [...selected];
+    setBulkBusy(true);
+    try {
+      const { data } = await api.post('/admin/landing-pages/bulk-action', { ids, action });
+      const { results, summary } = data.data;
+      const label = (id) => {
+        const row = pages.find((p) => p._id === id);
+        return row ? `${row.city}, ${row.state}` : id;
+      };
+      const failed = results.filter((r) => r.status === 'failed').map((r) => ({ id: r.id, label: label(r.id), message: r.message }));
+      setSelected(new Set(failed.map((f) => f.id)));
+      setBulkResult({ action, summary, failed });
+      (summary.failed ? toast.error : toast.success)(bulkSummaryText(action, summary));
+      setConfirming(null);
+      // Deleting every row on a page > 1 would leave it empty.
+      if (action === 'delete' && summary.ok >= pages.length && page > 1) setPage((n) => n - 1);
+      else setReloadKey((k) => k + 1);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Bulk action failed.');
+    }
+    setBulkBusy(false);
+  };
+
   return (
     <div>
       {/* Heading */}
@@ -103,11 +172,18 @@ export default function AdminLandingPagesPage() {
             </span>
           )}
         </div>
-        <Link href="/admin/dashboard/landing-pages/new">
-          <Button variant="primary" size="sm" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Plus size={14} /> New landing page
-          </Button>
-        </Link>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Link href="/admin/dashboard/landing-pages/bulk">
+            <Button variant="outline" size="sm" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Layers size={14} /> Bulk create
+            </Button>
+          </Link>
+          <Link href="/admin/dashboard/landing-pages/new">
+            <Button variant="primary" size="sm" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Plus size={14} /> New landing page
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
@@ -145,6 +221,31 @@ export default function AdminLandingPagesPage() {
         </form>
       </div>
 
+      {bulkResult && (
+        <div role="status" style={{
+          display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 16, fontSize: 13, lineHeight: 1.6,
+          padding: '10px 14px', borderRadius: 'var(--radius-lg)',
+          background: bulkResult.failed.length ? 'var(--warning-bg)' : 'var(--success-bg)',
+          color: bulkResult.failed.length ? 'var(--warning)' : 'var(--success)',
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600 }}>{bulkSummaryText(bulkResult.action, bulkResult.summary)}</div>
+            {bulkResult.failed.length > 0 && (
+              <>
+                <ul style={{ margin: '4px 0 0', paddingLeft: 18, listStyle: 'disc' }}>
+                  {bulkResult.failed.slice(0, 5).map((f) => <li key={f.id}><strong>{f.label}</strong>: {f.message}</li>)}
+                  {bulkResult.failed.length > 5 && <li>…and {bulkResult.failed.length - 5} more</li>}
+                </ul>
+                <div style={{ marginTop: 4 }}>Failed pages stay selected — fix them in the editor and try again.</div>
+              </>
+            )}
+          </div>
+          <button type="button" aria-label="Dismiss" onClick={() => setBulkResult(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 2, minHeight: 0 }}>
+            <X size={15} />
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div style={{ padding: '48px 0' }}><Spinner size="md" /></div>
       ) : pages.length === 0 ? (
@@ -169,6 +270,9 @@ export default function AdminLandingPagesPage() {
             background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-md)', padding: '10px 16px', marginBottom: 8,
           }}>
+            <div style={COL.select}>
+              <input type="checkbox" aria-label="Select all on this page" checked={allOnPage} onChange={toggleAll} style={CHECKBOX} />
+            </div>
             <div style={{ ...HEADER_CELL, flex: COL.category.flex }}>Category</div>
             <div style={{ ...HEADER_CELL, flex: COL.state.flex }}>State</div>
             <div style={{ ...HEADER_CELL, flex: COL.city.flex }}>City</div>
@@ -189,6 +293,9 @@ export default function AdminLandingPagesPage() {
                 borderRadius: 'var(--radius-lg)', padding: '14px 16px', marginBottom: 8,
               }}
             >
+              <div style={COL.select}>
+                <input type="checkbox" aria-label={`Select ${p.city}, ${p.state}`} checked={selected.has(p._id)} onChange={() => toggle(p._id)} style={CHECKBOX} />
+              </div>
               <div style={{ flex: COL.category.flex, minWidth: 0, fontSize: 13, color: 'var(--color-text-sub)' }}>
                 {p.category?.name || '—'}
               </div>
@@ -216,6 +323,15 @@ export default function AdminLandingPagesPage() {
                 )}
                 <button
                   type="button"
+                  title="Duplicate to another city"
+                  aria-label="Duplicate"
+                  onClick={() => setDuplicating(p)}
+                  style={ICON_BUTTON}
+                >
+                  <Copy size={13} color="var(--color-text-sub)" />
+                </button>
+                <button
+                  type="button"
                   title="Delete"
                   aria-label="Delete"
                   onClick={() => setDeleting(p)}
@@ -226,6 +342,22 @@ export default function AdminLandingPagesPage() {
               </div>
             </div>
           ))}
+
+          {selected.size > 0 && (
+            <div style={{
+              position: 'sticky', bottom: 16, zIndex: 5, marginTop: 8,
+              display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+              background: 'var(--color-surface)', border: '1px solid var(--color-accent)',
+              borderRadius: 'var(--radius-lg)', padding: '10px 16px', boxShadow: 'var(--shadow-md)',
+            }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{selected.size} selected</span>
+              <span style={{ flex: 1 }} />
+              <Button variant="success" size="sm" disabled={bulkBusy} onClick={() => setConfirming('publish')}>Publish</Button>
+              <Button variant="secondary" size="sm" disabled={bulkBusy} onClick={() => setConfirming('unpublish')}>Unpublish</Button>
+              <Button variant="danger" size="sm" disabled={bulkBusy} onClick={() => setConfirming('delete')}>Delete</Button>
+              <Button variant="outline" size="sm" disabled={bulkBusy} onClick={() => setSelected(new Set())}>Clear</Button>
+            </div>
+          )}
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -245,6 +377,32 @@ export default function AdminLandingPagesPage() {
       )}
 
       <DeleteLandingPageModal page={deleting} onClose={() => setDeleting(null)} onDeleted={handleDeleted} />
+      <DeleteLandingPageModal
+        pages={confirming === 'delete' ? selectedPages : null}
+        busy={bulkBusy}
+        onBulkDelete={() => runBulk('delete')}
+        onClose={() => setConfirming(null)}
+      />
+      <DuplicateLandingPageModal page={duplicating} onClose={() => setDuplicating(null)} />
+
+      <Modal
+        isOpen={confirming === 'publish' || confirming === 'unpublish'}
+        onClose={bulkBusy ? () => {} : () => setConfirming(null)}
+        title={confirming ? BULK_VERBS[confirming].confirm?.(selected.size) : ''}
+        size="sm"
+      >
+        <p style={{ fontSize: 13, color: 'var(--color-text-sub)', lineHeight: 1.7, margin: '0 0 20px' }}>
+          {confirming === 'publish'
+            ? 'They become public immediately. Pages that fail validation are skipped and listed afterwards.'
+            : 'They go back to draft; their URLs show the automatic page again.'}
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <Button variant="secondary" size="sm" onClick={() => setConfirming(null)} disabled={bulkBusy}>Cancel</Button>
+          <Button variant={confirming === 'publish' ? 'success' : 'primary'} size="sm" loading={bulkBusy} onClick={() => runBulk(confirming)}>
+            {confirming === 'publish' ? `Publish ${selected.size}` : `Unpublish ${selected.size}`}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
