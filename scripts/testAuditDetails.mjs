@@ -36,6 +36,13 @@ test('duplicate landing page (with and without copy warnings)', () => {
   assert.match(formatAuditDetails('Duplicate landing page', d).title, /sourceId: s1/);
 });
 
+test('singular / plural: "1 id", "0 ids", "1 item", "2 items"', () => {
+  const one = formatAuditDetails('Bulk landing page action', { action: 'publish', ok: 1, ids: ['a'] });
+  assert.equal(one.text, 'publish · 1 ok · 0 unchanged · 0 failed · 0 not found · 1 id');
+  assert.match(formatAuditDetails('Bulk landing page action', { action: 'publish', ids: [] }).text, / · 0 ids$/);
+  assert.equal(formatAuditDetails('Other', { a: ['x'], b: ['x', 'y'], c: [] }).text, 'a: 1 item · b: 2 items · c: 0 items');
+});
+
 test('known action with an unexpected shape falls back to key: value', () => {
   assert.equal(formatAuditDetails('Bulk landing page action', { foo: 'bar' }).text, 'foo: bar');
   assert.equal(formatAuditDetails('Duplicate landing page', { newId: 'n1' }).text, 'newId: n1');

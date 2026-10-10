@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AlertTriangle, ChevronLeft, Copy, ExternalLink, Eye, Trash2, X } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, Copy, ExternalLink, Eye, History, RotateCcw, Trash2, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
@@ -19,6 +19,7 @@ import SeoFields from '../_components/SeoFields';
 import QualityChecklist from '../_components/QualityChecklist';
 import DeleteLandingPageModal from '../_components/DeleteLandingPageModal';
 import DuplicateLandingPageModal from '../_components/DuplicateLandingPageModal';
+import HistoryPanel, { formatWhen } from '../_components/HistoryPanel';
 
 // Server document -> editable form state. Only the fields this editor
 // writes; category/state/city are fixed once created.
@@ -79,6 +80,23 @@ export default function LandingPageEditor() {
   const [duplicating, setDuplicating] = useState(false);
   // Set when this draft was just made by Duplicate / Bulk create.
   const [copyWarnings, setCopyWarnings] = useState([]);
+  // Version history: list (null while loading), and the version currently
+  // loaded into the form by Restore ({ id, createdAt, bannerHidden }).
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [versions, setVersions] = useState(null);
+  const [versionsError, setVersionsError] = useState(null);
+  const [restored, setRestored] = useState(null);
+
+  const loadVersions = useCallback(() => {
+    setVersionsError(null);
+    api.get(`/admin/landing-pages/${id}/versions`)
+      .then(({ data }) => setVersions(data.data.versions || []))
+      .catch((err) => {
+        setVersions([]);
+        setVersionsError(err.response?.data?.message || 'Could not load the history.');
+      });
+  }, [id]);
+  useEffect(() => { loadVersions(); }, [loadVersions]);
 
   useEffect(() => {
     const warnings = takeDuplicateWarnings(id);
@@ -99,6 +117,12 @@ export default function LandingPageEditor() {
   }, [id, applyServerPage]);
 
   const dirty = useMemo(() => form && JSON.stringify(toPayload(form)) !== saved, [form, saved]);
+
+  // A restore is only pending while it's an unsaved change: once saved,
+  // or edited back to the saved content, there's nothing to attribute.
+  useEffect(() => {
+    if (!dirty) setRestored(null);
+  }, [dirty]);
 
   useEffect(() => {
     if (!dirty) return undefined;
@@ -134,7 +158,9 @@ export default function LandingPageEditor() {
     setBusy(kind);
     setErrors({});
     try {
-      const body = kind === 'unpublish' ? { status } : { ...toPayload(form), ...(status && { status }) };
+      const body = kind === 'unpublish'
+        ? { status }
+        : { ...toPayload(form), ...(status && { status }), ...(restored && { restoredFrom: restored.id }) };
       const { data } = await api.put(`/admin/landing-pages/${id}`, body);
       if (kind === 'unpublish') {
         // Keep any unsaved edits in the form; only status changed.
@@ -143,6 +169,7 @@ export default function LandingPageEditor() {
         applyServerPage(data.data.page);
       }
       toast.success({ save: 'Saved.', publish: 'Published.', unpublish: 'Unpublished — back to draft.' }[kind]);
+      loadVersions();
     } catch (err) {
       const res = err.response?.data;
       if (res?.errors && Object.keys(res.errors).length) {
@@ -179,6 +206,20 @@ export default function LandingPageEditor() {
     setPreviewing(false);
   };
 
+  // Loads a version's CONTENT into the form as unsaved edits (location and
+  // status aren't in snapshots, so they can't change). The next save
+  // sends restoredFrom so the backend records it as a restore.
+  const restoreVersion = (version) => {
+    if (dirty) {
+      toast.error('Save or discard your changes first');
+      return;
+    }
+    setForm(toForm(version.snapshot || {}));
+    setErrors({});
+    setRestored({ id: version.id, createdAt: version.createdAt, bannerHidden: false });
+    setHistoryOpen(false);
+  };
+
   // Duplicates the SAVED page, so unsaved edits would silently not be copied.
   const openDuplicate = () => {
     if (dirty) {
@@ -204,6 +245,27 @@ export default function LandingPageEditor() {
   return (
     <div style={{ maxWidth: 860 }}>
       <BackLink />
+
+      {restored && !restored.bannerHidden && (
+        <div role="status" style={{
+          display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 16,
+          padding: '12px 14px', borderRadius: 'var(--radius-lg)',
+          background: 'var(--info-bg)', color: 'var(--info)', fontSize: 13, lineHeight: 1.6,
+        }}>
+          <RotateCcw size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+          <div style={{ flex: 1 }}>
+            Restored the version from {formatWhen(restored.createdAt)}. Review it, then click Save.
+          </div>
+          <button
+            type="button"
+            aria-label="Dismiss"
+            onClick={() => setRestored((r) => ({ ...r, bannerHidden: true }))}
+            style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 2, minHeight: 0, flexShrink: 0 }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {copyWarnings.length > 0 && (
         <div role="alert" style={{
@@ -267,6 +329,15 @@ export default function LandingPageEditor() {
           )}
           <Button variant="outline" size="sm" disabled={Boolean(busy)} onClick={openDuplicate}>
             <Copy size={13} /> Duplicate
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={Boolean(busy) || !versions || (versions.length === 0 && !versionsError)}
+            title={versions && versions.length === 0 && !versionsError ? 'No history yet — a version is recorded each time the page is saved' : undefined}
+            onClick={() => setHistoryOpen(true)}
+          >
+            <History size={13} /> History
           </Button>
           <Button variant="danger" size="sm" disabled={Boolean(busy)} onClick={() => setDeleting(true)} style={{ marginLeft: 'auto' }}>
             <Trash2 size={13} /> Delete
@@ -368,6 +439,17 @@ export default function LandingPageEditor() {
       />
 
       <DuplicateLandingPageModal page={duplicating ? page : null} onClose={() => setDuplicating(false)} />
+
+      <HistoryPanel
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        pageId={id}
+        versions={versions}
+        loadError={versionsError}
+        onRetry={loadVersions}
+        savedContent={page}
+        onRestore={restoreVersion}
+      />
 
       <DeleteLandingPageModal
         page={deleting ? page : null}
