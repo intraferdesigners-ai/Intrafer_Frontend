@@ -4,11 +4,13 @@ import { notFound } from 'next/navigation';
 import Breadcrumb from '@/components/seo/Breadcrumb';
 import LandingBanner from '@/components/seo/LandingBanner';
 import LandingMarkdown from '@/components/seo/LandingMarkdown';
+import LandingPreviewStrip from '@/components/seo/LandingPreviewStrip';
 import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
 import VendorCard from '@/components/vendor/VendorCard';
 import { SERVICE_CATEGORIES } from '@/lib/categories';
 import { resolveLandingPage } from '@/lib/landingPlaceholders';
+import { landingPageTitle } from '@/lib/landingSerp';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const SITE_URL = 'https://intrafer.in';
@@ -49,10 +51,15 @@ async function fetchVendors(categorySlug, stateSlug, citySlug) {
 // record or only a draft — the caller then renders the automatic page
 // exactly as before. Any failure also returns null, i.e. falls back to the
 // automatic page rather than erroring.
-async function fetchLandingPage(categorySlug, stateSlug, citySlug) {
+//
+// `preview` (Phase 3B): the admin preview token from ?preview=, passed
+// through as-is. The backend answers `preview: true` (and the draft) only
+// for a valid token for this exact page; anything else gets the normal
+// response, so an expired/invalid token renders the normal page.
+async function fetchLandingPage(categorySlug, stateSlug, citySlug, preview) {
   try {
     const res = await fetch(
-      `${API}/public/landing-page?category=${encodeURIComponent(categorySlug)}&state=${encodeURIComponent(stateSlug)}&city=${encodeURIComponent(citySlug)}`,
+      `${API}/public/landing-page?category=${encodeURIComponent(categorySlug)}&state=${encodeURIComponent(stateSlug)}&city=${encodeURIComponent(citySlug)}${preview ? `&preview=${encodeURIComponent(preview)}` : ''}`,
       { cache: 'no-store' }
     );
     if (!res.ok) return null;
@@ -67,20 +74,28 @@ async function fetchLandingPage(categorySlug, stateSlug, citySlug) {
 // per request. The landing page and the automatic page's vendor lookup run
 // in parallel — which one renders isn't known until the landing response
 // arrives. Everything stays no-store: the page is dynamic, so an admin's
-// save shows on the next request with nothing to revalidate.
+// save shows on the next request with nothing to revalidate. The preview
+// token is part of loadCity's cache() key, so a preview response can only
+// ever be reused within the same request for the same token.
 const loadCategory = cache(fetchCategory);
-const loadCity = cache(async (categorySlug, stateSlug, citySlug) => {
+const loadCity = cache(async (categorySlug, stateSlug, citySlug, preview) => {
   const [landing, data] = await Promise.all([
-    fetchLandingPage(categorySlug, stateSlug, citySlug),
+    fetchLandingPage(categorySlug, stateSlug, citySlug, preview),
     fetchVendors(categorySlug, stateSlug, citySlug),
   ]);
   return { landing, data };
 });
 
-async function load(params) {
+// ?preview=<token> (a single string), else null. Read only here — never
+// put into links, canonical URLs or the sitemap.
+const previewToken = (searchParams) => (
+  typeof searchParams?.preview === 'string' && searchParams.preview ? searchParams.preview : null
+);
+
+async function load(params, searchParams) {
   const [category, { landing, data }] = await Promise.all([
     loadCategory(params.category),
-    loadCity(params.category, params.state, params.city),
+    loadCity(params.category, params.state, params.city, previewToken(searchParams)),
   ]);
   return { category, landing, data };
 }
@@ -307,22 +322,27 @@ function RelatedLinks({ params, category, state, city, nearbyCities, relatedCate
   );
 }
 
-export async function generateMetadata({ params }) {
-  const { category, landing, data } = await load(params);
+export async function generateMetadata({ params, searchParams }) {
+  const { category, landing, data } = await load(params, searchParams);
   if (!category) return { title: 'Category Not Found' };
 
   if (landing?.page) {
     const { city, state, seo, banner } = authoredContent(category, landing);
     const ogImage = seo.ogImage || banner.imageUrl;
+    const isPreview = landing.preview === true;
     return {
-      // Root layout's title template appends " | Intrafer" — strip it if
-      // the admin typed it too, so it never doubles.
-      title: seo.metaTitle.replace(/\s*[|\-–]\s*Intrafer\s*$/i, '') || `${category.name} in ${city}, ${state}`,
+      // Root layout's title template appends " | Intrafer"; shared with the
+      // editor's Google-snippet preview (lib/landingSerp.js).
+      title: landingPageTitle({ metaTitle: seo.metaTitle, categoryName: category.name, city, state }),
       ...(seo.metaDescription && { description: seo.metaDescription }),
       ...(ogImage && { openGraph: { images: [ogImage] } }),
       // `indexable` is computed backend-side from the page's seo.indexing
-      // (auto = the same vendor threshold as the automatic page).
-      ...(!landing.indexable && { robots: { index: false, follow: true } }),
+      // (auto = the same vendor threshold as the automatic page); always
+      // false for a preview. A preview is also nofollow, and sends no
+      // Referer so the token in the URL can't leak to linked/embedded sites.
+      ...(isPreview
+        ? { robots: { index: false, follow: false }, referrer: 'no-referrer' }
+        : !landing.indexable && { robots: { index: false, follow: true } }),
       alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}/${params.city}/` },
     };
   }
@@ -346,8 +366,8 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function CityHubPage({ params }) {
-  const { category, landing, data } = await load(params);
+export default async function CityHubPage({ params, searchParams }) {
+  const { category, landing, data } = await load(params, searchParams);
   if (!category) notFound();
 
   // A published authored page renders even when the city isn't in Place
@@ -467,6 +487,7 @@ async function AuthoredCityPage({ params, category, landing }) {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
+      {landing.preview === true && <LandingPreviewStrip published={landing.page.status === 'published'} />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }}

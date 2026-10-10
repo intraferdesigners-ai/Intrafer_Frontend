@@ -88,7 +88,8 @@ export default function Navbar() {
       <nav
         className={`navbar-surface${scrolled ? ' scrolled' : ''}`}
         style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+          // --preview-strip-h: set only on landing page previews (LandingPreviewStrip).
+          position: 'fixed', top: 'var(--preview-strip-h, 0px)', left: 0, right: 0, zIndex: 100,
           height: '64px', display: 'flex', alignItems: 'center',
         }}
       >

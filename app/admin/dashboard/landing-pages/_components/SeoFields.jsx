@@ -1,13 +1,15 @@
 'use client';
 
 import ImageField from './ImageField';
+import SerpPreview from './SerpPreview';
 import { TextField, TextArea } from './Fields';
 import { CARD, SECTION_LABEL, HINT, LIMITS } from './shared';
 
 const THRESHOLD = 3; // backend MIN_VENDORS_TO_INDEX (src/utils/indexThreshold.js)
 
 // `vendorCount`: from match-check (null while loading/unknown).
-export default function SeoFields({ seo, onChange, errors, vendorCount }) {
+// `snippet`: { categoryName, city, state, path } for the Google preview.
+export default function SeoFields({ seo, onChange, errors, vendorCount, snippet }) {
   const set = (key) => (value) => onChange({ ...seo, [key]: value });
 
   const autoNote = vendorCount == null
@@ -42,6 +44,7 @@ export default function SeoFields({ seo, onChange, errors, vendorCount }) {
           rows={3}
           error={errors['seo.metaDescription']}
         />
+        <SerpPreview seo={seo} vendorCount={vendorCount} {...snippet} />
         <ImageField
           label="Social share (OG) image"
           value={seo.ogImage}

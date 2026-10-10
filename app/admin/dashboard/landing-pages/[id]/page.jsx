@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ExternalLink, Trash2 } from 'lucide-react';
+import { ChevronLeft, ExternalLink, Eye, Trash2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import Button from '@/components/ui/Button';
@@ -15,6 +15,7 @@ import { TextField, TextArea } from '../_components/Fields';
 import BannerFields from '../_components/BannerFields';
 import SectionsEditor, { withKeys } from '../_components/SectionsEditor';
 import SeoFields from '../_components/SeoFields';
+import QualityChecklist from '../_components/QualityChecklist';
 import DeleteLandingPageModal from '../_components/DeleteLandingPageModal';
 
 // Server document -> editable form state. Only the fields this editor
@@ -71,6 +72,7 @@ export default function LandingPageEditor() {
   const [loadError, setLoadError] = useState(null);
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(null);          // 'save' | 'publish' | 'unpublish'
+  const [previewing, setPreviewing] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const applyServerPage = useCallback((p) => {
@@ -143,6 +145,30 @@ export default function LandingPageEditor() {
     setBusy(null);
   };
 
+  // Opens the SAVED page (draft or published) at its public URL via a
+  // 30-minute signed link. The tab is opened synchronously, inside the
+  // click, so popup blockers allow it; it's pointed at the link once the
+  // token arrives, with its opener cut (noopener).
+  const openPreview = async () => {
+    if (dirty) {
+      toast.error('Save your changes first — preview shows the saved version');
+      return;
+    }
+    const tab = window.open('about:blank', '_blank');
+    if (tab) tab.opener = null;
+    setPreviewing(true);
+    try {
+      const { data } = await api.post(`/admin/landing-pages/${id}/preview-token`);
+      const url = `${window.location.origin}${data.data.path}`;
+      if (tab) tab.location.replace(url);
+      else window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      tab?.close();
+      toast.error(err.response?.data?.message || 'Could not create a preview link.');
+    }
+    setPreviewing(false);
+  };
+
   if (loadError) {
     return (
       <div>
@@ -188,6 +214,9 @@ export default function LandingPageEditor() {
               {dirty ? 'Save & publish' : 'Publish'}
             </Button>
           )}
+          <Button variant="outline" size="sm" loading={previewing} disabled={Boolean(busy)} onClick={openPreview}>
+            <Eye size={13} /> Preview
+          </Button>
           {published && (
             <a href={path} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
               <Button variant="outline" size="sm"><ExternalLink size={13} /> View live</Button>
@@ -203,6 +232,15 @@ export default function LandingPageEditor() {
           </p>
         )}
       </div>
+
+      <QualityChecklist
+        form={form}
+        categoryName={page.category?.name}
+        city={page.city}
+        state={page.state}
+        vendorCount={vendorCount}
+        published={published}
+      />
 
       <BannerFields banner={form.banner} onChange={setBanner} errors={errors} />
 
@@ -275,7 +313,13 @@ export default function LandingPageEditor() {
         </div>
       </section>
 
-      <SeoFields seo={form.seo} onChange={set('seo')} errors={errors} vendorCount={vendorCount} />
+      <SeoFields
+        seo={form.seo}
+        onChange={set('seo')}
+        errors={errors}
+        vendorCount={vendorCount}
+        snippet={{ categoryName: page.category?.name, city: page.city, state: page.state, path }}
+      />
 
       <DeleteLandingPageModal
         page={deleting ? page : null}
