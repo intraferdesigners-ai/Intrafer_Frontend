@@ -54,6 +54,17 @@ export const LIMITS = {
   metaTitle: 70, metaDescription: 170,
 };
 
+// Same rule and message as the model's pre('validate') hook: the CTA
+// needs both a label and a URL, or neither. Returns an `errors` entry
+// for the empty field, or null.
+export const CTA_PAIR_MESSAGE = 'Set both the CTA label and the CTA URL, or leave both empty.';
+export function ctaPairError(banner) {
+  const hasLabel = Boolean(banner.ctaLabel?.trim());
+  const hasUrl = Boolean(banner.ctaUrl?.trim());
+  if (hasLabel === hasUrl) return null;
+  return { [hasLabel ? 'banner.ctaUrl' : 'banner.ctaLabel']: CTA_PAIR_MESSAGE };
+}
+
 export const INDEXING_LABELS = { auto: 'Auto', index: 'Force index', noindex: 'Noindex' };
 
 export const PLACEHOLDERS = ['{{city}}', '{{state}}', '{{category}}', '{{vendorCount}}'];

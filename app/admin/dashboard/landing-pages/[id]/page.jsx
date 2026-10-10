@@ -9,7 +9,7 @@ import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import {
-  CARD, SECTION_LABEL, HINT, SELECT_STYLE, LIMITS, PLACEHOLDERS, StatusBadge, useMatchCheck,
+  CARD, SECTION_LABEL, HINT, SELECT_STYLE, LIMITS, PLACEHOLDERS, StatusBadge, useMatchCheck, ctaPairError,
 } from '../_components/shared';
 import { TextField, TextArea } from '../_components/Fields';
 import BannerFields from '../_components/BannerFields';
@@ -100,10 +100,25 @@ export default function LandingPageEditor() {
 
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
 
+  // Editing either CTA field clears the pair error from both.
+  const setBanner = (banner) => {
+    if (banner.ctaLabel !== form.banner.ctaLabel || banner.ctaUrl !== form.banner.ctaUrl) {
+      setErrors((e) => ({ ...e, 'banner.ctaLabel': undefined, 'banner.ctaUrl': undefined }));
+    }
+    set('banner')(banner);
+  };
+
   // One PUT: editable fields, plus `status` when publishing/unpublishing —
   // so "Publish" saves and publishes together, or does neither on a
   // validation error.
   const submit = async (kind, status) => {
+    // Unpublish sends only `status`, so the banner isn't checked then.
+    const ctaError = kind !== 'unpublish' && ctaPairError(form.banner);
+    if (ctaError) {
+      setErrors(ctaError);
+      toast.error('Some fields need fixing — see the highlighted fields.');
+      return;
+    }
     setBusy(kind);
     setErrors({});
     try {
@@ -189,7 +204,7 @@ export default function LandingPageEditor() {
         )}
       </div>
 
-      <BannerFields banner={form.banner} onChange={set('banner')} errors={errors} />
+      <BannerFields banner={form.banner} onChange={setBanner} errors={errors} />
 
       {/* Heading + intro */}
       <section style={CARD}>
