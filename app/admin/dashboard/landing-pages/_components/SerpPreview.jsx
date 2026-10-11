@@ -7,11 +7,11 @@ import { FIELD_LABEL, HINT } from './shared';
 // Live "how this looks in Google" card under the meta fields. Colours are
 // Google's own on a white card, so it reads the same in either admin theme.
 // Truncation is a character approximation (see lib/landingSerp.js).
-export default function SerpPreview({ seo, categoryName, city, state, vendorCount, path }) {
+export default function SerpPreview({ seo, categoryName, city, state, vendorCount, path, level = 'city' }) {
   const [device, setDevice] = useState('desktop');
   const { title, description, displayUrl } = buildSerpPreview({
     metaTitle: seo.metaTitle, metaDescription: seo.metaDescription,
-    categoryName, city, state, vendorCount, path, device,
+    categoryName, city, state, vendorCount, path, device, level,
   });
   const mobile = device === 'mobile';
 

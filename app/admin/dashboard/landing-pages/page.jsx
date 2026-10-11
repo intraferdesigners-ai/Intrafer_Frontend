@@ -10,13 +10,15 @@ import Modal from '@/components/ui/Modal';
 import Spinner from '@/components/ui/Spinner';
 import { formatDate } from '@/lib/utils';
 import {
-  SELECT_STYLE, ICON_BUTTON, INDEXING_LABELS, StatusBadge, useLandingCategories,
+  SELECT_STYLE, ICON_BUTTON, StatusBadge, LevelChip, useLandingCategories, indexingLabel, pagePath, locationLabel,
 } from './_components/shared';
+import { levelOf } from '@/lib/landingLevel';
 import DeleteLandingPageModal from './_components/DeleteLandingPageModal';
 import DuplicateLandingPageModal from './_components/DuplicateLandingPageModal';
 
 const COL = {
   select:   { width: 20, flexShrink: 0 },
+  type:     { flex: '0 0 100px' },
   category: { flex: 2 },
   state:    { flex: 2 },
   city:     { flex: 2 },
@@ -33,7 +35,7 @@ const HEADER_CELL = {
   letterSpacing: '0.06em', textTransform: 'uppercase',
 };
 
-const livePath = (p) => `/${p.category?.slug}/${p.stateSlug}/${p.citySlug}/`;
+const DUPLICATE_TITLES = { city: 'Duplicate to another city', state: 'Duplicate to another state', category: 'Duplicate to another category' };
 
 const CHECKBOX = { width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--color-accent)', margin: 0 };
 
@@ -63,6 +65,7 @@ export default function AdminLandingPagesPage() {
   const [total,      setTotal]      = useState(0);
   const [loadError,  setLoadError]  = useState(null);
 
+  const [level,       setLevel]       = useState('');
   const [category,    setCategory]    = useState('');
   const [status,      setStatus]      = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -79,7 +82,7 @@ export default function AdminLandingPagesPage() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkResult, setBulkResult] = useState(null);  // { action, summary, failed: [{ id, label, message }] }
 
-  useEffect(() => { setSelected(new Set()); }, [category, status, q, page]);
+  useEffect(() => { setSelected(new Set()); }, [level, category, status, q, page]);
 
   useEffect(() => {
     // Filters can change faster than responses arrive; only the latest
@@ -88,6 +91,7 @@ export default function AdminLandingPagesPage() {
     setLoading(true);
     setLoadError(null);
     const params = { page, limit: 20 };
+    if (level) params.level = level;
     if (category) params.category = category;
     if (status) params.status = status;
     if (q) params.q = q;
@@ -106,7 +110,7 @@ export default function AdminLandingPagesPage() {
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [category, status, q, page, reloadKey]);
+  }, [level, category, status, q, page, reloadKey]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -121,7 +125,7 @@ export default function AdminLandingPagesPage() {
     else setReloadKey((k) => k + 1);
   };
 
-  const filtered = Boolean(category || status || q);
+  const filtered = Boolean(level || category || status || q);
 
   const toggle = (id) => setSelected((prev) => {
     const next = new Set(prev);
@@ -142,7 +146,7 @@ export default function AdminLandingPagesPage() {
       const { results, summary } = data.data;
       const label = (id) => {
         const row = pages.find((p) => p._id === id);
-        return row ? `${row.city}, ${row.state}` : id;
+        return row ? locationLabel(row) : id;
       };
       const failed = results.filter((r) => r.status === 'failed').map((r) => ({ id: r.id, label: label(r.id), message: r.message }));
       setSelected(new Set(failed.map((f) => f.id)));
@@ -188,6 +192,17 @@ export default function AdminLandingPagesPage() {
 
       {/* Filters */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+        <select
+          aria-label="Type"
+          value={level}
+          onChange={(e) => { setLevel(e.target.value); setPage(1); }}
+          style={SELECT_STYLE}
+        >
+          <option value="">All types</option>
+          <option value="category">Category pages</option>
+          <option value="state">State pages</option>
+          <option value="city">City pages</option>
+        </select>
         <select
           aria-label="Category"
           value={category}
@@ -258,7 +273,8 @@ export default function AdminLandingPagesPage() {
             <>
               No landing pages yet.<br />
               A landing page adds your own banner, text, FAQs and SEO settings to a city page
-              like /interior-designers/maharashtra/pune/. Cities without one keep the automatic page.
+              like /interior-designers/maharashtra/pune/ — or to a state or category page.
+              Pages without one keep the automatic page.
             </>
           )}
         </div>
@@ -273,6 +289,7 @@ export default function AdminLandingPagesPage() {
             <div style={COL.select}>
               <input type="checkbox" aria-label="Select all on this page" checked={allOnPage} onChange={toggleAll} style={CHECKBOX} />
             </div>
+            <div style={{ ...HEADER_CELL, flex: COL.type.flex }}>Type</div>
             <div style={{ ...HEADER_CELL, flex: COL.category.flex }}>Category</div>
             <div style={{ ...HEADER_CELL, flex: COL.state.flex }}>State</div>
             <div style={{ ...HEADER_CELL, flex: COL.city.flex }}>City</div>
@@ -294,20 +311,25 @@ export default function AdminLandingPagesPage() {
               }}
             >
               <div style={COL.select}>
-                <input type="checkbox" aria-label={`Select ${p.city}, ${p.state}`} checked={selected.has(p._id)} onChange={() => toggle(p._id)} style={CHECKBOX} />
+                <input type="checkbox" aria-label={`Select ${locationLabel(p)}`} checked={selected.has(p._id)} onChange={() => toggle(p._id)} style={CHECKBOX} />
               </div>
+              <div style={{ flex: COL.type.flex }}><LevelChip level={levelOf(p)} /></div>
+              {/* The row's link sits on its most specific part: the city,
+                  the state on a state page, the category on a category page. */}
               <div style={{ flex: COL.category.flex, minWidth: 0, fontSize: 13, color: 'var(--color-text-sub)' }}>
-                {p.category?.name || '—'}
+                {levelOf(p) === 'category' ? <RowLink page={p}>{p.category?.name || '—'}</RowLink> : (p.category?.name || '—')}
               </div>
-              <div style={{ flex: COL.state.flex, minWidth: 0, fontSize: 13, color: 'var(--color-text)' }}>{p.state}</div>
+              <div style={{ flex: COL.state.flex, minWidth: 0, fontSize: 13, color: 'var(--color-text)' }}>
+                {levelOf(p) === 'state' ? <RowLink page={p}>{p.state}</RowLink> : (p.state || '—')}
+              </div>
               <div style={{ flex: COL.city.flex, minWidth: 0 }}>
-                <Link href={`/admin/dashboard/landing-pages/${p._id}`} style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', textDecoration: 'none' }}>
-                  {p.city}
-                </Link>
+                {levelOf(p) === 'city'
+                  ? <RowLink page={p}>{p.city}</RowLink>
+                  : <span style={{ fontSize: 13, color: 'var(--color-text-hint)' }}>—</span>}
               </div>
               <div style={{ flex: COL.status.flex }}><StatusBadge status={p.status} /></div>
               <div style={{ flex: COL.indexing.flex, fontSize: 12, color: 'var(--color-text-sub)' }}>
-                {INDEXING_LABELS[p.seo?.indexing] || 'Auto'}
+                {indexingLabel(p)}
               </div>
               <div style={{ flex: COL.updated.flex, fontSize: 12, color: 'var(--color-text-sub)' }}>
                 {formatDate(p.updatedAt)}
@@ -316,14 +338,14 @@ export default function AdminLandingPagesPage() {
                 <Link href={`/admin/dashboard/landing-pages/${p._id}`} title="Edit" aria-label="Edit" style={ICON_BUTTON}>
                   <Pencil size={13} color="var(--color-text-sub)" />
                 </Link>
-                {p.status === 'published' && p.category?.slug && (
-                  <a href={livePath(p)} target="_blank" rel="noopener noreferrer" title="View live" aria-label="View live" style={ICON_BUTTON}>
+                {p.status === 'published' && pagePath(p) && (
+                  <a href={pagePath(p)} target="_blank" rel="noopener noreferrer" title="View live" aria-label="View live" style={ICON_BUTTON}>
                     <ExternalLink size={13} color="var(--color-text-sub)" />
                   </a>
                 )}
                 <button
                   type="button"
-                  title="Duplicate to another city"
+                  title={DUPLICATE_TITLES[levelOf(p)]}
                   aria-label="Duplicate"
                   onClick={() => setDuplicating(p)}
                   style={ICON_BUTTON}
@@ -404,5 +426,13 @@ export default function AdminLandingPagesPage() {
         </div>
       </Modal>
     </div>
+  );
+}
+
+function RowLink({ page, children }) {
+  return (
+    <Link href={`/admin/dashboard/landing-pages/${page._id}`} style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', textDecoration: 'none' }}>
+      {children}
+    </Link>
   );
 }

@@ -1,9 +1,20 @@
+import { cache } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Breadcrumb from '@/components/seo/Breadcrumb';
+import LandingBanner from '@/components/seo/LandingBanner';
+import LandingPreviewStrip from '@/components/seo/LandingPreviewStrip';
+import LandingTopVendors from '@/components/seo/LandingTopVendors';
+import {
+  authoredContent, authoredRobots, buildFaqJsonLd, FaqSection, LandingIntro, LandingSections,
+  visibleFaqItems, visibleSections,
+} from '@/components/seo/LandingAuthored';
 import Reveal from '@/components/ui/Reveal';
 import { slugify } from '@/lib/slug';
 import { getCategoryFaq } from '@/lib/categoryFaq';
+import { fetchHubLandingPage, previewToken } from '@/lib/landingHub';
+import { placeholderValues } from '@/lib/landingLevel';
+import { landingPageTitle } from '@/lib/landingSerp';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const SITE_URL = 'https://intrafer.in';
@@ -30,9 +41,81 @@ async function fetchStates(slug) {
   }
 }
 
-export async function generateMetadata({ params }) {
-  const category = await fetchCategory(params.category);
+// Admin-authored category pages (Phase 4C): the landing page is fetched
+// in parallel with the automatic page's data, shared by generateMetadata
+// and the page through React cache() (the preview token is part of the
+// key). No published page — or any failure — means `landing.page` is null
+// and everything below renders exactly as before.
+const loadCategory = cache(fetchCategory);
+const loadHub = cache(async (categorySlug, preview) => {
+  const [landing, states] = await Promise.all([
+    fetchHubLandingPage({ category: categorySlug }, preview),
+    fetchStates(categorySlug),
+  ]);
+  return { landing, states };
+});
+
+async function load(params, searchParams) {
+  const [category, { landing, states }] = await Promise.all([
+    loadCategory(params.category),
+    loadHub(params.category, previewToken(searchParams)),
+  ]);
+  return { category, landing, states };
+}
+
+// Placeholders resolved; {{state}} and {{city}} are empty on this level.
+function categoryContent(category, landing) {
+  return authoredContent(landing.page, placeholderValues('category', {
+    categoryName: category.name, vendorCount: landing.vendorCount,
+  }));
+}
+
+function buildServiceJsonLd(category) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: category.name,
+    serviceType: category.name,
+    provider: { '@id': `${SITE_URL}/#organization` },
+    areaServed: 'India',
+  };
+}
+
+function buildCollectionJsonLd(params, category, states) {
+  if (states.length === 0) return null;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${category.name} in India`,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: states.map((s, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: s.state,
+        url: `${SITE_URL}/${params.category}/${slugify(s.state)}/`,
+      })),
+    },
+  };
+}
+
+export async function generateMetadata({ params, searchParams }) {
+  const { category, landing } = await load(params, searchParams);
   if (!category) return { title: 'Category Not Found' };
+
+  if (landing?.page) {
+    const { seo, banner } = categoryContent(category, landing);
+    const ogImage = seo.ogImage || banner.imageUrl;
+    return {
+      title: landingPageTitle({ metaTitle: seo.metaTitle, categoryName: category.name, level: 'category' }),
+      ...(seo.metaDescription && { description: seo.metaDescription }),
+      ...(ogImage && { openGraph: { images: [ogImage] } }),
+      // Hubs stay indexable (no robots key) unless the page is set to
+      // noindex; previews are noindex, nofollow, no-referrer.
+      ...authoredRobots(landing),
+      alternates: { canonical: `${SITE_URL}/${params.category}/` },
+    };
+  }
 
   return {
     // Root layout's title template already appends " | Intrafer".
@@ -50,11 +133,12 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function CategoryHubPage({ params }) {
-  const category = await fetchCategory(params.category);
+export default async function CategoryHubPage({ params, searchParams }) {
+  const { category, landing, states } = await load(params, searchParams);
   if (!category) notFound();
 
-  const states = await fetchStates(params.category);
+  if (landing?.page) return <AuthoredCategoryPage params={params} category={category} landing={landing} states={states} />;
+
   // Step 13: the client-approved 5-question FAQ set, adapted per category
   // (see lib/categoryFaq.js for sourcing/exclusions). Every one of the 12
   // known category slugs resolves to a real set; null only if params.category
@@ -62,39 +146,9 @@ export default async function CategoryHubPage({ params }) {
   // it above — defensive, not expected in practice.
   const faq = getCategoryFaq(params.category);
 
-  const serviceJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Service',
-    name: category.name,
-    serviceType: category.name,
-    provider: { '@id': `${SITE_URL}/#organization` },
-    areaServed: 'India',
-  };
-
-  const collectionJsonLd = states.length === 0 ? null : {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    name: `${category.name} in India`,
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: states.map((s, i) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: s.state,
-        url: `${SITE_URL}/${params.category}/${slugify(s.state)}/`,
-      })),
-    },
-  };
-
-  const faqJsonLd = !faq ? null : {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faq.map((item) => ({
-      '@type': 'Question',
-      name: item.question,
-      acceptedAnswer: { '@type': 'Answer', text: item.answer },
-    })),
-  };
+  const serviceJsonLd = buildServiceJsonLd(category);
+  const collectionJsonLd = buildCollectionJsonLd(params, category, states);
+  const faqJsonLd = !faq ? null : buildFaqJsonLd(faq);
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
@@ -125,47 +179,97 @@ export default async function CategoryHubPage({ params }) {
         </p>
       </Reveal>
 
-      {states.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: '16px' }}>
-          {states.map((s) => (
-            <Link
-              key={s.state}
-              href={`/${params.category}/${slugify(s.state)}/`}
-              style={{
-                display: 'block', padding: '20px', borderRadius: 'var(--r-md)',
-                border: '1px solid var(--border)', background: 'var(--surface)',
-                textDecoration: 'none', color: 'var(--text)',
-              }}
-            >
-              <div style={{ fontSize: '15px', fontWeight: 500 }}>{s.state}</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '4px' }}>
-                {s.cityCount} {s.cityCount === 1 ? 'city' : 'cities'}
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div style={{
-          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px',
-          padding: '48px', textAlign: 'center',
-        }}>
-          <p style={{ fontSize: '15px', color: 'var(--text-mid)' }}>
-            No cities listed yet in this category.
-          </p>
-        </div>
+      <StateGrid params={params} states={states} />
+
+      {faq && <FaqSection title="Frequently asked questions" questions={faq} />}
+    </div>
+  );
+}
+
+function StateGrid({ params, states }) {
+  return states.length > 0 ? (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: '16px' }}>
+      {states.map((s) => (
+        <Link
+          key={s.state}
+          href={`/${params.category}/${slugify(s.state)}/`}
+          style={{
+            display: 'block', padding: '20px', borderRadius: 'var(--r-md)',
+            border: '1px solid var(--border)', background: 'var(--surface)',
+            textDecoration: 'none', color: 'var(--text)',
+          }}
+        >
+          <div style={{ fontSize: '15px', fontWeight: 500 }}>{s.state}</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '4px' }}>
+            {s.cityCount} {s.cityCount === 1 ? 'city' : 'cities'}
+          </div>
+        </Link>
+      ))}
+    </div>
+  ) : (
+    <div style={{
+      background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px',
+      padding: '48px', textAlign: 'center',
+    }}>
+      <p style={{ fontSize: '15px', color: 'var(--text-mid)' }}>
+        No cities listed yet in this category.
+      </p>
+    </div>
+  );
+}
+
+// Admin-authored version of this page: banner, authored h1/intro, the same
+// state grid, the optional "Top vendors" block, then the authored sections.
+// The built-in category FAQ still shows (with its JSON-LD) unless the page
+// has an FAQ section of its own, which then replaces it — never two FAQs.
+function AuthoredCategoryPage({ params, category, landing, states }) {
+  const { banner, heading, intro, sections } = categoryContent(category, landing);
+  const shown = visibleSections(sections);
+  const faqItems = visibleFaqItems(shown);
+  const builtInFaq = faqItems.length === 0 ? getCategoryFaq(params.category) : null;
+
+  const serviceJsonLd = buildServiceJsonLd(category);
+  const collectionJsonLd = buildCollectionJsonLd(params, category, states);
+  const faqJsonLd = faqItems.length > 0 ? buildFaqJsonLd(faqItems) : (builtInFaq && buildFaqJsonLd(builtInFaq));
+
+  return (
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
+      {landing.preview === true && <LandingPreviewStrip published={landing.page.status === 'published'} />}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      {collectionJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+        />
+      )}
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
       )}
 
-      {faq && (
-        <section style={{ marginTop: '60px' }}>
-          <h2 className="page-heading" style={{ marginBottom: '24px' }}>Frequently asked questions</h2>
-          {faq.map((item, i) => (
-            <div key={i} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--border)' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 500, marginBottom: '8px', color: 'var(--text)' }}>{item.question}</h3>
-              <p style={{ fontSize: '14px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{item.answer}</p>
-            </div>
-          ))}
-        </section>
-      )}
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: category.name }]} />
+
+      <LandingBanner banner={banner} />
+
+      <LandingIntro
+        heading={heading}
+        defaultHeading={`${category.name} in India`}
+        intro={intro}
+        defaultBlurb={<>Find verified {category.name.toLowerCase()} across India, browsable by state and city.</>}
+      />
+
+      <StateGrid params={params} states={states} />
+
+      <LandingTopVendors title={`Top ${category.name.toLowerCase()} in India`} vendors={landing.vendors || []} />
+
+      <LandingSections sections={shown} localitiesTitle="Areas we cover" />
+
+      {builtInFaq && <FaqSection title="Frequently asked questions" questions={builtInFaq} />}
     </div>
   );
 }

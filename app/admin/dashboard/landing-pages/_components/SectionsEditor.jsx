@@ -26,7 +26,9 @@ export function withKeys(sections = []) {
 
 // Add / reorder / toggle / remove the page's sections. `errors` is the
 // server's per-field map ('sections.2.faqItems.0.answer', ...).
-export default function SectionsEditor({ sections, onChange, errors }) {
+// `localitiesTitle`: the live page's heading for an untitled localities
+// section (it differs per page type).
+export default function SectionsEditor({ sections, onChange, errors, localitiesTitle = 'Localities in {{city}}' }) {
   const atLimit = sections.length >= LIMITS.sections;
 
   const update = (i, patch) => onChange(sections.map((s, j) => (j === i ? { ...s, ...patch } : s)));
@@ -96,7 +98,7 @@ export default function SectionsEditor({ sections, onChange, errors }) {
                   max={LIMITS.sectionTitle}
                   counter
                   error={err('title')}
-                  placeholder={section.type === 'faq' ? 'Frequently asked questions' : section.type === 'localities' ? 'Localities in {{city}}' : ''}
+                  placeholder={section.type === 'faq' ? 'Frequently asked questions' : section.type === 'localities' ? localitiesTitle : ''}
                 />
 
                 {section.type === 'text' && (

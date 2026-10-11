@@ -123,4 +123,11 @@ test('values are plain strings/numbers (rendered as text)', () => {
   assert.equal(c.summary, 'Heading (H1) added');
 });
 
+// ── Phase 4C: hubs' Top vendors toggle ───────────────────────────────────
+test('vendorList.enabled: shown/hidden; missing = shown (city pages never differ)', () => {
+  const diff = diffContent({ vendorList: { enabled: false, sort: 'featured', limit: 12 } }, { vendorList: { enabled: true, sort: 'featured', limit: 12 } });
+  assert.deepEqual(diff.map((d) => d.summary), ['Top vendors block: hidden → shown']);
+  assert.deepEqual(diffContent({ vendorList: { enabled: true, sort: 'featured', limit: 12 } }, { vendorList: { sort: 'featured', limit: 12 } }), []);
+});
+
 console.log(`\n${passed} passed`);

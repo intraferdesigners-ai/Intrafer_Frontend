@@ -1,7 +1,17 @@
+import { cache } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Breadcrumb from '@/components/seo/Breadcrumb';
+import LandingBanner from '@/components/seo/LandingBanner';
+import LandingPreviewStrip from '@/components/seo/LandingPreviewStrip';
+import LandingTopVendors from '@/components/seo/LandingTopVendors';
+import {
+  authoredContent, authoredRobots, buildFaqJsonLd, LandingIntro, LandingSections, visibleFaqItems, visibleSections,
+} from '@/components/seo/LandingAuthored';
 import Reveal from '@/components/ui/Reveal';
+import { fetchHubLandingPage, previewToken } from '@/lib/landingHub';
+import { placeholderValues } from '@/lib/landingLevel';
+import { landingPageTitle } from '@/lib/landingSerp';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const SITE_URL = 'https://intrafer.in';
@@ -34,11 +44,85 @@ async function fetchCities(categorySlug, stateSlug) {
   }
 }
 
-export async function generateMetadata({ params }) {
-  const category = await fetchCategory(params.category);
+// Admin-authored state pages (Phase 4C): the landing page is fetched in
+// parallel with the automatic page's data, shared by generateMetadata and
+// the page through React cache() (the preview token is part of the key).
+// No published page — or any failure — means `landing.page` is null and
+// everything below renders exactly as before.
+const loadCategory = cache(fetchCategory);
+const loadState = cache(async (categorySlug, stateSlug, preview) => {
+  const [landing, data] = await Promise.all([
+    fetchHubLandingPage({ category: categorySlug, state: stateSlug }, preview),
+    fetchCities(categorySlug, stateSlug),
+  ]);
+  return { landing, data };
+});
+
+async function load(params, searchParams) {
+  const [category, { landing, data }] = await Promise.all([
+    loadCategory(params.category),
+    loadState(params.category, params.state, previewToken(searchParams)),
+  ]);
+  return { category, landing, data };
+}
+
+// Display name from the record, as on city pages (state is free text there
+// and may not be in Place at all); placeholders resolved, {{city}} empty.
+function stateContent(category, landing) {
+  const { page, vendorCount } = landing;
+  const content = authoredContent(page, placeholderValues('state', {
+    state: page.state, categoryName: category.name, vendorCount,
+  }));
+  return { ...content, state: page.state };
+}
+
+function buildServiceJsonLd(category, state) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: category.name,
+    serviceType: category.name,
+    provider: { '@id': `${SITE_URL}/#organization` },
+    areaServed: state,
+  };
+}
+
+function buildCollectionJsonLd(params, category, state, cities) {
+  if (cities.length === 0) return null;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${category.name} in ${state}`,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: cities.map((c, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: c.city,
+        url: `${SITE_URL}/${params.category}/${params.state}/${c.citySlug}/`,
+      })),
+    },
+  };
+}
+
+export async function generateMetadata({ params, searchParams }) {
+  const { category, landing, data } = await load(params, searchParams);
   if (!category) return { title: 'Category Not Found' };
 
-  const data = await fetchCities(params.category, params.state);
+  if (landing?.page) {
+    const { state, seo, banner } = stateContent(category, landing);
+    const ogImage = seo.ogImage || banner.imageUrl;
+    return {
+      title: landingPageTitle({ metaTitle: seo.metaTitle, categoryName: category.name, state, level: 'state' }),
+      ...(seo.metaDescription && { description: seo.metaDescription }),
+      ...(ogImage && { openGraph: { images: [ogImage] } }),
+      // Hubs stay indexable (no robots key) unless the page is set to
+      // noindex; previews are noindex, nofollow, no-referrer.
+      ...authoredRobots(landing),
+      alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}/` },
+    };
+  }
+
   if (!data) return { title: 'State Not Found' };
 
   return {
@@ -55,38 +139,20 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function StateHubPage({ params }) {
-  const category = await fetchCategory(params.category);
+export default async function StateHubPage({ params, searchParams }) {
+  const { category, landing, data } = await load(params, searchParams);
   if (!category) notFound();
 
-  const data = await fetchCities(params.category, params.state);
+  // A published authored page renders even when the state isn't in Place
+  // (the automatic page's 404 rule) — its city grid is then just empty.
+  if (landing?.page) return <AuthoredStatePage params={params} category={category} landing={landing} cities={data?.cities || []} />;
+
   if (!data) notFound();
 
   const { state, cities } = data;
 
-  const serviceJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Service',
-    name: category.name,
-    serviceType: category.name,
-    provider: { '@id': `${SITE_URL}/#organization` },
-    areaServed: state,
-  };
-
-  const collectionJsonLd = cities.length === 0 ? null : {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    name: `${category.name} in ${state}`,
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: cities.map((c, i) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: c.city,
-        url: `${SITE_URL}/${params.category}/${params.state}/${c.citySlug}/`,
-      })),
-    },
-  };
+  const serviceJsonLd = buildServiceJsonLd(category, state);
+  const collectionJsonLd = buildCollectionJsonLd(params, category, state, cities);
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
@@ -115,35 +181,97 @@ export default async function StateHubPage({ params }) {
         </p>
       </Reveal>
 
-      {cities.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: '16px' }}>
-          {cities.map((c) => (
-            <Link
-              key={c.citySlug}
-              href={`/${params.category}/${params.state}/${c.citySlug}/`}
-              style={{
-                display: 'block', padding: '20px', borderRadius: 'var(--r-md)',
-                border: '1px solid var(--border)', background: 'var(--surface)',
-                textDecoration: 'none', color: 'var(--text)',
-              }}
-            >
-              <div style={{ fontSize: '15px', fontWeight: 500 }}>{c.city}</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '4px' }}>
-                {c.vendorCount} {c.vendorCount === 1 ? 'vendor' : 'vendors'}
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div style={{
-          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px',
-          padding: '48px', textAlign: 'center',
-        }}>
-          <p style={{ fontSize: '15px', color: 'var(--text-mid)' }}>
-            No cities listed yet in {state} for {category.name}.
-          </p>
-        </div>
+      <CityGrid params={params} category={category} state={state} cities={cities} />
+    </div>
+  );
+}
+
+function CityGrid({ params, category, state, cities }) {
+  return cities.length > 0 ? (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: '16px' }}>
+      {cities.map((c) => (
+        <Link
+          key={c.citySlug}
+          href={`/${params.category}/${params.state}/${c.citySlug}/`}
+          style={{
+            display: 'block', padding: '20px', borderRadius: 'var(--r-md)',
+            border: '1px solid var(--border)', background: 'var(--surface)',
+            textDecoration: 'none', color: 'var(--text)',
+          }}
+        >
+          <div style={{ fontSize: '15px', fontWeight: 500 }}>{c.city}</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-hint)', marginTop: '4px' }}>
+            {c.vendorCount} {c.vendorCount === 1 ? 'vendor' : 'vendors'}
+          </div>
+        </Link>
+      ))}
+    </div>
+  ) : (
+    <div style={{
+      background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px',
+      padding: '48px', textAlign: 'center',
+    }}>
+      <p style={{ fontSize: '15px', color: 'var(--text-mid)' }}>
+        No cities listed yet in {state} for {category.name}.
+      </p>
+    </div>
+  );
+}
+
+// Admin-authored version of this page: banner, authored h1/intro, the same
+// city grid, the optional "Top vendors" block (only when the page turned
+// it on — the backend sends vendors: [] otherwise), then the authored
+// sections in order.
+function AuthoredStatePage({ params, category, landing, cities }) {
+  const { state, banner, heading, intro, sections } = stateContent(category, landing);
+  const shown = visibleSections(sections);
+  const faqItems = visibleFaqItems(shown);
+
+  const serviceJsonLd = buildServiceJsonLd(category, state);
+  const collectionJsonLd = buildCollectionJsonLd(params, category, state, cities);
+
+  const faqJsonLd = faqItems.length === 0 ? null : buildFaqJsonLd(faqItems);
+
+  return (
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
+      {landing.preview === true && <LandingPreviewStrip published={landing.page.status === 'published'} />}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      {collectionJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+        />
       )}
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
+
+      <Breadcrumb items={[
+        { label: 'Home', href: '/' },
+        { label: category.name, href: `/${params.category}/` },
+        { label: state },
+      ]} />
+
+      <LandingBanner banner={banner} />
+
+      <LandingIntro
+        heading={heading}
+        defaultHeading={`${category.name} in ${state}`}
+        intro={intro}
+        defaultBlurb={<>Find verified {category.name.toLowerCase()} in {state}, browsable by city.</>}
+      />
+
+      <CityGrid params={params} category={category} state={state} cities={cities} />
+
+      <LandingTopVendors title={`Top ${category.name.toLowerCase()} in ${state}`} vendors={landing.vendors || []} />
+
+      <LandingSections sections={shown} localitiesTitle={`Localities in ${state}`} />
     </div>
   );
 }

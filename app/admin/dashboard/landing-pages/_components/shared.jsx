@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { slugify } from '@/lib/slug';
+import { LEVEL_LABELS, landingPath, levelOf } from '@/lib/landingLevel';
 
 // Shared bits for the landing pages admin (Phase 3A): styles matching the
 // coupons/projects admin pages, the backend model's limits, and the
@@ -83,16 +84,53 @@ export function takeDuplicateWarnings(pageId) {
 }
 
 export const INDEXING_LABELS = { auto: 'Auto', index: 'Force index', noindex: 'Noindex' };
+// State/category pages: 'auto' and 'index' both mean indexed.
+export const HUB_INDEXING_LABELS = { auto: 'Index', index: 'Index', noindex: 'Noindex' };
+export const indexingLabel = (page) => (
+  (levelOf(page) === 'city' ? INDEXING_LABELS : HUB_INDEXING_LABELS)[page.seo?.indexing] || (levelOf(page) === 'city' ? 'Auto' : 'Index')
+);
 
 export const PLACEHOLDERS = ['{{city}}', '{{state}}', '{{category}}', '{{vendorCount}}'];
 
-// Public URL path for a page — same slug rules as the backend and the city
-// route (lib/slug.js).
-export function publicPath(categorySlug, state, city) {
-  const s = slugify(state || '');
-  const c = slugify(city || '');
-  if (!categorySlug || !s || !c) return null;
-  return `/${categorySlug}/${s}/${c}/`;
+// Public URL path for a page of `level` (default city) from free-text
+// state/city — same slug rules as the backend and the routes (lib/slug.js).
+// null until every part the level needs is filled in.
+export function publicPath(categorySlug, state, city, level = 'city') {
+  return landingPath(level, categorySlug, slugify(state || ''), slugify(city || ''));
+}
+
+// A saved page's public path (needs a populated category.slug), or null.
+export const pagePath = (page) => (
+  page?.category?.slug ? landingPath(levelOf(page), page.category.slug, page.stateSlug, page.citySlug) : null
+);
+
+// "Pune, Maharashtra" / "Maharashtra" / "All of India" — a page's location.
+export function locationLabel(page) {
+  const level = levelOf(page);
+  if (level === 'category') return 'All of India';
+  if (level === 'state') return page.state;
+  return `${page.city}, ${page.state}`;
+}
+
+// Editor title: "Interior Designers" / "Interior Designers in Uttar
+// Pradesh" / "Interior Designers in Pune, Maharashtra".
+export function pageTitle(page) {
+  const name = page.category?.name || 'Unknown category';
+  const level = levelOf(page);
+  if (level === 'category') return name;
+  return `${name} in ${locationLabel(page)}`;
+}
+
+export function LevelChip({ level }) {
+  return (
+    <span style={{
+      display: 'inline-block', padding: '3px 10px', borderRadius: 20,
+      fontSize: 11, fontWeight: 600, letterSpacing: '.02em', whiteSpace: 'nowrap',
+      background: 'var(--color-surface-alt)', color: 'var(--color-text-sub)', border: '1px solid var(--color-border)',
+    }}>
+      {LEVEL_LABELS[level] || LEVEL_LABELS.city}
+    </span>
+  );
 }
 
 export function StatusBadge({ status }) {
@@ -109,15 +147,19 @@ export function StatusBadge({ status }) {
   );
 }
 
-// Debounced GET /admin/landing-pages/match-check. Returns
-// { result, loading } — result is null until there's a category, state
-// and city to check, or when the check itself fails (it's only a hint).
-export function useMatchCheck(category, state, city, excludeId) {
+// Debounced GET /admin/landing-pages/match-check for a page of `level`
+// (default city). Returns { result, loading } — result is null until
+// there's a category (+ state, + city, as the level needs) to check, or
+// when the check itself fails (it's only a hint).
+export function useMatchCheck(category, state, city, excludeId, level = 'city') {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!category || !slugify(state || '') || !slugify(city || '')) {
+    const ready = category
+      && (level === 'category' || slugify(state || ''))
+      && (level !== 'city' || slugify(city || ''));
+    if (!ready) {
       setResult(null);
       setLoading(false);
       return undefined;
@@ -126,16 +168,32 @@ export function useMatchCheck(category, state, city, excludeId) {
     setLoading(true);
     const timer = setTimeout(() => {
       api.get('/admin/landing-pages/match-check', {
-        params: { category, state, city, ...(excludeId && { excludeId }) },
+        params: level === 'city'
+          ? { category, state, city, ...(excludeId && { excludeId }) }
+          : { level, category, ...(level === 'state' && { state }), ...(excludeId && { excludeId }) },
       })
         .then(({ data }) => { if (!cancelled) setResult(data.data || null); })
         .catch(() => { if (!cancelled) setResult(null); })
         .finally(() => { if (!cancelled) setLoading(false); });
     }, 400);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [category, state, city, excludeId]);
+  }, [category, state, city, excludeId, level]);
 
   return { result, loading };
+}
+
+// The vendor count a match-check result reports, or null.
+export function matchVendorCount(match) {
+  if (!match) return null;
+  if (match.level) return match.vendorCount ?? null;
+  return match.matchedPlace ? match.vendorsByPlace : match.vendorsByName;
+}
+
+// The existing page at exactly this key, from a match-check result.
+export function matchExisting(match, level, city) {
+  if (!match?.similar) return null;
+  if (level === 'city') return match.similar.find((p) => p.citySlug === slugify(city || '')) || null;
+  return match.similar.find((p) => p.reason === 'same-slug') || null;
 }
 
 // GET /admin/landing-pages/categories — active service categories with

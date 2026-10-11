@@ -10,8 +10,9 @@ import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import {
   CARD, SECTION_LABEL, HINT, SELECT_STYLE, LIMITS, PLACEHOLDERS, StatusBadge, useMatchCheck, ctaPairError,
-  takeDuplicateWarnings,
+  takeDuplicateWarnings, LevelChip, pageTitle, pagePath, matchVendorCount,
 } from '../_components/shared';
+import { defaultLandingTitle, isHubLevel, levelOf } from '@/lib/landingLevel';
 import { TextField, TextArea } from '../_components/Fields';
 import BannerFields from '../_components/BannerFields';
 import SectionsEditor, { withKeys } from '../_components/SectionsEditor';
@@ -21,9 +22,10 @@ import DeleteLandingPageModal from '../_components/DeleteLandingPageModal';
 import DuplicateLandingPageModal from '../_components/DuplicateLandingPageModal';
 import HistoryPanel, { formatWhen } from '../_components/HistoryPanel';
 
-// Server document -> editable form state. Only the fields this editor
-// writes; category/state/city are fixed once created.
-function toForm(page) {
+// Server document (or a version snapshot) -> editable form state. Only the
+// fields this editor writes; level/category/state/city are fixed once
+// created. `level` is the page's: hubs also edit vendorList.enabled.
+function toForm(page, level) {
   const b = page.banner || {};
   const s = page.seo || {};
   return {
@@ -38,7 +40,11 @@ function toForm(page) {
       faqItems: (sec.faqItems || []).map((f) => ({ question: f.question || '', answer: f.answer || '' })),
       localities: sec.localities || [], enabled: sec.enabled !== false,
     }))),
-    vendorList: { sort: page.vendorList?.sort || 'featured', limit: page.vendorList?.limit || 12 },
+    vendorList: {
+      sort: page.vendorList?.sort || 'featured',
+      limit: page.vendorList?.limit || 12,
+      ...(isHubLevel(level) && { enabled: page.vendorList?.enabled === true }),
+    },
     seo: {
       metaTitle: s.metaTitle || '', metaDescription: s.metaDescription || '',
       ogImage: s.ogImage || '', indexing: s.indexing || 'auto',
@@ -47,14 +53,19 @@ function toForm(page) {
 }
 
 // Form -> PUT body: editable fields only, client-only keys stripped.
-function toPayload(form) {
+// City pages always list their vendors, so only hubs send `enabled`.
+function toPayload(form, level) {
   return {
     banner: form.banner,
     heading: form.heading,
     intro: form.intro,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sections: form.sections.map(({ _key, _id, ...rest }) => (_id ? { _id, ...rest } : rest)),
-    vendorList: { sort: form.vendorList.sort, limit: Number(form.vendorList.limit) },
+    vendorList: {
+      ...(isHubLevel(level) && { enabled: form.vendorList.enabled === true }),
+      sort: form.vendorList.sort,
+      limit: Number(form.vendorList.limit),
+    },
     seo: form.seo,
   };
 }
@@ -104,10 +115,10 @@ export default function LandingPageEditor() {
   }, [id]);
 
   const applyServerPage = useCallback((p) => {
-    const f = toForm(p);
+    const f = toForm(p, levelOf(p));
     setPage(withCategory(p));
     setForm(f);
-    setSaved(JSON.stringify(toPayload(f)));
+    setSaved(JSON.stringify(toPayload(f, levelOf(p))));
   }, []);
 
   useEffect(() => {
@@ -116,7 +127,9 @@ export default function LandingPageEditor() {
       .catch((err) => setLoadError(err.response?.data?.message || 'Failed to load landing page.'));
   }, [id, applyServerPage]);
 
-  const dirty = useMemo(() => form && JSON.stringify(toPayload(form)) !== saved, [form, saved]);
+  const level = levelOf(page);
+  const hub = isHubLevel(level);
+  const dirty = useMemo(() => form && JSON.stringify(toPayload(form, level)) !== saved, [form, saved, level]);
 
   // A restore is only pending while it's an unsaved change: once saved,
   // or edited back to the saved content, there's nothing to attribute.
@@ -131,8 +144,8 @@ export default function LandingPageEditor() {
     return () => window.removeEventListener('beforeunload', warn);
   }, [dirty]);
 
-  const { result: match } = useMatchCheck(page?.category?._id, page?.state, page?.city, page?._id);
-  const vendorCount = match ? (match.matchedPlace ? match.vendorsByPlace : match.vendorsByName) : null;
+  const { result: match } = useMatchCheck(page?.category?._id, page?.state, page?.city, page?._id, level);
+  const vendorCount = matchVendorCount(match);
 
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -160,7 +173,7 @@ export default function LandingPageEditor() {
     try {
       const body = kind === 'unpublish'
         ? { status }
-        : { ...toPayload(form), ...(status && { status }), ...(restored && { restoredFrom: restored.id }) };
+        : { ...toPayload(form, level), ...(status && { status }), ...(restored && { restoredFrom: restored.id }) };
       const { data } = await api.put(`/admin/landing-pages/${id}`, body);
       if (kind === 'unpublish') {
         // Keep any unsaved edits in the form; only status changed.
@@ -214,7 +227,7 @@ export default function LandingPageEditor() {
       toast.error('Save or discard your changes first');
       return;
     }
-    setForm(toForm(version.snapshot || {}));
+    setForm(toForm(version.snapshot || {}, level));
     setErrors({});
     setRestored({ id: version.id, createdAt: version.createdAt, bannerHidden: false });
     setHistoryOpen(false);
@@ -240,7 +253,8 @@ export default function LandingPageEditor() {
   if (!form) return <div style={{ padding: '48px 0' }}><Spinner size="md" /></div>;
 
   const published = page.status === 'published';
-  const path = `/${page.category?.slug}/${page.stateSlug}/${page.citySlug}/`;
+  const path = pagePath(page) || '';
+  const defaultTitle = defaultLandingTitle(level, { categoryName: page.category?.name, state: page.state, city: page.city });
 
   return (
     <div style={{ maxWidth: 860 }}>
@@ -275,7 +289,7 @@ export default function LandingPageEditor() {
         }}>
           <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600 }}>Review before publishing — this draft was copied from another city:</div>
+            <div style={{ fontWeight: 600 }}>Review before publishing — this draft was copied from another page:</div>
             <ul style={{ margin: '4px 0 0', paddingLeft: 18, listStyle: 'disc' }}>
               {copyWarnings.map((w, i) => <li key={i}>{w.message}</li>)}
             </ul>
@@ -295,8 +309,9 @@ export default function LandingPageEditor() {
       <div style={{ ...CARD, display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 300, color: 'var(--color-text)', margin: 0 }}>
-            {page.category?.name} in {page.city}, {page.state}
+            {pageTitle(page)}
           </h1>
+          <LevelChip level={level} />
           <StatusBadge status={page.status} />
           <span
             aria-live="polite"
@@ -355,6 +370,7 @@ export default function LandingPageEditor() {
         categoryName={page.category?.name}
         city={page.city}
         state={page.state}
+        level={level}
         vendorCount={vendorCount}
         published={published}
       />
@@ -372,7 +388,7 @@ export default function LandingPageEditor() {
             max={LIMITS.heading}
             counter
             error={errors.heading}
-            hint={`Blank = “${page.category?.name} in ${page.city}, ${page.state}”`}
+            hint={`Blank = “${defaultTitle}”`}
           />
           <TextArea
             label="Intro (Markdown)"
@@ -396,18 +412,40 @@ export default function LandingPageEditor() {
         </div>
       </section>
 
-      <SectionsEditor sections={form.sections} onChange={set('sections')} errors={errors} />
+      <SectionsEditor
+        sections={form.sections}
+        onChange={set('sections')}
+        errors={errors}
+        localitiesTitle={{ category: 'Areas we cover', state: 'Localities in {{state}}', city: 'Localities in {{city}}' }[level]}
+      />
 
       {/* Vendor list */}
       <section style={CARD}>
         <span style={SECTION_LABEL}>Vendor list</span>
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        {hub && (
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer', marginBottom: 14 }}>
+            <input
+              type="checkbox"
+              checked={form.vendorList.enabled === true}
+              onChange={(e) => set('vendorList')({ ...form.vendorList, enabled: e.target.checked })}
+              style={{ marginTop: 3, width: 16, height: 16, accentColor: 'var(--color-accent)' }}
+            />
+            <span>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>Show top vendors on this page</span>
+              <span style={{ ...HINT, display: 'block', marginTop: 2 }}>
+                Adds a vendor list below the {level === 'state' ? 'city' : 'state'} cards. Off by default.
+              </span>
+            </span>
+          </label>
+        )}
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end', ...(hub && !form.vendorList.enabled && { opacity: 0.55 }) }}>
           <div>
             <label htmlFor="lp-sort" style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-hint)', marginBottom: 5 }}>Sort</label>
             <select
               id="lp-sort"
               value={form.vendorList.sort}
               onChange={(e) => set('vendorList')({ ...form.vendorList, sort: e.target.value })}
+              disabled={hub && !form.vendorList.enabled}
               style={SELECT_STYLE}
             >
               <option value="featured">Featured first</option>
@@ -423,10 +461,13 @@ export default function LandingPageEditor() {
               max={50}
               value={String(form.vendorList.limit)}
               onChange={(v) => set('vendorList')({ ...form.vendorList, limit: v === '' ? '' : Math.max(1, Math.min(50, Number(v) || 1)) })}
+              disabled={hub && !form.vendorList.enabled}
               error={errors['vendorList.limit']}
             />
           </div>
-          <p style={{ ...HINT, margin: '0 0 12px' }}>1–50 vendors.{vendorCount != null && ` ${vendorCount} currently match this city.`}</p>
+          <p style={{ ...HINT, margin: '0 0 12px' }}>
+            1–50 vendors.{vendorCount != null && ` ${vendorCount} currently match this ${level === 'category' ? 'category' : level}.`}
+          </p>
         </div>
       </section>
 
@@ -435,7 +476,8 @@ export default function LandingPageEditor() {
         onChange={set('seo')}
         errors={errors}
         vendorCount={vendorCount}
-        snippet={{ categoryName: page.category?.name, city: page.city, state: page.state, path }}
+        level={level}
+        snippet={{ categoryName: page.category?.name, city: page.city, state: page.state, path, level }}
       />
 
       <DuplicateLandingPageModal page={duplicating ? page : null} onClose={() => setDuplicating(false)} />
@@ -456,7 +498,7 @@ export default function LandingPageEditor() {
         onClose={() => setDeleting(false)}
         onDeleted={() => {
           // Nothing left to save — don't let the unsaved-changes guard fire.
-          setSaved(JSON.stringify(toPayload(form)));
+          setSaved(JSON.stringify(toPayload(form, level)));
           router.push('/admin/dashboard/landing-pages');
         }}
       />

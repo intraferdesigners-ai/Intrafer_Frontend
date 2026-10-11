@@ -1,6 +1,7 @@
 // Run: node scripts/testLandingPlaceholders.mjs
 import assert from 'node:assert/strict';
 import { resolvePlaceholders, resolveLandingPage } from '../lib/landingPlaceholders.js';
+import { placeholderValues, landingPath, levelOf } from '../lib/landingLevel.js';
 
 const values = { city: 'Pune', state: 'Maharashtra', category: 'Interior Designers', vendorCount: 7 };
 let passed = 0;
@@ -71,6 +72,28 @@ test('resolveLandingPage tolerates a sparse page', () => {
   assert.equal(out.heading, '');
   assert.deepEqual(out.sections, []);
   assert.equal(out.banner.imageUrl, '');
+});
+
+// ── Phase 4C: page levels ────────────────────────────────────────────────
+test('placeholderValues per level: hubs have no {{city}}, category pages no {{state}}', () => {
+  const v = { categoryName: 'Architects', state: 'Goa', city: 'Panaji', vendorCount: 4 };
+  const text = '{{category}}|{{state}}|{{city}}|{{vendorCount}}|{{nope}}';
+  assert.equal(resolvePlaceholders(text, placeholderValues('city', v)), 'Architects|Goa|Panaji|4|');
+  assert.equal(resolvePlaceholders(text, placeholderValues('state', v)), 'Architects|Goa||4|');
+  assert.equal(resolvePlaceholders(text, placeholderValues('category', v)), 'Architects|||4|');
+  assert.equal(resolveLandingPage({ heading: '{{category}} in {{city}}' }, placeholderValues('category', v)).heading, 'Architects in');
+});
+
+test('landingPath per level and levelOf default', () => {
+  assert.equal(landingPath('category', 'a', '', ''), '/a/');
+  assert.equal(landingPath('state', 'a', 'b', ''), '/a/b/');
+  assert.equal(landingPath('city', 'a', 'b', 'c'), '/a/b/c/');
+  assert.equal(landingPath('state', 'a', '', ''), null);
+  assert.equal(landingPath('city', 'a', 'b', ''), null);
+  assert.equal(landingPath('category', '', '', ''), null);
+  assert.equal(levelOf({}), 'city');
+  assert.equal(levelOf({ level: 'state' }), 'state');
+  assert.equal(levelOf({ level: 'bogus' }), 'city');
 });
 
 console.log(`\n${passed} passed`);

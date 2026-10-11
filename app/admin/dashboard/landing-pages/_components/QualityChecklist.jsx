@@ -8,11 +8,11 @@ import { CARD, SECTION_LABEL, HINT } from './shared';
 // Advisory quality checks (lib/landingChecklist.js), re-evaluated as the
 // form changes. Never blocks saving or publishing. Open by default for
 // drafts, collapsed for published pages.
-export default function QualityChecklist({ form, categoryName, city, state, vendorCount, published }) {
+export default function QualityChecklist({ form, categoryName, city, state, level = 'city', vendorCount, published }) {
   const [open, setOpen] = useState(!published);
   const checks = useMemo(
-    () => evaluateChecklist(form, { categoryName, city, state, vendorCount }),
-    [form, categoryName, city, state, vendorCount]
+    () => evaluateChecklist(form, { categoryName, city, state, vendorCount, level }),
+    [form, categoryName, city, state, vendorCount, level]
   );
   const passed = checks.filter((c) => c.level === 'pass').length;
 

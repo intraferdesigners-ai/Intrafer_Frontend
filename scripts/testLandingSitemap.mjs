@@ -81,4 +81,61 @@ await test('skips entries with missing slugs', async () => {
   assert.deepEqual(out, existing());
 });
 
+// ── Phase 4C: every level ────────────────────────────────────────────────
+const withHubs = () => [
+  ...existing(),
+  { url: `${BASE}/interior-designers/maharashtra/`, priority: 0.6, lastModified: NOW },
+];
+
+await test('hubs: indexable + missing → added with the level priority and the right URL', async () => {
+  const pages = await fetchLandingSitemapPages('https://api.example/api', {}, mockFetch(respond([
+    { level: 'category', categorySlug: 'architects', stateSlug: '', citySlug: '', updatedAt: '2026-03-01T00:00:00.000Z', indexable: true },
+    { level: 'state', categorySlug: 'interior-designers', stateSlug: 'goa', citySlug: '', indexable: true },
+    { level: 'city', categorySlug: 'interior-designers', stateSlug: 'goa', citySlug: 'panaji', indexable: true },
+  ])));
+  const out = mergeLandingPages(withHubs(), pages, BASE, NOW);
+  assert.deepEqual(out.slice(4), [
+    { url: `${BASE}/architects/`, lastModified: '2026-03-01T00:00:00.000Z', priority: 0.8 },
+    { url: `${BASE}/interior-designers/goa/`, lastModified: NOW, priority: 0.6 },
+    { url: `${BASE}/interior-designers/goa/panaji/`, lastModified: NOW, priority: 0.5 },
+  ]);
+});
+
+await test('hubs: indexable + already listed → no-op, existing priority kept', async () => {
+  const out = mergeLandingPages(withHubs(), [
+    { level: 'category', categorySlug: 'interior-designers', stateSlug: '', citySlug: '', indexable: true },
+    { level: 'state', categorySlug: 'interior-designers', stateSlug: 'maharashtra', citySlug: '', indexable: true },
+  ], BASE, NOW);
+  assert.deepEqual(out, withHubs());
+});
+
+await test('hubs: noindex → the matching existing hub URL is removed (and only it)', async () => {
+  const out = mergeLandingPages(withHubs(), [
+    { level: 'category', categorySlug: 'interior-designers', stateSlug: '', citySlug: '', indexable: false },
+    { level: 'state', categorySlug: 'interior-designers', stateSlug: 'maharashtra', citySlug: '', indexable: false },
+  ], BASE, NOW);
+  assert.deepEqual(out.map((e) => e.url), [`${BASE}/`, `${BASE}/interior-designers/uttar-pradesh/gautam-buddha-nagar/`]);
+});
+
+await test('hubs: noindex for an unlisted hub adds nothing; malformed hub entries skipped', async () => {
+  const out = mergeLandingPages(withHubs(), [
+    { level: 'state', categorySlug: 'interior-designers', stateSlug: 'kerala', citySlug: '', indexable: false },
+    { level: 'state', categorySlug: 'interior-designers', stateSlug: '', citySlug: '', indexable: true },
+    { level: 'category', categorySlug: '', stateSlug: '', citySlug: '', indexable: true },
+  ], BASE, NOW);
+  assert.deepEqual(out, withHubs());
+});
+
+await test('entries without level are city pages (old backend payload)', async () => {
+  const out = mergeLandingPages(withHubs(), [
+    { categorySlug: 'interior-designers', stateSlug: 'maharashtra', citySlug: '', indexable: false },
+  ], BASE, NOW);
+  assert.deepEqual(out, withHubs()); // a city entry without a city slug is malformed, not the state hub
+});
+
+await test('hubs: fetch failure leaves hub entries unchanged', async () => {
+  const pages = await fetchLandingSitemapPages('https://api.example/api', {}, mockFetch(null, { throws: true }));
+  assert.deepEqual(mergeLandingPages(withHubs(), pages, BASE, NOW), withHubs());
+});
+
 console.log(`\n${passed} passed`);

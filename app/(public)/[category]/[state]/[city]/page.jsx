@@ -3,13 +3,17 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Breadcrumb from '@/components/seo/Breadcrumb';
 import LandingBanner from '@/components/seo/LandingBanner';
-import LandingMarkdown from '@/components/seo/LandingMarkdown';
 import LandingPreviewStrip from '@/components/seo/LandingPreviewStrip';
+import {
+  authoredContent as resolveAuthored, authoredRobots, buildFaqJsonLd, FaqSection, LandingIntro, LandingSections,
+  visibleFaqItems, visibleSections,
+} from '@/components/seo/LandingAuthored';
 import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
 import VendorCard from '@/components/vendor/VendorCard';
 import { SERVICE_CATEGORIES } from '@/lib/categories';
-import { resolveLandingPage } from '@/lib/landingPlaceholders';
+import { previewToken } from '@/lib/landingHub';
+import { placeholderValues } from '@/lib/landingLevel';
 import { landingPageTitle } from '@/lib/landingSerp';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
@@ -86,12 +90,6 @@ const loadCity = cache(async (categorySlug, stateSlug, citySlug, preview) => {
   return { landing, data };
 });
 
-// ?preview=<token> (a single string), else null. Read only here — never
-// put into links, canonical URLs or the sitemap.
-const previewToken = (searchParams) => (
-  typeof searchParams?.preview === 'string' && searchParams.preview ? searchParams.preview : null
-);
-
 async function load(params, searchParams) {
   const [category, { landing, data }] = await Promise.all([
     loadCategory(params.category),
@@ -102,17 +100,12 @@ async function load(params, searchParams) {
 
 // Display names come from the record (state/city are free text there, and
 // the city may not exist in Place at all); every authored text field has
-// its placeholders resolved. Banner/OG image URLs must be https — the
-// backend enforces that on save, re-checked so a bad value means "no image"
-// rather than a broken one.
+// its placeholders resolved (components/seo/LandingAuthored.jsx).
 function authoredContent(category, landing) {
   const { page, vendorCount } = landing;
-  const content = resolveLandingPage(page, {
-    city: page.city, state: page.state, category: category.name, vendorCount,
-  });
-  const https = (url) => (/^https:\/\//i.test(url) ? url : '');
-  content.banner.imageUrl = https(content.banner.imageUrl);
-  content.seo.ogImage = https(content.seo.ogImage);
+  const content = resolveAuthored(page, placeholderValues('city', {
+    city: page.city, state: page.state, categoryName: category.name, vendorCount,
+  }));
   return { ...content, city: page.city, state: page.state };
 }
 
@@ -236,34 +229,6 @@ function buildCollectionJsonLd(category, city, state, vendors) {
   };
 }
 
-// `questions`: [{ question, answer }] — must be exactly the visible text.
-function buildFaqJsonLd(questions) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: questions.map((q) => ({
-      '@type': 'Question',
-      name: q.question,
-      acceptedAnswer: { '@type': 'Answer', text: q.answer },
-    })),
-  };
-}
-
-// Shared by the automatic page's CityFAQ and authored FAQ sections.
-function FaqSection({ title, questions }) {
-  return (
-    <section style={{ marginTop: '60px' }}>
-      <h2 className="page-heading" style={{ marginBottom: '24px' }}>{title}</h2>
-      {questions.map((q, i) => (
-        <div key={i} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--border)' }}>
-          <h3 style={{ fontSize: '15px', fontWeight: 500, marginBottom: '8px', color: 'var(--text)' }}>{q.question}</h3>
-          <p style={{ fontSize: '14px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{q.answer}</p>
-        </div>
-      ))}
-    </section>
-  );
-}
-
 // Nearby cities + related services, shared by both page variants.
 function RelatedLinks({ params, category, state, city, nearbyCities, relatedCategories }) {
   return (
@@ -329,7 +294,6 @@ export async function generateMetadata({ params, searchParams }) {
   if (landing?.page) {
     const { city, state, seo, banner } = authoredContent(category, landing);
     const ogImage = seo.ogImage || banner.imageUrl;
-    const isPreview = landing.preview === true;
     return {
       // Root layout's title template appends " | Intrafer"; shared with the
       // editor's Google-snippet preview (lib/landingSerp.js).
@@ -337,12 +301,9 @@ export async function generateMetadata({ params, searchParams }) {
       ...(seo.metaDescription && { description: seo.metaDescription }),
       ...(ogImage && { openGraph: { images: [ogImage] } }),
       // `indexable` is computed backend-side from the page's seo.indexing
-      // (auto = the same vendor threshold as the automatic page); always
-      // false for a preview. A preview is also nofollow, and sends no
-      // Referer so the token in the URL can't leak to linked/embedded sites.
-      ...(isPreview
-        ? { robots: { index: false, follow: false }, referrer: 'no-referrer' }
-        : !landing.indexable && { robots: { index: false, follow: true } }),
+      // (auto = the same vendor threshold as the automatic page); previews
+      // are noindex, nofollow and no-referrer (see authoredRobots).
+      ...authoredRobots(landing),
       alternates: { canonical: `${SITE_URL}/${params.category}/${params.state}/${params.city}/` },
     };
   }
@@ -464,11 +425,7 @@ export default async function CityHubPage({ params, searchParams }) {
 async function AuthoredCityPage({ params, category, landing }) {
   const { city, state, banner, heading, intro, sections } = authoredContent(category, landing);
   const { vendors } = landing;
-  const visibleSections = sections.filter((sec) => sec.enabled && (
-    (sec.type === 'text' && (sec.title || sec.body))
-    || (sec.type === 'faq' && sec.faqItems.length > 0)
-    || (sec.type === 'localities' && sec.localities.length > 0)
-  ));
+  const shown = visibleSections(sections);
 
   const [nearbyCities, relatedCategories] = await Promise.all([
     fetchNearbyCities(params.category, params.state, params.city),
@@ -478,7 +435,7 @@ async function AuthoredCityPage({ params, category, landing }) {
   const businessJsonLd = buildBusinessJsonLd(category, city);
   const collectionJsonLd = buildCollectionJsonLd(category, city, state, vendors);
   // Every enabled FAQ section's items, exactly as rendered below.
-  const faqItems = visibleSections.filter((sec) => sec.type === 'faq').flatMap((sec) => sec.faqItems);
+  const faqItems = visibleFaqItems(shown);
   const faqJsonLd = faqItems.length === 0 ? null : buildFaqJsonLd(faqItems);
 
   // With a banner image, that image is the LCP — no vendor card competes
@@ -514,17 +471,12 @@ async function AuthoredCityPage({ params, category, landing }) {
 
       <LandingBanner banner={banner} />
 
-      <Reveal>
-        <p className="caps-label-primary" style={{ marginBottom: '10px' }}>SERVICE CATEGORY</p>
-        <h1 className="section-heading" style={{ marginBottom: '16px' }}>{heading || `${category.name} in ${city}, ${state}`}</h1>
-        {intro ? (
-          <div style={{ marginBottom: '26px' }}><LandingMarkdown>{intro}</LandingMarkdown></div>
-        ) : (
-          <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.8, maxWidth: '680px', marginBottom: '40px' }}>
-            Find verified {category.name.toLowerCase()} in {city}.
-          </p>
-        )}
-      </Reveal>
+      <LandingIntro
+        heading={heading}
+        defaultHeading={`${category.name} in ${city}, ${state}`}
+        intro={intro}
+        defaultBlurb={<>Find verified {category.name.toLowerCase()} in {city}.</>}
+      />
 
       {vendors.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px,1fr))', gap: '20px' }}>
@@ -545,38 +497,7 @@ async function AuthoredCityPage({ params, category, landing }) {
         </div>
       )}
 
-      {visibleSections.map((sec, i) => {
-        if (sec.type === 'faq') {
-          return <FaqSection key={i} title={sec.title || 'Frequently asked questions'} questions={sec.faqItems} />;
-        }
-        if (sec.type === 'localities') {
-          // Plain names, not links — no locality pages exist to link to.
-          return (
-            <section key={i} style={{ marginTop: '60px' }}>
-              <h2 className="page-heading" style={{ marginBottom: '20px' }}>{sec.title || `Localities in ${city}`}</h2>
-              <ul style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', listStyle: 'none', padding: 0, margin: 0 }}>
-                {sec.localities.map((name, j) => (
-                  <li
-                    key={j}
-                    style={{
-                      padding: '8px 14px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)',
-                      background: 'var(--surface)', color: 'var(--text)', fontSize: '13px',
-                    }}
-                  >
-                    {name}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          );
-        }
-        return (
-          <section key={i} style={{ marginTop: '60px' }}>
-            {sec.title && <h2 className="page-heading" style={{ marginBottom: '20px' }}>{sec.title}</h2>}
-            <LandingMarkdown>{sec.body}</LandingMarkdown>
-          </section>
-        );
-      })}
+      <LandingSections sections={shown} localitiesTitle={`Localities in ${city}`} />
 
       <RelatedLinks params={params} category={category} state={state} city={city} nearbyCities={nearbyCities} relatedCategories={relatedCategories} />
     </div>

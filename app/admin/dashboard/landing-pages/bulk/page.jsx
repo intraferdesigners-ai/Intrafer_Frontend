@@ -36,7 +36,9 @@ const TONES = {
 };
 const SKIPPED = ['exists', 'duplicate_in_batch', 'invalid'];
 
-// Every landing page, for the template picker ("Category — City, State").
+// Every CITY landing page, for the template picker ("Category — City,
+// State") — bulk create makes city pages, and the backend refuses hub
+// templates.
 function useAllLandingPages() {
   const [pages, setPages] = useState([]);
   useEffect(() => {
@@ -44,7 +46,7 @@ function useAllLandingPages() {
     (async () => {
       const all = [];
       for (let page = 1; page <= TEMPLATE_MAX_PAGES; page += 1) {
-        const { data } = await api.get('/admin/landing-pages', { params: { page, limit: TEMPLATE_PAGE_LIMIT } });
+        const { data } = await api.get('/admin/landing-pages', { params: { page, limit: TEMPLATE_PAGE_LIMIT, level: 'city' } });
         all.push(...(data.data?.pages || []));
         if (page >= (data.data?.totalPages || 1)) break;
       }

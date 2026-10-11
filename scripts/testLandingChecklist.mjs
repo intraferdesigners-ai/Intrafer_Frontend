@@ -1,6 +1,6 @@
 // Run: node scripts/testLandingChecklist.mjs
 import assert from 'node:assert/strict';
-import { evaluateChecklist, countWords, findUnknownTokens } from '../lib/landingChecklist.js';
+import { evaluateChecklist, countWords, findUnknownTokens, findEmptyTokens } from '../lib/landingChecklist.js';
 
 const ctx = { categoryName: 'Interior Designers', state: 'Uttar Pradesh', city: 'Ghaziabad', vendorCount: 7 };
 let passed = 0;
@@ -187,6 +187,50 @@ test('banner, CTA, FAQ, localities and heading checks', () => {
 test('never throws on a sparse form', () => {
   const checks = evaluateChecklist({}, { ...ctx, vendorCount: undefined });
   assert.ok(checks.length > 0);
+});
+
+// ── Phase 4C: page levels ────────────────────────────────────────────────
+const hubForm = () => {
+  const f = good();
+  f.heading = '{{category}} in {{state}}';
+  f.banner.headline = 'Designers across {{state}}';
+  f.sections[0].title = 'Why {{state}}';
+  f.seo.metaTitle = 'Top {{category}} in {{state}}';
+  f.seo.metaDescription = f.seo.metaDescription.replace('{{city}}', '{{state}}');
+  return f;
+};
+
+test('state page: no vendor check, indexing always passes, placeholders fit', () => {
+  const checks = byId(evaluateChecklist({ ...hubForm(), seo: { ...hubForm().seo, indexing: 'index' } }, { ...ctx, level: 'state', vendorCount: 0 }));
+  assert.equal(checks.vendors, undefined);
+  assert.equal(checks.indexing.level, 'pass');
+  assert.equal(checks.indexing.label, 'Indexing: on');
+  assert.equal(checks.emptyTokens.level, 'pass');
+  assert.equal(checks.emptyTokens.label, 'Placeholders fit a state page');
+  const noindex = byId(evaluateChecklist({ ...hubForm(), seo: { ...hubForm().seo, indexing: 'noindex' } }, { ...ctx, level: 'state' }));
+  assert.equal(noindex.indexing.label, 'Indexing: off (noindex)');
+});
+
+test('{{city}} on a state page and {{state}} on a category page are flagged', () => {
+  const state = byId(evaluateChecklist(good(), { ...ctx, level: 'state' }));
+  assert.equal(state.emptyTokens.level, 'warn');
+  assert.match(state.emptyTokens.hint, /\{\{city\}\} is always empty on a state page/);
+  const cat = byId(evaluateChecklist(hubForm(), { ...ctx, level: 'category' }));
+  assert.equal(cat.emptyTokens.level, 'warn');
+  assert.match(cat.emptyTokens.hint, /\{\{state\}\} is always empty on a category page/);
+  assert.deepEqual(findEmptyTokens(['{{city}} {{ state }} {{category}}'], 'category'), ['{{city}}', '{{ state }}']);
+  assert.deepEqual(findEmptyTokens(['{{city}}'], 'city'), []);
+});
+
+test('hub meta-title check uses the level default title', () => {
+  const f = good();
+  f.seo.metaTitle = '';
+  assert.match(byId(evaluateChecklist(f, { ...ctx, level: 'category' })).metaTitle.hint, /“Interior Designers in India \| Intrafer”/);
+  assert.match(byId(evaluateChecklist(f, { ...ctx, level: 'state' })).metaTitle.hint, /“Interior Designers in Uttar Pradesh \| Intrafer”/);
+});
+
+test('city checklist unchanged with an explicit level', () => {
+  assert.deepEqual(evaluateChecklist(good(), { ...ctx, level: 'city' }), evaluateChecklist(good(), ctx));
 });
 
 console.log(`\n${passed} passed`);

@@ -71,4 +71,25 @@ test('display URL is a breadcrumb; query string dropped', () => {
   assert.equal(buildSerpPreview(ctx).displayUrl, 'intrafer.in › interior-designers › uttar-pradesh › ghaziabad');
 });
 
+// ── Phase 4C: page levels ────────────────────────────────────────────────
+test('default title per level (city default unchanged)', () => {
+  const base = { metaTitle: '', categoryName: 'Interior Designers', city: 'Pune', state: 'Maharashtra' };
+  assert.equal(landingPageTitle(base), 'Interior Designers in Pune, Maharashtra');
+  assert.equal(landingPageTitle({ ...base, level: 'city' }), 'Interior Designers in Pune, Maharashtra');
+  assert.equal(landingPageTitle({ ...base, level: 'state' }), 'Interior Designers in Maharashtra');
+  assert.equal(landingPageTitle({ ...base, level: 'category' }), 'Interior Designers in India');
+  assert.equal(landingPageTitle({ ...base, metaTitle: 'Mine | Intrafer', level: 'category' }), 'Mine');
+});
+
+test('SERP preview per level: hub titles, {{city}}/{{state}} empty where they do not apply', () => {
+  const hub = { categoryName: 'Interior Designers', state: 'Maharashtra', city: 'Pune', vendorCount: 9 };
+  const state = buildSerpPreview({ ...hub, level: 'state', metaTitle: '', metaDescription: '{{vendorCount}} in {{state}}{{city}}.', path: '/interior-designers/maharashtra/' });
+  assert.equal(state.fullTitle, 'Interior Designers in Maharashtra | Intrafer');
+  assert.equal(state.fullDescription, '9 in Maharashtra.');
+  assert.equal(state.displayUrl, 'intrafer.in › interior-designers › maharashtra');
+  const cat = buildSerpPreview({ ...hub, level: 'category', metaTitle: '{{category}} {{state}} {{city}} hub', metaDescription: '', path: '/interior-designers/' });
+  assert.equal(cat.fullTitle, 'Interior Designers hub | Intrafer');
+  assert.equal(cat.displayUrl, 'intrafer.in › interior-designers');
+});
+
 console.log(`\n${passed} passed`);

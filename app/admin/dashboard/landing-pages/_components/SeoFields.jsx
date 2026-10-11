@@ -7,20 +7,36 @@ import { CARD, SECTION_LABEL, HINT, LIMITS } from './shared';
 
 const THRESHOLD = 3; // backend MIN_VENDORS_TO_INDEX (src/utils/indexThreshold.js)
 
+// Blank-title hint per page type (lib/landingLevel.js defaultLandingTitle).
+const TITLE_HINTS = {
+  category: 'Blank = “{Category} in India”. “| Intrafer” is added automatically',
+  state: 'Blank = “{Category} in {State}”. “| Intrafer” is added automatically',
+  city: 'Blank = “{Category} in {City}, {State}”. “| Intrafer” is added automatically',
+};
+
 // `vendorCount`: from match-check (null while loading/unknown).
-// `snippet`: { categoryName, city, state, path } for the Google preview.
-export default function SeoFields({ seo, onChange, errors, vendorCount, snippet }) {
+// `snippet`: { categoryName, city, state, path, level } for the Google preview.
+// `level`: city pages keep Auto / Force index / Noindex; state and category
+// pages are always indexed unless set to Noindex, so they get two options
+// ('auto' and 'index' both show as "Index").
+export default function SeoFields({ seo, onChange, errors, vendorCount, snippet, level = 'city' }) {
   const set = (key) => (value) => onChange({ ...seo, [key]: value });
+  const hub = level !== 'city';
 
   const autoNote = vendorCount == null
     ? null
     : `${vendorCount} vendor${vendorCount === 1 ? '' : 's'} now — ${vendorCount >= THRESHOLD ? 'indexed' : 'not indexed'}`;
 
-  const OPTIONS = [
+  const OPTIONS = hub ? [
+    { value: 'auto', label: 'Index (default)', help: 'Indexed and listed in the sitemap.' },
+    { value: 'noindex', label: 'Noindex', help: 'Never indexed and kept out of the sitemap.' },
+  ] : [
     { value: 'auto', label: 'Auto', help: `Follows the ${THRESHOLD}-vendor rule: indexed once ${THRESHOLD}+ vendors are listed.`, note: autoNote },
     { value: 'index', label: 'Force index', help: 'Always indexed and listed in the sitemap, whatever the vendor count.' },
     { value: 'noindex', label: 'Noindex', help: 'Never indexed and kept out of the sitemap.' },
   ];
+  // A hub saved as 'index' is the same as 'auto' — shown as "Index (default)".
+  const current = hub && seo.indexing === 'index' ? 'auto' : (seo.indexing || 'auto');
 
   return (
     <section style={CARD} id="seo">
@@ -33,7 +49,7 @@ export default function SeoFields({ seo, onChange, errors, vendorCount, snippet 
           max={LIMITS.metaTitle}
           counter
           error={errors['seo.metaTitle']}
-          hint="Blank = “{Category} in {City}, {State}”. “| Intrafer” is added automatically"
+          hint={TITLE_HINTS[level] || TITLE_HINTS.city}
         />
         <TextArea
           label="Meta description"
@@ -57,9 +73,12 @@ export default function SeoFields({ seo, onChange, errors, vendorCount, snippet 
           <legend style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-hint)', marginBottom: 8 }}>
             Indexing
           </legend>
+          {hub && (
+            <p style={{ ...HINT, marginTop: 0, marginBottom: 8 }}>State and category pages are always indexed unless you choose Noindex.</p>
+          )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {OPTIONS.map((o) => {
-              const checked = (seo.indexing || 'auto') === o.value;
+              const checked = current === o.value;
               return (
                 <label
                   key={o.value}
