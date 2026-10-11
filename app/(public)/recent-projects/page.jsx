@@ -2,6 +2,12 @@ import Link from 'next/link';
 import Reveal from '../../../components/ui/Reveal';
 import RevealItem from '../../../components/ui/RevealItem';
 import ProjectImageSlider from '../../../components/vendor/ProjectImageSlider';
+import { cachedJson } from '../../../lib/cachedFetch';
+import { LIST_WINDOW, TAGS } from '../../../lib/cacheTags';
+
+// Cached (ISR, 5 min), purged on 'projects'; a failure throws at runtime so
+// the last good page stays up (see lib/cachedFetch.js).
+export const revalidate = 300;
 
 const normalizeSrc = (src) => (src.startsWith('/') || src.startsWith('http') ? src : `/${src}`);
 
@@ -11,12 +17,8 @@ export const metadata = {
 };
 
 async function fetchProjects() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/gallery`, { cache: 'no-store' });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return json.data?.projects || json.projects || json.data || [];
-  } catch { return []; }
+  const json = await cachedJson(`${process.env.NEXT_PUBLIC_API_URL}/public/gallery`, { revalidate: LIST_WINDOW, tags: [TAGS.PROJECTS] });
+  return json?.data?.projects || json?.projects || json?.data || [];
 }
 
 export default async function RecentProjectsPage() {

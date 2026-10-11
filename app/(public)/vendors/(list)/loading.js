@@ -1,5 +1,9 @@
-import Skeleton from '../../../components/ui/Skeleton';
+import Skeleton from '../../../../components/ui/Skeleton';
 
+// Lives in the (list) route group so it wraps only the listing, not
+// /vendors/[vendorId]/ (where it would stream a 200 before a missing
+// vendor's 404 is known).
+//
 // Shown instantly on navigation into /vendors — covers both the first visit
 // (e.g. from the homepage) and every filter/sort change, since those also
 // go through router.push('/vendors?...') against this same fully dynamic,

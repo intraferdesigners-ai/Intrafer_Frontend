@@ -7,8 +7,22 @@ import Reveal from '../../../../components/ui/Reveal';
 import Breadcrumb from '../../../../components/seo/Breadcrumb';
 import { SITE_URL } from '../../../../lib/siteUrl';
 import { isPublicProject } from '../../../../lib/projectSitemap';
+import { cachedJson } from '../../../../lib/cachedFetch';
+import { DETAIL_WINDOW, TAGS, projectTag, vendorTag } from '../../../../lib/cacheTags';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
+
+// Cached per project (ISR, 15 min) — the 404 for a missing/hidden project
+// included — and purged by the backend on any change to the project or its
+// vendor (project:<id>, vendor:<id>, projects).
+export const revalidate = 900; // = DETAIL_WINDOW (Next needs a literal here)
+
+// No ids are built ahead; each one is rendered on its first request and
+// then cached (on-demand ISR). Without this, Next 14 renders the dynamic
+// segment on every request.
+export function generateStaticParams() {
+  return [];
+}
 
 const OBJECT_ID = /^[a-f0-9]{24}$/i;
 
@@ -17,26 +31,24 @@ const OBJECT_ID = /^[a-f0-9]{24}$/i;
 // unpublished or unapproved), or a project failing the same isPublicProject
 // rule the sitemap uses (e.g. its vendor is gone, so vendorId populates to
 // null). Any other failure — network, 5xx — throws, so a backend blip is a
-// 5xx crawlers retry rather than a 404 that drops a real page.
+// 5xx crawlers retry (and never a cached 404) rather than a dropped page.
 async function fetchProject(id) {
   if (!OBJECT_ID.test(id)) return null;
-  const res = await fetch(`${API}/public/projects/${id}`, { cache: 'no-store' });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`GET /public/projects/${id} failed: ${res.status}`);
-  const json = await res.json();
-  const project = json.data?.project;
+  const json = await cachedJson(`${API}/public/projects/${id}`, {
+    revalidate: DETAIL_WINDOW, tags: [projectTag(id), TAGS.PROJECTS], nullOn404: true,
+  });
+  const project = json?.data?.project;
   return isPublicProject(project) && typeof project.vendorId === 'object' ? project : null;
 }
 
+// 404 (the project itself is missing or hidden) -> [] so the page's own
+// 404 wins; other failures throw like fetchProject's.
 async function fetchRelatedProjects(id) {
-  try {
-    const res = await fetch(`${API}/public/projects/${id}/related`, { cache: 'no-store' });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return json.data?.projects || [];
-  } catch {
-    return [];
-  }
+  if (!OBJECT_ID.test(id)) return [];
+  const json = await cachedJson(`${API}/public/projects/${id}/related`, {
+    revalidate: DETAIL_WINDOW, tags: [projectTag(id), TAGS.PROJECTS], nullOn404: true,
+  });
+  return json?.data?.projects || [];
 }
 
 // getProjectById's populated vendorId sub-document doesn't include
@@ -44,18 +56,13 @@ async function fetchRelatedProjects(id) {
 // extend that endpoint — this step explicitly excludes touching any Step
 // 1-7 backend file — this reuses GET /api/public/vendors/:id, which Step 6
 // already populates primaryCategory on, for the one extra field the
-// breadcrumb needs. Returns null (not thrown) if the vendor has none set
-// or the fetch fails, so the page falls back to the shorter breadcrumb
-// rather than breaking.
+// breadcrumb needs. Returns null if the vendor has none set (or 404s), so
+// the page falls back to the shorter breadcrumb; other failures throw.
 async function fetchVendorCategory(vendorId) {
-  try {
-    const res = await fetch(`${API}/public/vendors/${vendorId}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data?.vendor?.primaryCategory ?? null;
-  } catch {
-    return null;
-  }
+  const json = await cachedJson(`${API}/public/vendors/${vendorId}`, {
+    revalidate: DETAIL_WINDOW, tags: [vendorTag(vendorId), TAGS.VENDORS], nullOn404: true,
+  });
+  return json?.data?.vendor?.primaryCategory ?? null;
 }
 
 export async function generateMetadata({ params }) {

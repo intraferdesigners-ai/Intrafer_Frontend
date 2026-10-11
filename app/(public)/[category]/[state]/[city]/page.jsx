@@ -16,6 +16,7 @@ import { previewToken } from '@/lib/landingHub';
 import { placeholderValues } from '@/lib/landingLevel';
 import { landingPageTitle } from '@/lib/landingSerp';
 import { SITE_URL } from '@/lib/siteUrl';
+import { TAGS } from '@/lib/cacheTags';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -24,7 +25,7 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 // tag 'taxonomy') — 12 backend calls per render otherwise. Everything else
 // on this page (category, vendors, FAQ, the landing page and its ?preview=
 // token) stays no-store, and the page itself stays dynamic.
-const TAXONOMY_FETCH = { next: { revalidate: 3600, tags: ['taxonomy'] } };
+const TAXONOMY_FETCH = { next: { revalidate: 3600, tags: [TAGS.TAXONOMY] } };
 
 async function fetchCategory(slug) {
   try {

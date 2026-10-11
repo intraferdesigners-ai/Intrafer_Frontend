@@ -1,4 +1,11 @@
 import GalleryGrid from '@/components/vendor/GalleryGrid';
+import { cachedJson } from '@/lib/cachedFetch';
+import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
+
+// Cached (ISR, 5 min), purged on 'projects'. Same unpaginated
+// GET /public/gallery call as before; a failure throws at runtime so the
+// last good page stays up (see lib/cachedFetch.js).
+export const revalidate = 300;
 
 export const metadata = {
   title: 'Design Gallery | Intrafer',
@@ -6,17 +13,8 @@ export const metadata = {
 };
 
 async function fetchProjects() {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/public/gallery`,
-      { cache: 'no-store' }
-    );
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    const json = await res.json();
-    return json.data?.projects || [];
-  } catch {
-    return [];
-  }
+  const json = await cachedJson(`${process.env.NEXT_PUBLIC_API_URL}/public/gallery`, { revalidate: LIST_WINDOW, tags: [TAGS.PROJECTS] });
+  return json?.data?.projects || [];
 }
 
 export default async function GalleryPage() {

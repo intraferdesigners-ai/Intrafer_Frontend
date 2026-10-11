@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { IMAGES } from '../../../lib/images';
+import { TAGS } from '../../../lib/cacheTags';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -25,7 +26,7 @@ const STYLES_DATA = [
 
 async function fetchStyleCounts() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/style-counts`, { next: { revalidate: 300, tags: ['vendors'] } });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/style-counts`, { next: { revalidate: 300, tags: [TAGS.VENDORS] } });
     if (!res.ok) throw new Error(`API ${res.status}`);
     const json = await res.json();
     return json.data?.counts || {};

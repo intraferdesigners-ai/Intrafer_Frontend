@@ -1,10 +1,10 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { Building2 } from 'lucide-react';
-import VendorSearch from '../../../components/vendor/VendorSearch';
-import CompareBar from '../../../components/vendor/CompareBar';
-import VendorResultsGrid from '../../../components/vendor/VendorResultsGrid';
-import AnimatedCounter from '../../../components/ui/AnimatedCounter';
+import VendorSearch from '../../../../components/vendor/VendorSearch';
+import CompareBar from '../../../../components/vendor/CompareBar';
+import VendorResultsGrid from '../../../../components/vendor/VendorResultsGrid';
+import AnimatedCounter from '../../../../components/ui/AnimatedCounter';
 
 export const metadata = { title: 'Find Interior Designers | Intrafer' };
 

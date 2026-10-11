@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Star, Building2, ChevronLeft, Phone, Mail } from 'lucide-react';
+import { MapPin, Star, ChevronLeft, Phone, Mail } from 'lucide-react';
 import Button from '../../../../components/ui/Button';
 import VendorCard from '../../../../components/vendor/VendorCard';
 import ProjectsSection from '../../../../components/vendor/ProjectsSection';
@@ -13,6 +13,9 @@ import Reveal from '../../../../components/ui/Reveal';
 import Breadcrumb from '../../../../components/seo/Breadcrumb';
 import { slugify } from '../../../../lib/slug';
 import { SITE_URL } from '../../../../lib/siteUrl';
+import { TAGS } from '../../../../lib/cacheTags';
+import { fetchVendor, fetchVendorList } from './vendorData';
+import { notFound } from 'next/navigation';
 
 const PRICE_UNIT_LABEL = {
   flat: '',
@@ -20,69 +23,35 @@ const PRICE_UNIT_LABEL = {
   per_room: ' / room',
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+// Cached per vendor (ISR, 15 min) and purged by the backend on any change to
+// the vendor, its projects or reviews (vendor:<id>, vendors). A missing,
+// suspended or unlisted vendor is a real 404 from ./layout.jsx.
+export const revalidate = 900; // = DETAIL_WINDOW (Next needs a literal here)
 
-async function fetchVendor(id) {
-  try {
-    const res = await fetch(`${API}/public/vendors/${id}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data?.vendor ?? null;
-  } catch {
-    return null;
-  }
+// No ids are built ahead; each one is rendered on its first request and
+// then cached (on-demand ISR). Without this, Next 14 renders the dynamic
+// segment on every request.
+export function generateStaticParams() {
+  return [];
 }
 
-async function fetchProjects(id) {
-  try {
-    const res = await fetch(`${API}/public/vendors/${id}/projects`, { cache: 'no-store' });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return json.data?.projects || [];
-  } catch {
-    return [];
-  }
-}
-
-async function fetchSimilar(id) {
-  try {
-    const res = await fetch(`${API}/public/vendors/${id}/similar`, { cache: 'no-store' });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return json.data?.vendors || [];
-  } catch {
-    return [];
-  }
-}
-
-async function fetchReviews(id) {
-  try {
-    const res = await fetch(`${API}/reviews/vendor/${id}`, { cache: 'no-store' });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return json.data?.reviews || [];
-  } catch {
-    return [];
-  }
-}
+const fetchProjects = (id) => fetchVendorList(id, `/public/vendors/${id}/projects`, 'projects', TAGS.PROJECTS);
+const fetchSimilar = (id) => fetchVendorList(id, `/public/vendors/${id}/similar`, 'vendors', TAGS.VENDORS);
+const fetchReviews = (id) => fetchVendorList(id, `/reviews/vendor/${id}`, 'reviews', TAGS.REVIEWS);
 
 export async function generateMetadata({ params }) {
-  try {
-    const vendor = await fetchVendor(params.vendorId);
-    if (!vendor) return { title: 'Vendor not found' };
-    return {
-      title: vendor.businessName,
-      description: (vendor.description || '').slice(0, 155),
-      // Step 6 of the SEO restructuring project: this page is now reachable
-      // from multiple parents (city pages, search, /vendors, ...) and needs
-      // to state its own canonical explicitly. No robots override here —
-      // this page was never noindex before this step and step 6 is
-      // internal linking + schema only, not a go-live/indexation change.
-      alternates: { canonical: `${SITE_URL}/vendors/${params.vendorId}/` },
-    };
-  } catch {
-    return { title: 'Vendor not found' };
-  }
+  const vendor = await fetchVendor(params.vendorId);
+  if (!vendor) return { title: 'Vendor not found', robots: { index: false, follow: false } };
+  return {
+    title: vendor.businessName,
+    description: (vendor.description || '').slice(0, 155),
+    // Step 6 of the SEO restructuring project: this page is now reachable
+    // from multiple parents (city pages, search, /vendors, ...) and needs
+    // to state its own canonical explicitly. No robots override here —
+    // this page was never noindex before this step and step 6 is
+    // internal linking + schema only, not a go-live/indexation change.
+    alternates: { canonical: `${SITE_URL}/vendors/${params.vendorId}/` },
+  };
 }
 
 const LABEL = {
@@ -99,19 +68,7 @@ export default async function VendorProfilePage({ params }) {
     fetchReviews(params.vendorId),
   ]);
 
-  if (!vendor) {
-    return (
-      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
-        <Building2 size={48} color="var(--text-hint)" />
-        <h1 style={{ fontSize: 24, fontWeight: 400, color: 'var(--text)', margin: '16px 0 8px' }}>
-          Designer not found
-        </h1>
-        <Link href="/vendors/" style={{ fontSize: 14, color: 'var(--primary)', textDecoration: 'none' }}>
-          ← Browse all designers
-        </Link>
-      </main>
-    );
-  }
+  if (!vendor) notFound(); // layout.jsx already 404s; defensive
 
   const specs    = vendor.specializations || [];
   const location = [vendor.location?.city, vendor.location?.state].filter(Boolean).join(', ') || 'India';

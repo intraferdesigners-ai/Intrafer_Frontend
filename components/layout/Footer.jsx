@@ -93,7 +93,9 @@ export default function Footer() {
 
     async function fetchStats() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { cache: 'no-store' });
+        // Same-origin and cached (app/api/stats/route.js), not a
+        // browser -> backend call on every page view.
+        const res = await fetch('/api/stats/');
         if (!res.ok) throw new Error(`API ${res.status}`);
         const json = await res.json();
         const data = json.data;

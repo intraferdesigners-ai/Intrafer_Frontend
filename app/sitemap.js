@@ -2,6 +2,7 @@ import { slugify } from '@/lib/slug';
 import { fetchLandingSitemapPages, mergeLandingPages } from '@/lib/landingSitemap';
 import { fetchPublicProjects, projectEntries } from '@/lib/projectSitemap';
 import { SITE_URL } from '@/lib/siteUrl';
+import { TAGS } from '@/lib/cacheTags';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const baseUrl = SITE_URL;
@@ -99,7 +100,7 @@ async function fetchVendorPage(page, limit) {
       // drift) is what actually lets this fetch participate in the
       // route's ISR window.
       const res = await fetch(`${API}/public/vendors?page=${page}&limit=${limit}`, {
-        next: { revalidate },
+        next: { revalidate, tags: [TAGS.VENDORS] },
       });
       if (!res.ok) throw new Error(`GET /public/vendors failed: ${res.status}`);
       return await res.json();
@@ -147,12 +148,12 @@ async function fetchCategoryStateEntries() {
   const entries = [];
 
   for (const slug of CATEGORY_SLUGS) {
-    const catRes = await fetch(`${API}/public/service-categories/${slug}`, { next: { revalidate } });
+    const catRes = await fetch(`${API}/public/service-categories/${slug}`, { next: { revalidate, tags: [TAGS.TAXONOMY] } });
     if (catRes.status === 404) continue;
     if (!catRes.ok) throw new Error(`GET /public/service-categories/${slug} failed: ${catRes.status}`);
     entries.push({ url: `${baseUrl}/${slug}/`, priority: 0.8 });
 
-    const statesRes = await fetch(`${API}/public/states?category=${slug}`, { next: { revalidate } });
+    const statesRes = await fetch(`${API}/public/states?category=${slug}`, { next: { revalidate, tags: [TAGS.TAXONOMY, TAGS.VENDORS] } });
     if (statesRes.status === 404) continue;
     if (!statesRes.ok) throw new Error(`GET /public/states?category=${slug} failed: ${statesRes.status}`);
     const statesJson = await statesRes.json();
@@ -167,7 +168,7 @@ async function fetchCategoryStateEntries() {
       // use). A non-ok response here would be surprising (this state just
       // resolved via the states call above) — skip this state's cities
       // rather than fail the whole sitemap over it.
-      const citiesRes = await fetch(`${API}/public/category-cities?category=${slug}&state=${stateSlug}`, { next: { revalidate } });
+      const citiesRes = await fetch(`${API}/public/category-cities?category=${slug}&state=${stateSlug}`, { next: { revalidate, tags: [TAGS.TAXONOMY, TAGS.VENDORS] } });
       if (!citiesRes.ok) continue;
       const citiesJson = await citiesRes.json();
       const cities = citiesJson.data?.cities || [];
@@ -176,7 +177,7 @@ async function fetchCategoryStateEntries() {
         if (!c.citySlug) continue; // guards against a malformed <loc>
         const vendorsRes = await fetch(
           `${API}/public/vendors?category=${slug}&state=${stateSlug}&city=${c.citySlug}`,
-          { next: { revalidate } }
+          { next: { revalidate, tags: [TAGS.VENDORS] } }
         );
         if (!vendorsRes.ok) continue; // same reasoning as citiesRes above
         const vendorsJson = await vendorsRes.json();
@@ -227,13 +228,13 @@ export default async function sitemap() {
 
   // A failed fetch returns null -> no project entries; every other group
   // above is unaffected.
-  const projectResult = await fetchPublicProjects(API, { next: { revalidate } });
+  const projectResult = await fetchPublicProjects(API, { next: { revalidate, tags: [TAGS.PROJECTS] } });
   const projectUrls = projectEntries(projectResult?.projects, baseUrl, now);
 
   // Admin-authored landing pages (Phase 2): adds indexable ones, and drops
   // any threshold-qualified city above whose authored page forces noindex.
   // A failed fetch returns null, which leaves everything above unchanged —
   // same fallback idea as the two blocks above.
-  const landingPages = await fetchLandingSitemapPages(API, { next: { revalidate } });
+  const landingPages = await fetchLandingSitemapPages(API, { next: { revalidate, tags: [TAGS.LANDING] } });
   return mergeLandingPages([...staticEntries, ...vendorEntries, ...projectUrls, ...categoryStateEntries], landingPages, baseUrl, now);
 }

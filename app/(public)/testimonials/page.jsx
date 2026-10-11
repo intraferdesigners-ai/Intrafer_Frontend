@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import TestimonialsGrid from './TestimonialsGrid';
 import Reveal from '../../../components/ui/Reveal';
+import { TAGS } from '../../../lib/cacheTags';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -14,7 +15,7 @@ export const metadata = {
 
 async function fetchSiteReviews() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/site-reviews`, { next: { revalidate: 300, tags: ['reviews'] } });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/site-reviews`, { next: { revalidate: 300, tags: [TAGS.REVIEWS] } });
     if (!res.ok) throw new Error(`API ${res.status}`);
     const json = await res.json();
     return { reviews: json.data?.reviews || [], stats: json.data?.stats || null };

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import VendorCard from '../../../../components/vendor/VendorCard';
 import Reveal from '../../../../components/ui/Reveal';
 import RevealItem from '../../../../components/ui/RevealItem';
+import { TAGS } from '../../../../lib/cacheTags';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -68,7 +69,7 @@ async function fetchVendors(cityName) {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/public/vendors?city=${encodeURIComponent(cityName)}&limit=6`,
-      { next: { revalidate: 300, tags: ['vendors'] } }
+      { next: { revalidate: 300, tags: [TAGS.VENDORS] } }
     );
     if (!res.ok) return [];
     const json = await res.json();
@@ -78,7 +79,7 @@ async function fetchVendors(cityName) {
 
 async function fetchStats() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { next: { revalidate: 300, tags: ['stats'] } });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { next: { revalidate: 300, tags: [TAGS.STATS] } });
     const json = await res.json();
     return json.data || null;
   } catch { return null; }

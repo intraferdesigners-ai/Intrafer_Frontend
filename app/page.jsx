@@ -20,6 +20,8 @@ import HowItWorksCard from '../components/ui/HowItWorksCard';
 import StyleGallery from '../components/public/StyleGallery';
 import CostEstimatorTeaser from '../components/public/CostEstimatorTeaser';
 import TestimonialCarousel from '../components/public/TestimonialCarousel';
+import { cachedJson } from '../lib/cachedFetch';
+import { LIST_WINDOW, TAGS } from '../lib/cacheTags';
 
 export const metadata = {
   title: 'Intrafer — Vetted Interior Designers Across India',
@@ -27,53 +29,40 @@ export const metadata = {
   alternates: { canonical: '/' },
 };
 
+// Cached (ISR, 5 min) and purged on demand by the backend (homepage,
+// projects, reviews, vendors, stats tags). A failing fetch throws at runtime
+// so the last good page stays up (see lib/cachedFetch.js); the fallbacks
+// below only apply during `next build`.
+export const revalidate = 300;
+const API = process.env.NEXT_PUBLIC_API_URL;
+
 async function fetchStats() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    const json = await res.json();
-    return json.data || null;
-  } catch { return null; }
+  const json = await cachedJson(`${API}/public/stats`, { revalidate: LIST_WINDOW, tags: [TAGS.STATS] });
+  return json?.data || null;
 }
 
 const DEFAULT_HERO_SUBTITLE = "Compare vetted interior designers by city, style, and budget. Every portfolio shown is real, completed work — submit one enquiry and hear back within two days.";
 
 async function fetchHomepageContent() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/homepage-content`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    const json = await res.json();
-    return json.data?.heroSubtitle || DEFAULT_HERO_SUBTITLE;
-  } catch { return DEFAULT_HERO_SUBTITLE; }
+  const json = await cachedJson(`${API}/public/homepage-content`, { revalidate: LIST_WINDOW, tags: [TAGS.HOMEPAGE] });
+  return json?.data?.heroSubtitle || DEFAULT_HERO_SUBTITLE;
 }
 
 async function fetchFeaturedProjects() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/featured-projects`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    const json = await res.json();
-    return json.data?.projects || [];
-  } catch { return []; }
+  const json = await cachedJson(`${API}/public/featured-projects`, { revalidate: LIST_WINDOW, tags: [TAGS.PROJECTS] });
+  return json?.data?.projects || [];
 }
 
 async function fetchSiteReviews() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/site-reviews`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    const json = await res.json();
-    return json.data?.reviews || [];
-  } catch { return []; }
+  const json = await cachedJson(`${API}/public/site-reviews`, { revalidate: LIST_WINDOW, tags: [TAGS.REVIEWS] });
+  return json?.data?.reviews || [];
 }
 
 // Real per-style vendor counts (Vendor.countDocuments by specialization),
 // not a fabricated figure — see public.controller.js's getStyleCounts.
 async function fetchStyleCounts() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/style-counts`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    const json = await res.json();
-    return json.data?.counts || {};
-  } catch { return {}; }
+  const json = await cachedJson(`${API}/public/style-counts`, { revalidate: LIST_WINDOW, tags: [TAGS.VENDORS] });
+  return json?.data?.counts || {};
 }
 
 // Stock illustrative pairs — only one real Project document currently has

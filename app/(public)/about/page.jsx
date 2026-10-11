@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { IMAGES } from '@/lib/images';
 import Reveal from '@/components/ui/Reveal';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
+import { TAGS } from '@/lib/cacheTags';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -15,7 +16,7 @@ export const metadata = {
 
 async function fetchStats() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { next: { revalidate: 300, tags: ['stats'] } });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { next: { revalidate: 300, tags: [TAGS.STATS] } });
     if (!res.ok) throw new Error(`API ${res.status}`);
     const json = await res.json();
     return json.data || null;
