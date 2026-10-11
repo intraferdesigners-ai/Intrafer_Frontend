@@ -2,6 +2,7 @@ import Link from 'next/link';
 import TestimonialsGrid from './TestimonialsGrid';
 import Reveal from '../../../components/ui/Reveal';
 import { TAGS } from '../../../lib/cacheTags';
+import { SITE_URL } from '../../../lib/siteUrl';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -11,6 +12,7 @@ export const revalidate = 300;
 export const metadata = {
   title: 'Testimonials | What Homeowners Say | Intrafer',
   description: 'Read verified reviews from homeowners who transformed their spaces with Intrafer designers.',
+  alternates: { canonical: `${SITE_URL}/testimonials/` },
 };
 
 async function fetchSiteReviews() {

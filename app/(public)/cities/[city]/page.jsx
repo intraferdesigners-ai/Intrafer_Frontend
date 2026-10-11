@@ -4,6 +4,7 @@ import VendorCard from '../../../../components/vendor/VendorCard';
 import Reveal from '../../../../components/ui/Reveal';
 import RevealItem from '../../../../components/ui/RevealItem';
 import { TAGS } from '../../../../lib/cacheTags';
+import { SITE_URL } from '../../../../lib/siteUrl';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -58,7 +59,10 @@ const CITY_MAP_COORDS = {
 export async function generateMetadata({ params }) {
   const city = CITY_DATA[params.city];
   if (!city) return { title: 'City Not Found | Intrafer' };
-  return { title: `Interior Designers in ${city.name} | Intrafer` };
+  return {
+    title: `Interior Designers in ${city.name} | Intrafer`,
+    alternates: { canonical: `${SITE_URL}/cities/${params.city}/` },
+  };
 }
 
 export function generateStaticParams() {

@@ -101,4 +101,52 @@ test('sitemap, robots and metadataBase all come from lib/siteUrl', () => {
   assert.match(src('app/layout.jsx'), /metadataBase: new URL\(SITE_URL\)/);
 });
 
+// Every public page (app/page.jsx, (public), (vendor-site)) by route.
+const PAGE_ROOTS = ['app/(public)', 'app/(vendor-site)'];
+const pages = [join(ROOT, 'app/page.jsx'), ...PAGE_ROOTS.flatMap((d) => sourceFiles(join(ROOT, d)))]
+  .filter((f) => /[\\/]page\.jsx?$/.test(f))
+  .map((f) => {
+    const rel = relative(ROOT, f).split('\\').join('/');
+    const route = `/${rel.replace(/^app\//, '').replace(/(^|\/)\([^)]+\)/g, '').replace(/\/?page\.jsx?$/, '')}`.replace(/\/+/g, '/');
+    return { rel, route: route === '/' ? '/' : `${route.replace(/\/$/, '')}/`, src: readFileSync(f, 'utf8') };
+  });
+
+// Not indexable by design: per-visitor flows and token pages.
+const NOT_INDEXABLE = ['/enquiry/', '/enquiry/success/', '/enquiry/verify/', '/review/[token]/', '/compare/'];
+// Indexable but no canonical yet (backlog, reported in the small-fixes
+// batch). Shrink-only: a page here that gains a canonical fails the test
+// until it is removed from this list.
+const KNOWN_MISSING = [
+  '/faq/', '/gallery/', '/guides/', '/guides/[slug]/', '/how-it-works/', '/packages/', '/privacy/', '/terms/',
+  '/recent-projects/', '/vendors/', '/contact/', '/cost-calculator/', '/wardrobe-calculator/',
+  '/for-designers/', '/for-designers/privacy/', '/for-designers/terms/', '/plans/',
+];
+
+// "/cities/[city]/" -> `${SITE_URL}/cities/${params.city}/` (as written in source); "/" -> '/'.
+const expectedCanonical = (route) => (route === '/'
+  ? "'/'"
+  : `\`\${SITE_URL}${route.replace(/\[([^\]]+)\]/g, '${params.$1}')}\``);
+
+test('every indexable public page sets its own canonical: SITE_URL + its route, trailing slash', () => {
+  assert.ok(pages.length > 30, `only ${pages.length} pages found`);
+  const missing = [];
+  const wrong = [];
+  for (const { rel, route, src } of pages) {
+    if (NOT_INDEXABLE.includes(route) || KNOWN_MISSING.includes(route)) continue;
+    const found = [...src.matchAll(/canonical:\s*(`[^`]*`|'[^']*')/g)].map((m) => m[1]);
+    if (found.length === 0) missing.push(`${route} (${rel})`);
+    for (const c of found) if (c !== expectedCanonical(route)) wrong.push(`${route}: ${c}`);
+  }
+  assert.deepEqual(missing, [], 'pages without a canonical');
+  assert.deepEqual(wrong, [], 'canonicals not equal to SITE_URL + route');
+});
+
+test('the backlog list is accurate: every KNOWN_MISSING / NOT_INDEXABLE route exists and has no canonical', () => {
+  const byRoute = new Map(pages.map((p) => [p.route, p]));
+  for (const route of [...KNOWN_MISSING, ...NOT_INDEXABLE]) {
+    assert.ok(byRoute.has(route), `${route}: no such page — remove it from the list`);
+    assert.doesNotMatch(byRoute.get(route).src, /canonical:/, `${route} now has a canonical — remove it from the list`);
+  }
+});
+
 console.log(`\n${passed} passed`);

@@ -5,6 +5,7 @@ import { IMAGES } from '../../../../lib/images';
 import Reveal from '../../../../components/ui/Reveal';
 import RevealItem from '../../../../components/ui/RevealItem';
 import { TAGS } from '../../../../lib/cacheTags';
+import { SITE_URL } from '../../../../lib/siteUrl';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -38,7 +39,10 @@ const STYLE_SPECIALIZATIONS = {
 
 export async function generateMetadata({ params }) {
   const meta = STYLE_META[params.style] || { label: params.style };
-  return { title: `${meta.label} Interior Designers in Bangalore | Intrafer` };
+  return {
+    title: `${meta.label} Interior Designers in Bangalore | Intrafer`,
+    alternates: { canonical: `${SITE_URL}/design-styles/${params.style}/` },
+  };
 }
 
 export function generateStaticParams() {
