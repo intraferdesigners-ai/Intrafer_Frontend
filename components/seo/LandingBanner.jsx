@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { safeUrl } from '@/components/seo/LandingMarkdown';
+import { canOptimize } from '@/lib/imageHost';
 
 // Banner block at the top of an admin-authored landing page (Phase 2).
 // When it has an image, that image is the page's LCP element — hence
@@ -10,26 +11,9 @@ import { safeUrl } from '@/components/seo/LandingMarkdown';
 //
 // The admin can paste any https image URL, but next/image only optimizes
 // hosts listed in next.config.js images.remotePatterns (and throws for
-// anything else). Hosts matching that list are optimized; any other host
-// is served `unoptimized` instead of crashing the page. Keep this list in
-// sync with next.config.js.
-const OPTIMIZABLE_HOSTS = [
-  /(^|\.)[^.]+\.railway\.app$/,
-  /^res\.cloudinary\.com$/,
-  /(^|\.)[^.]+\.amazonaws\.com$/,
-  /^cdn\.intrafer\.com$/,
-  /^images\.unsplash\.com$/,
-  /^api\.intrafer\.in$/,
-];
-
-function isOptimizable(url) {
-  try {
-    const { protocol, hostname } = new URL(url);
-    return protocol === 'https:' && OPTIMIZABLE_HOSTS.some((re) => re.test(hostname));
-  } catch {
-    return false;
-  }
-}
+// anything else). Hosts on that list (lib/imageRemotePatterns.js, checked
+// by canOptimize) are optimized; any other host is served `unoptimized`
+// instead of crashing the page.
 
 // `banner`: placeholder-resolved { imageUrl, headline, subheadline, ctaLabel, ctaUrl }.
 export default function LandingBanner({ banner }) {
@@ -65,7 +49,7 @@ export default function LandingBanner({ banner }) {
             fill
             priority
             sizes="(max-width: 1100px) 100vw, 1020px"
-            unoptimized={!isOptimizable(imageUrl)}
+            unoptimized={!canOptimize(imageUrl)}
             style={{ objectFit: 'cover' }}
           />
           <div

@@ -207,7 +207,13 @@ export default function VendorProjectsPage() {
                 {/* Image area */}
                 <div style={{ height: 160, background: 'var(--color-surface-alt)', position: 'relative' }}>
                   {project.images?.length ? (
-                    <ProjectImageSlider images={project.images} alt={project.title} />
+                    // auto-fill minmax(260px, 1fr) beside the sidebar:
+                    // full width on phones, ~2 columns on tablets, ≤ ~340px on desktop.
+                    <ProjectImageSlider
+                      images={project.images}
+                      alt={project.title}
+                      sizes="(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 340px"
+                    />
                   ) : (
                     <div style={{
                       width: '100%', height: '100%',

@@ -49,7 +49,15 @@ export default async function RecentProjectsPage() {
                 }} className="card-hover">
                   <div style={{ position: 'relative', height: '220px', overflow: 'hidden' }}>
                     {imgs.length ? (
-                      <ProjectImageSlider images={imgs} alt={project.title || 'Project'} />
+                      // 3 columns in a 1200px content box (1 column ≤768px).
+                      // The first card sits in the first row, right under
+                      // the heading — above the fold, so it loads eagerly.
+                      <ProjectImageSlider
+                        images={imgs}
+                        alt={project.title || 'Project'}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 33vw, 390px"
+                        priority={i === 0}
+                      />
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-hint)', fontSize: '13px' }}>No image</div>
                     )}

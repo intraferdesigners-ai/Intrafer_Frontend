@@ -33,7 +33,13 @@ export default function ProjectsSection({ projects }) {
             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
             {project.images?.length ? (
-              <ProjectImageSlider images={project.images} alt={project.title} />
+              // 3 columns, ≤ ~340px wide on both hosts (vendor profile main
+              // column ~850px, project page 1020px); 1 column ≤768px.
+              <ProjectImageSlider
+                images={project.images}
+                alt={project.title}
+                sizes="(max-width: 768px) 100vw, (max-width: 1100px) 33vw, 340px"
+              />
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Building2 size={24} color="var(--color-text-hint)" />

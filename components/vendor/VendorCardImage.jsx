@@ -11,13 +11,11 @@ const SLIDE_INTERVAL_MS = 3500;
 // for above-the-fold cards) instead of a raw <img> with none of that, per
 // SEO spec section 16's Core Web Vitals requirements (Step 11).
 //
-// Kept as its own component rather than editing ProjectImageSlider
-// directly: that component is shared by four other surfaces
-// (recent-projects, the vendor dashboard's projects page, ProjectsSection
-// — used on both the vendor profile's Portfolio section and the project
-// detail page's Related Projects — and GalleryGrid) that this step is
-// scoped not to touch. Those still have the same raw-<img> pattern;
-// flagged, not fixed here.
+// Kept as its own component: ProjectImageSlider (used by recent-projects,
+// the vendor dashboard's projects page, ProjectsSection — the vendor
+// profile's Portfolio and the project page's Related Projects — and
+// GalleryGrid) now uses the same next/image pattern too, plus an
+// `unoptimized` fallback for hosts missing from lib/imageRemotePatterns.js.
 export default function VendorCardImage({ images, alt, sizes, priority = false }) {
   const shouldReduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);

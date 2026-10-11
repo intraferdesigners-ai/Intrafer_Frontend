@@ -1,3 +1,5 @@
+const { IMAGE_REMOTE_PATTERNS } = require('./lib/imageRemotePatterns');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
@@ -9,38 +11,8 @@ const nextConfig = {
   // page. No hand-written redirects() rule needed; verified directly
   // against the dev server (see the Step 14 commit's test notes).
   trailingSlash: true,
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.railway.app',
-      },
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.amazonaws.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cdn.intrafer.com',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'api.intrafer.in',
-      },
-    ],
-  },
+  // Single source of truth shared with lib/imageHost.js (canOptimize).
+  images: { remotePatterns: IMAGE_REMOTE_PATTERNS },
 };
 
 module.exports = nextConfig;

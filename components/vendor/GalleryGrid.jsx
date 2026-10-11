@@ -108,7 +108,12 @@ export default function GalleryGrid({ projects }) {
                     marginBottom: '16px', height: `${h}px`,
                   }}
                 >
-                  <ProjectImageSlider images={item.images} alt={item.title} />
+                  {/* .masonry-grid: 3 columns in a 1216px box, 2 ≤768px, 1 ≤640px. */}
+                  <ProjectImageSlider
+                    images={item.images}
+                    alt={item.title}
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 400px"
+                  />
                   <div
                     className="gallery-overlay"
                     style={{
