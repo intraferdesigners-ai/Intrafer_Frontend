@@ -2,12 +2,13 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Building2, Clock, CheckCircle2, XCircle, Search, Star } from 'lucide-react';
+import { Building2, Clock, CheckCircle2, XCircle, Search, Star, EyeOff } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
 import Spinner from '../../../../components/ui/Spinner';
 import { formatDate } from '../../../../lib/utils';
+import { vendorVisibilityIssue } from '../../../../lib/vendorVisibility';
 
 const MODERATION_BADGE = {
   pending:  { label: 'Pending review', icon: Clock,        color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
@@ -145,6 +146,8 @@ function AdminProjectsPageContent() {
           {projects.map((project) => {
             const badge = MODERATION_BADGE[project.moderationStatus] || MODERATION_BADGE.pending;
             const BadgeIcon = badge.icon;
+            // An approved project whose vendor isn't public isn't on the site either.
+            const vendorIssue = project.moderationStatus === 'approved' ? vendorVisibilityIssue(project.vendorId) : null;
             return (
               <div
                 key={project._id}
@@ -186,7 +189,7 @@ function AdminProjectsPageContent() {
                 </div>
 
                 {/* Status */}
-                <div style={{ flex: 1.4 }}>
+                <div style={{ flex: 1.4, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
                     fontSize: 11, fontWeight: 500, padding: '3px 8px',
@@ -195,6 +198,16 @@ function AdminProjectsPageContent() {
                     <BadgeIcon size={11} />
                     {badge.label}
                   </span>
+                  {vendorIssue && (
+                    <span title={vendorIssue.title} style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      fontSize: 11, fontWeight: 500, padding: '3px 8px',
+                      borderRadius: 20, color: 'var(--color-warning)', background: 'var(--color-warning-bg)',
+                    }}>
+                      <EyeOff size={11} />
+                      {vendorIssue.label}
+                    </span>
+                  )}
                 </div>
 
                 {/* Submitted date */}
