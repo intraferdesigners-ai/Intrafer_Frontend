@@ -4,6 +4,7 @@ import RevealItem from '../../../components/ui/RevealItem';
 import ProjectImageSlider from '../../../components/vendor/ProjectImageSlider';
 import { cachedJson } from '../../../lib/cachedFetch';
 import { LIST_WINDOW, TAGS } from '../../../lib/cacheTags';
+import { SITE_URL } from '@/lib/siteUrl';
 
 // Cached (ISR, 5 min), purged on 'projects'; a failure throws at runtime so
 // the last good page stays up (see lib/cachedFetch.js).
@@ -12,8 +13,9 @@ export const revalidate = 300;
 const normalizeSrc = (src) => (src.startsWith('/') || src.startsWith('http') ? src : `/${src}`);
 
 export const metadata = {
-  title: 'Recent Projects | Interior Design Work | Intrafer',
+  title: 'Recent Projects | Interior Design Work',
   description: 'Browse recently completed interior design projects across India by verified Intrafer designers.',
+  alternates: { canonical: `${SITE_URL}/recent-projects/` },
 };
 
 async function fetchProjects() {

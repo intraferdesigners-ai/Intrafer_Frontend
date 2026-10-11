@@ -1,7 +1,7 @@
 // Run: node scripts/testSiteUrl.mjs
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeSiteUrl, absoluteUrl, SITE_URL, DEFAULT_SITE_URL } from '../lib/siteUrl.js';
@@ -108,19 +108,17 @@ const pages = [join(ROOT, 'app/page.jsx'), ...PAGE_ROOTS.flatMap((d) => sourceFi
   .map((f) => {
     const rel = relative(ROOT, f).split('\\').join('/');
     const route = `/${rel.replace(/^app\//, '').replace(/(^|\/)\([^)]+\)/g, '').replace(/\/?page\.jsx?$/, '')}`.replace(/\/+/g, '/');
-    return { rel, route: route === '/' ? '/' : `${route.replace(/\/$/, '')}/`, src: readFileSync(f, 'utf8') };
+    // A client page's metadata lives in the layout of its own folder.
+    const layout = ['layout.js', 'layout.jsx'].map((n) => join(f, '..', n)).find((l) => existsSync(l));
+    const src = readFileSync(f, 'utf8') + (layout ? `\n${readFileSync(layout, 'utf8')}` : '');
+    return { rel, route: route === '/' ? '/' : `${route.replace(/\/$/, '')}/`, src };
   });
 
 // Not indexable by design: per-visitor flows and token pages.
 const NOT_INDEXABLE = ['/enquiry/', '/enquiry/success/', '/enquiry/verify/', '/review/[token]/', '/compare/'];
-// Indexable but no canonical yet (backlog, reported in the small-fixes
-// batch). Shrink-only: a page here that gains a canonical fails the test
-// until it is removed from this list.
-const KNOWN_MISSING = [
-  '/faq/', '/gallery/', '/guides/', '/guides/[slug]/', '/how-it-works/', '/packages/', '/privacy/', '/terms/',
-  '/recent-projects/', '/vendors/', '/contact/', '/cost-calculator/', '/wardrobe-calculator/',
-  '/for-designers/', '/for-designers/privacy/', '/for-designers/terms/', '/plans/',
-];
+// Indexable pages allowed to have no canonical: none (the backlog was
+// cleared in the SEO polish batch). Shrink-only if ever used again.
+const KNOWN_MISSING = [];
 
 // "/cities/[city]/" -> `${SITE_URL}/cities/${params.city}/` (as written in source); "/" -> '/'.
 const expectedCanonical = (route) => (route === '/'

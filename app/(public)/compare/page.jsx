@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Building2, MapPin, ShieldCheck } from 'lucide-react';
 import RevealItem from '../../../components/ui/RevealItem';
 
-export const metadata = { title: 'Compare Designers | Intrafer' };
+export const metadata = { title: 'Compare Designers' };
 
 const PRICE_UNIT_LABEL = {
   flat: '',

@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import LegalSection from '@/components/ui/LegalSection';
+import { SITE_URL } from '@/lib/siteUrl';
 
 export const metadata = {
   title: 'Vendor Terms and Conditions',
   description: 'The terms and conditions governing interior designers listed on Intrafer.',
+  alternates: { canonical: `${SITE_URL}/for-designers/terms/` },
 };
 
 export default function VendorTermsPage() {

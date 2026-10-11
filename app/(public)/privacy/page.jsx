@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import LegalSection from '@/components/ui/LegalSection';
+import { SITE_URL } from '@/lib/siteUrl';
 
 export const metadata = {
   title: 'Privacy Policy',
   description: 'How Intrafer collects, uses and protects your personal data.',
+  alternates: { canonical: `${SITE_URL}/privacy/` },
 };
 
 export default function PrivacyPolicyPage() {

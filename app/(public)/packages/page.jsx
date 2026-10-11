@@ -4,10 +4,12 @@ import { CheckCircle, ShieldCheck, Clock, Wallet } from 'lucide-react';
 import EMICalculator from '../../../components/ui/EMICalculator';
 import Reveal from '../../../components/ui/Reveal';
 import RevealItem from '../../../components/ui/RevealItem';
+import { SITE_URL } from '@/lib/siteUrl';
 
 export const metadata = {
-  title: 'Interior Design Packages — Fixed Price | Intrafer',
+  title: 'Interior Design Packages — Fixed Price',
   description: 'Complete home interior packages at transparent fixed prices. Essential, Eleganza, and Eleganza Plus for 2–3 BHK homes.',
+  alternates: { canonical: `${SITE_URL}/packages/` },
 };
 
 const PACKAGES = [

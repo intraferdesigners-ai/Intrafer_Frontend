@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import LegalSection from '@/components/ui/LegalSection';
+import { SITE_URL } from '@/lib/siteUrl';
 
 export const metadata = {
   title: 'Vendor Privacy Policy',
   description: 'How Intrafer collects, uses and protects data for interior designers listed on the platform.',
+  alternates: { canonical: `${SITE_URL}/for-designers/privacy/` },
 };
 
 export default function VendorPrivacyPolicyPage() {

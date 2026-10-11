@@ -10,7 +10,7 @@ import { SITE_URL } from '../../../lib/siteUrl';
 export const revalidate = 300;
 
 export const metadata = {
-  title: 'Interior Design Styles | Find Your Design Language | Intrafer',
+  title: 'Interior Design Styles | Find Your Design Language',
   description: 'Explore modern, Scandinavian, luxury, minimalist, bohemian, industrial, traditional, and contemporary interior design styles.',
   alternates: { canonical: `${SITE_URL}/design-styles/` },
 };

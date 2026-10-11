@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import LegalSection from '@/components/ui/LegalSection';
+import { SITE_URL } from '@/lib/siteUrl';
 
 export const metadata = {
   title: 'Terms of Service',
   description: 'The terms and conditions governing your use of Intrafer.',
+  alternates: { canonical: `${SITE_URL}/terms/` },
 };
 
 export default function TermsOfServicePage() {

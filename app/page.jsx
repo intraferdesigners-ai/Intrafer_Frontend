@@ -24,7 +24,8 @@ import { cachedJson } from '../lib/cachedFetch';
 import { LIST_WINDOW, TAGS } from '../lib/cacheTags';
 
 export const metadata = {
-  title: 'Intrafer — Vetted Interior Designers Across India',
+  // absolute: the brand is already in it, so skip the root "%s | Intrafer" template.
+  title: { absolute: 'Intrafer — Vetted Interior Designers Across India' },
   description: "Compare interior designers by city, style, and budget. Every portfolio is real, completed work. Submit one enquiry and hear back within 48 hours.",
   alternates: { canonical: '/' },
 };

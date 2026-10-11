@@ -1,9 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { SITE_URL } from '@/lib/siteUrl';
 
 export const metadata = {
-  title: 'Interior Design Guides | Room-by-Room Expertise | Intrafer',
+  title: 'Interior Design Guides | Room-by-Room Expertise',
   description: 'Free interior design guides for every room. Kitchen, bedroom, living room, bathroom, and more.',
+  alternates: { canonical: `${SITE_URL}/guides/` },
 };
 
 const GUIDES = [

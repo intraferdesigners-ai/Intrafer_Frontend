@@ -3,13 +3,15 @@ import Link from 'next/link';
 import { GUIDES, getGuide } from '../../../../lib/guides-data';
 import { notFound } from 'next/navigation';
 import Reveal from '../../../../components/ui/Reveal';
+import { SITE_URL } from '@/lib/siteUrl';
 
 export async function generateMetadata({ params }) {
   const guide = getGuide(params.slug);
   if (!guide) return { title: 'Guide Not Found' };
   return {
-    title: `${guide.title} | Intrafer Design Guides`,
+    title: `${guide.title} | Design Guides`,
     description: guide.desc,
+    alternates: { canonical: `${SITE_URL}/guides/${params.slug}/` },
   };
 }
 

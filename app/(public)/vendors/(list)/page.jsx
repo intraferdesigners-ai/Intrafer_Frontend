@@ -5,8 +5,13 @@ import VendorSearch from '../../../../components/vendor/VendorSearch';
 import CompareBar from '../../../../components/vendor/CompareBar';
 import VendorResultsGrid from '../../../../components/vendor/VendorResultsGrid';
 import AnimatedCounter from '../../../../components/ui/AnimatedCounter';
+import { SITE_URL } from '@/lib/siteUrl';
 
-export const metadata = { title: 'Find Interior Designers | Intrafer' };
+export const metadata = {
+  title: 'Find Interior Designers',
+  // Filters (?city=, ?sort=, ...) all canonicalise to the unfiltered list.
+  alternates: { canonical: `${SITE_URL}/vendors/` },
+};
 
 async function fetchVendors(searchParams) {
   try {

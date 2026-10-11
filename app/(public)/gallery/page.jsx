@@ -1,6 +1,7 @@
 import GalleryGrid from '@/components/vendor/GalleryGrid';
 import { cachedJson } from '@/lib/cachedFetch';
 import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
+import { SITE_URL } from '@/lib/siteUrl';
 
 // Cached (ISR, 5 min), purged on 'projects'. Same unpaginated
 // GET /public/gallery call as before; a failure throws at runtime so the
@@ -8,8 +9,9 @@ import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
 export const revalidate = 300;
 
 export const metadata = {
-  title: 'Design Gallery | Intrafer',
+  title: 'Design Gallery',
   description: 'Browse real interior design projects from verified designers across India.',
+  alternates: { canonical: `${SITE_URL}/gallery/` },
 };
 
 async function fetchProjects() {

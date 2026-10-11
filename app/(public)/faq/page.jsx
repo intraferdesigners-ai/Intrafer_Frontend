@@ -1,8 +1,12 @@
 import Link from 'next/link';
 import FaqContent from './FaqContent';
 import Reveal from '@/components/ui/Reveal';
+import { SITE_URL } from '@/lib/siteUrl';
 
-export const metadata = { title: 'Frequently Asked Questions | Intrafer' };
+export const metadata = {
+  title: 'Frequently Asked Questions',
+  alternates: { canonical: `${SITE_URL}/faq/` },
+};
 
 export const FAQ_GROUPS = [
   {

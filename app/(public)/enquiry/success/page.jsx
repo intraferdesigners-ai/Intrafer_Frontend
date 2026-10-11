@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import SuccessContent from './SuccessContent';
 
-export const metadata = { title: 'Enquiry Submitted | Intrafer' };
+export const metadata = { title: 'Enquiry Submitted' };
 
 export default function SuccessPage() {
   return (

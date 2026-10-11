@@ -10,7 +10,7 @@ import { SITE_URL } from '../../../lib/siteUrl';
 export const revalidate = 300;
 
 export const metadata = {
-  title: 'Testimonials | What Homeowners Say | Intrafer',
+  title: 'Testimonials | What Homeowners Say',
   description: 'Read verified reviews from homeowners who transformed their spaces with Intrafer designers.',
   alternates: { canonical: `${SITE_URL}/testimonials/` },
 };

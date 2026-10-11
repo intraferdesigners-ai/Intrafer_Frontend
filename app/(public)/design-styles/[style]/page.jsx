@@ -40,7 +40,7 @@ const STYLE_SPECIALIZATIONS = {
 export async function generateMetadata({ params }) {
   const meta = STYLE_META[params.style] || { label: params.style };
   return {
-    title: `${meta.label} Interior Designers in Bangalore | Intrafer`,
+    title: `${meta.label} Interior Designers in India`,
     alternates: { canonical: `${SITE_URL}/design-styles/${params.style}/` },
   };
 }

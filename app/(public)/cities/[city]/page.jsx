@@ -58,9 +58,10 @@ const CITY_MAP_COORDS = {
 
 export async function generateMetadata({ params }) {
   const city = CITY_DATA[params.city];
-  if (!city) return { title: 'City Not Found | Intrafer' };
+  if (!city) return { title: 'City Not Found' };
   return {
-    title: `Interior Designers in ${city.name} | Intrafer`,
+    title: `Interior Designers in ${city.name}`,
+    description: `Compare checked interior designers in ${city.name}, ${city.state} — real portfolios, ratings and reviews. Send one free enquiry and designers respond directly.`,
     alternates: { canonical: `${SITE_URL}/cities/${params.city}/` },
   };
 }

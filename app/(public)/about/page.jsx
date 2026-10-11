@@ -12,7 +12,9 @@ import { SITE_URL } from '@/lib/siteUrl';
 export const revalidate = 300;
 
 export const metadata = {
-  title: "About Intrafer | India's Interior Designer Marketplace",
+  // absolute: the brand is already in it, so skip the root "%s | Intrafer" template.
+  title: { absolute: "About Intrafer | India's Interior Designer Marketplace" },
+  description: "Intrafer is India's interior designer marketplace. Every listed designer's credentials and completed work are checked before they go live; enquiries are free.",
   alternates: { canonical: `${SITE_URL}/about/` },
 };
 

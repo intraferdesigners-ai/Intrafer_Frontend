@@ -3,10 +3,13 @@ import Link from 'next/link';
 import { Shield, Star, Clock, Lock } from 'lucide-react';
 import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
+import { SITE_URL } from '@/lib/siteUrl';
 
 export const metadata = {
-  title: 'How Intrafer Works | Interior Design Made Simple',
+  // absolute: the brand is already in it, so skip the root "%s | Intrafer" template.
+  title: { absolute: 'How Intrafer Works | Interior Design Made Simple' },
   description: 'Learn how Intrafer connects homeowners with verified interior designers in 5 simple steps.',
+  alternates: { canonical: `${SITE_URL}/how-it-works/` },
 };
 
 const STEPS = [
