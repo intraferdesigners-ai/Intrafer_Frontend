@@ -26,7 +26,7 @@ export default function TermsOfServicePage() {
           letterSpacing: '-.02em', marginBottom: '16px',
         }}>Terms of Service</h1>
         <p style={{ fontSize: '14px', color: 'var(--text-hint)' }}>
-          Last updated: July 2026
+          Last updated: 11 October 2026
         </p>
         <div style={{ height: '1px', background: 'var(--border)', marginTop: '24px' }} />
       </div>
@@ -123,11 +123,16 @@ export default function TermsOfServicePage() {
 
       <LegalSection title="7. Limitation of liability">
         <p>
-          Intrafer provides a marketplace platform on an &quot;as is&quot; basis.
-          We are not liable for any disputes, damages, or losses arising
-          from interactions between homeowners and designers. Our maximum
-          liability to you is limited to the subscription fees paid in
-          the 3 months preceding any claim.
+          Intrafer is a marketplace that connects homeowners with independent
+          interior designers. Designers are not employees or agents of
+          Intrafer, and any contract for design or construction work is
+          solely between you and the designer. We do not guarantee the
+          quality, timing, pricing or outcome of any designer&apos;s work.
+          Intrafer&apos;s platform is provided on an &quot;as is&quot; basis. To
+          the extent permitted by law, Intrafer is not liable for disputes,
+          damages or losses arising from your dealings with a designer.
+          Nothing in these terms limits any liability that cannot be
+          excluded under applicable law.
         </p>
       </LegalSection>
 

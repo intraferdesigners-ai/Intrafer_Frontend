@@ -26,7 +26,7 @@ export default function VendorTermsPage() {
           letterSpacing: '-.02em', marginBottom: '16px',
         }}>Vendor Terms and Conditions</h1>
         <p style={{ fontSize: '14px', color: 'var(--text-hint)' }}>
-          Last updated: July 2026 · Applies to interior designers listed on Intrafer
+          Last updated: 11 October 2026 · Applies to interior designers listed on Intrafer
         </p>
         <div style={{ height: '1px', background: 'var(--border)', marginTop: '24px' }} />
       </div>
@@ -115,10 +115,11 @@ export default function VendorTermsPage() {
       <LegalSection title="6. Limitation of liability">
         <p>
           Intrafer provides a marketplace platform on an &quot;as is&quot;
-          basis. We are not liable for any disputes, damages, or losses
-          arising from interactions or contracts between you and homeowners.
-          Our maximum liability to you is limited to the subscription fees
-          you paid in the 3 months preceding any claim.
+          basis. To the extent permitted by law, Intrafer&apos;s total
+          liability to you for any claim is limited to the subscription fees
+          you paid in the 12 months preceding the claim. We are not liable
+          for disputes, damages or losses arising from interactions or
+          contracts between you and homeowners.
         </p>
       </LegalSection>
 
