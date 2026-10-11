@@ -1,9 +1,10 @@
 import { slugify } from '@/lib/slug';
 import { fetchLandingSitemapPages, mergeLandingPages } from '@/lib/landingSitemap';
 import { fetchPublicProjects, projectEntries } from '@/lib/projectSitemap';
+import { SITE_URL } from '@/lib/siteUrl';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const baseUrl = 'https://intrafer.in';
+const baseUrl = SITE_URL;
 
 // Regenerate at most every 5 minutes — a newly-listed vendor shows up in
 // the sitemap quickly without a full redeploy, and a crawler hitting

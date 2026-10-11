@@ -5,6 +5,7 @@ import ThemeProvider from '../context/ThemeContext';
 import CompareProvider from '../context/CompareContext';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import LeadCapturePopup from '../components/ui/LeadCapturePopup';
+import { SITE_URL, absoluteUrl } from '../lib/siteUrl';
 
 // Self-hosted via next/font — no render-blocking request to
 // fonts.googleapis.com, no FOUC. Weights match what the old @import loaded.
@@ -34,7 +35,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  metadataBase: new URL('https://intrafer.in'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default:  'Intrafer — Find. Compare. Design.',
     template: '%s | Intrafer',
@@ -50,10 +51,10 @@ export const metadata = {
 const ORGANIZATION_JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  '@id': 'https://intrafer.in/#organization',
+  '@id': absoluteUrl('/#organization'),
   name: 'Intrafer',
-  url: 'https://intrafer.in',
-  logo: 'https://intrafer.in/images/logo/logo.png',
+  url: SITE_URL,
+  logo: absoluteUrl('/images/logo/logo.png'),
   sameAs: [
     'https://instagram.com/intrafer',
     'https://linkedin.com/company/intrafer',
@@ -64,7 +65,7 @@ const WEBSITE_JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Intrafer',
-  url: 'https://intrafer.in',
+  url: SITE_URL,
 };
 
 export const viewport = {

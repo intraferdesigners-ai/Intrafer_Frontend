@@ -1,6 +1,5 @@
 import Link from 'next/link';
-
-const SITE_URL = 'https://intrafer.in';
+import { SITE_URL } from '@/lib/siteUrl';
 
 // Generic breadcrumb trail — visible nav plus matching BreadcrumbList
 // JSON-LD, kept in the same component so the two can never drift apart.

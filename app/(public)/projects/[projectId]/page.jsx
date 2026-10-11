@@ -1,23 +1,31 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Building2 } from 'lucide-react';
+import { notFound } from 'next/navigation';
 import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
 import ProjectsSection from '../../../../components/vendor/ProjectsSection';
 import Reveal from '../../../../components/ui/Reveal';
 import Breadcrumb from '../../../../components/seo/Breadcrumb';
+import { SITE_URL } from '../../../../lib/siteUrl';
+import { isPublicProject } from '../../../../lib/projectSitemap';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const SITE_URL = 'https://intrafer.in';
 
+const OBJECT_ID = /^[a-f0-9]{24}$/i;
+
+// The project if it's public, null if it isn't: malformed id (never sent —
+// the backend would 500 on the cast), a 404 from the API (missing,
+// unpublished or unapproved), or a project failing the same isPublicProject
+// rule the sitemap uses (e.g. its vendor is gone, so vendorId populates to
+// null). Any other failure — network, 5xx — throws, so a backend blip is a
+// 5xx crawlers retry rather than a 404 that drops a real page.
 async function fetchProject(id) {
-  try {
-    const res = await fetch(`${API}/public/projects/${id}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data?.project ?? null;
-  } catch {
-    return null;
-  }
+  if (!OBJECT_ID.test(id)) return null;
+  const res = await fetch(`${API}/public/projects/${id}`, { cache: 'no-store' });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`GET /public/projects/${id} failed: ${res.status}`);
+  const json = await res.json();
+  const project = json.data?.project;
+  return isPublicProject(project) && typeof project.vendorId === 'object' ? project : null;
 }
 
 async function fetchRelatedProjects(id) {
@@ -52,7 +60,7 @@ async function fetchVendorCategory(vendorId) {
 
 export async function generateMetadata({ params }) {
   const project = await fetchProject(params.projectId);
-  if (!project) return { title: 'Project not found' };
+  if (!project) return { title: 'Project not found', robots: { index: false, follow: false } };
   return {
     // Root layout's title template already appends " | Intrafer" — this
     // used to append it a second time too, rendering "X | Intrafer |
@@ -80,23 +88,13 @@ export default async function ProjectDetailPage({ params }) {
     fetchRelatedProjects(params.projectId),
   ]);
 
+  // Real HTTP 404 (rendered by ./not-found.jsx) instead of a 200 "not
+  // found" page that search engines would index as a soft 404.
+  if (!project) notFound();
+
   // vendorId is populated server-side into the vendor sub-document (see
   // getProjectById), so project.vendorId IS the vendor object — no second fetch.
-  const vendor = project?.vendorId;
-
-  if (!project || !vendor) {
-    return (
-      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
-        <Building2 size={48} color="var(--text-hint)" />
-        <h1 style={{ fontSize: 24, fontWeight: 400, color: 'var(--text)', margin: '16px 0 8px' }}>
-          Project not found
-        </h1>
-        <Link href="/vendors/" style={{ fontSize: 14, color: 'var(--primary)', textDecoration: 'none' }}>
-          ← Browse designers
-        </Link>
-      </main>
-    );
-  }
+  const vendor = project.vendorId;
 
   // Step 8 of the SEO restructuring project: Home > Category > Vendor >
   // Project, falling back to Home > Vendor > Project when the vendor has

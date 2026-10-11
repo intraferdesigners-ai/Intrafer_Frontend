@@ -15,9 +15,9 @@ import { getCategoryFaq } from '@/lib/categoryFaq';
 import { fetchHubLandingPage, previewToken } from '@/lib/landingHub';
 import { placeholderValues } from '@/lib/landingLevel';
 import { landingPageTitle } from '@/lib/landingSerp';
+import { SITE_URL } from '@/lib/siteUrl';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const SITE_URL = 'https://intrafer.in';
 
 async function fetchCategory(slug) {
   try {

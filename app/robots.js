@@ -1,3 +1,5 @@
+import { absoluteUrl } from '@/lib/siteUrl';
+
 export default function robots() {
   return {
     rules: {
@@ -5,6 +7,6 @@ export default function robots() {
       allow: '/',
       disallow: ['/admin', '/vendor/dashboard', '/auth'],
     },
-    sitemap: 'https://intrafer.in/sitemap.xml',
+    sitemap: absoluteUrl('/sitemap.xml'),
   };
 }

@@ -12,6 +12,7 @@ import VendorEnquiryOverlay from '../../../../components/vendor/VendorEnquiryOve
 import Reveal from '../../../../components/ui/Reveal';
 import Breadcrumb from '../../../../components/seo/Breadcrumb';
 import { slugify } from '../../../../lib/slug';
+import { SITE_URL } from '../../../../lib/siteUrl';
 
 const PRICE_UNIT_LABEL = {
   flat: '',
@@ -20,7 +21,6 @@ const PRICE_UNIT_LABEL = {
 };
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const SITE_URL = 'https://intrafer.in';
 
 async function fetchVendor(id) {
   try {

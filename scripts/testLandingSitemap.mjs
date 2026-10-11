@@ -1,8 +1,10 @@
 // Run: node scripts/testLandingSitemap.mjs
 import assert from 'node:assert/strict';
 import { fetchLandingSitemapPages, mergeLandingPages } from '../lib/landingSitemap.js';
+import { SITE_URL } from '../lib/siteUrl.js';
 
-const BASE = 'https://intrafer.in';
+// The sitemap's real base (app/sitemap.js uses SITE_URL), not a copy of it.
+const BASE = SITE_URL;
 const NOW = '2026-01-01T00:00:00.000Z';
 let passed = 0;
 const test = async (name, fn) => { await fn(); passed += 1; console.log(`ok - ${name}`); };
@@ -136,6 +138,16 @@ await test('entries without level are city pages (old backend payload)', async (
 await test('hubs: fetch failure leaves hub entries unchanged', async () => {
   const pages = await fetchLandingSitemapPages('https://api.example/api', {}, mockFetch(null, { throws: true }));
   assert.deepEqual(mergeLandingPages(withHubs(), pages, BASE, NOW), withHubs());
+});
+
+await test('merged entries are all on www.intrafer.in, never the apex or another host', async () => {
+  const out = mergeLandingPages(withHubs(), [
+    { level: 'category', categorySlug: 'architects', indexable: true },
+    { level: 'state', categorySlug: 'interior-designers', stateSlug: 'goa', indexable: true },
+    { categorySlug: 'interior-designers', stateSlug: 'goa', citySlug: 'panaji', indexable: true },
+  ], BASE, NOW);
+  assert.ok(out.length > withHubs().length);
+  for (const e of out) assert.match(e.url, /^https:\/\/www\.intrafer\.in\//);
 });
 
 console.log(`\n${passed} passed`);

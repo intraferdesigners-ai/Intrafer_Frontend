@@ -2,8 +2,13 @@
 import assert from 'node:assert/strict';
 import { fetchPublicProjects, projectEntries, isPublicProject, MAX_PROJECTS, PROJECT_PRIORITY } from '../lib/projectSitemap.js';
 import { mergeLandingPages } from '../lib/landingSitemap.js';
+import { SITE_URL } from '../lib/siteUrl.js';
 
-const BASE = 'https://intrafer.in';
+// The sitemap's real base (app/sitemap.js uses SITE_URL), not a copy of it.
+const BASE = SITE_URL;
+// Every <loc> must be on the one canonical host — apex or any other host fails.
+const CANONICAL = /^https:\/\/www\.intrafer\.in\//;
+const assertCanonicalHost = (entries) => entries.forEach((e) => assert.match(e.url, CANONICAL));
 const NOW = '2026-01-01T00:00:00.000Z';
 const API = 'https://api.example/api';
 let passed = 0;
@@ -42,7 +47,7 @@ await test('pages through every project (limit 50) and keeps them all', async ()
   assert.ok(calls.every((c) => new URL(c).searchParams.get('limit') === '50'));
 });
 
-await test('entries: canonical URL form (no www, trailing slash), lastmod updatedAt → createdAt → now, priority', async () => {
+await test('entries: canonical URL form (www host, trailing slash), lastmod updatedAt → createdAt → now, priority', async () => {
   const out = projectEntries([
     project(1),
     project(2, { updatedAt: undefined }),
@@ -56,7 +61,8 @@ await test('entries: canonical URL form (no www, trailing slash), lastmod update
     { url: `${BASE}/projects/${id(4)}/`, lastModified: NOW, priority: PROJECT_PRIORITY },
   ]);
   // Same shape as the page's canonical: `${SITE_URL}/projects/${id}/`.
-  assert.match(out[0].url, /^https:\/\/intrafer\.in\/projects\/[a-f0-9]{24}\/$/);
+  assert.match(out[0].url, /^https:\/\/www\.intrafer\.in\/projects\/[a-f0-9]{24}\/$/);
+  assertCanonicalHost(out);
 });
 
 await test('non-public projects excluded (unpublished, pending/rejected, no vendor, bad id)', async () => {
@@ -105,6 +111,7 @@ await test('API failure → null → no project entries, every other group intac
   ];
   const sitemap = mergeLandingPages([others[0], others[1], ...projectEntries(r?.projects, BASE, NOW), others[2]], [], BASE, NOW);
   assert.deepEqual(sitemap, others);
+  assertCanonicalHost(sitemap);
 });
 
 await test(`stops at MAX_PROJECTS (${MAX_PROJECTS}) and reports truncated`, async () => {
@@ -122,6 +129,12 @@ await test('empty catalogue → no entries, one request', async () => {
   assert.deepEqual(r, { projects: [], truncated: false });
   assert.equal(calls.length, 1);
   assert.deepEqual(projectEntries(r.projects, BASE, NOW), []);
+});
+
+await test('every entry is on www.intrafer.in, never the apex', async () => {
+  const out = projectEntries(Array.from({ length: 5 }, (_, i) => project(i + 1)), BASE, NOW);
+  assertCanonicalHost(out);
+  assert.ok(out.every((e) => !e.url.startsWith('https://intrafer.in')));
 });
 
 console.log(`\n${passed} passed`);
