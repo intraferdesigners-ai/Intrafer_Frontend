@@ -1,5 +1,6 @@
 import { slugify } from '@/lib/slug';
 import { fetchLandingSitemapPages, mergeLandingPages } from '@/lib/landingSitemap';
+import { fetchPublicProjects, projectEntries } from '@/lib/projectSitemap';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 const baseUrl = 'https://intrafer.in';
@@ -73,15 +74,9 @@ const CATEGORY_SLUGS = [
   'painting', 'home-automation', 'landscaping',
 ];
 
-// Project/portfolio pages (/projects/[projectId]/) are also excluded: the
-// only public listing endpoint, GET /api/public/gallery, hardcodes
-// .limit(50) with no pagination, so there's no way to enumerate every
-// approved project the way GET /api/public/vendors lets us enumerate every
-// vendor. Sitemapping just the top 50 (by completedYear) would silently
-// drop the rest while implying completeness. Fixing that needs a paginated
-// listing endpoint on the backend, which is out of scope here (public
-// vendors/projects controllers were already touched in Steps 5-6, off
-// limits this step) — a known gap to revisit.
+// Project/portfolio pages (/projects/[projectId]/): every published,
+// approved project with a vendor, paged through GET /public/gallery's
+// paginated branch (lib/projectSitemap.js; capped at MAX_PROJECTS).
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -229,10 +224,15 @@ export default async function sitemap() {
     categoryStateEntries = [];
   }
 
+  // A failed fetch returns null -> no project entries; every other group
+  // above is unaffected.
+  const projectResult = await fetchPublicProjects(API, { next: { revalidate } });
+  const projectUrls = projectEntries(projectResult?.projects, baseUrl, now);
+
   // Admin-authored landing pages (Phase 2): adds indexable ones, and drops
   // any threshold-qualified city above whose authored page forces noindex.
   // A failed fetch returns null, which leaves everything above unchanged —
   // same fallback idea as the two blocks above.
   const landingPages = await fetchLandingSitemapPages(API, { next: { revalidate } });
-  return mergeLandingPages([...staticEntries, ...vendorEntries, ...categoryStateEntries], landingPages, baseUrl, now);
+  return mergeLandingPages([...staticEntries, ...vendorEntries, ...projectUrls, ...categoryStateEntries], landingPages, baseUrl, now);
 }
