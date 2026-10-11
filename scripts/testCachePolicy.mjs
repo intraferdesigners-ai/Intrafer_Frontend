@@ -51,7 +51,6 @@ const CACHED = {
   'app/(public)/cities/[city]/page.jsx': 300,
   'app/(public)/about/page.jsx': 300,
   'app/(public)/testimonials/page.jsx': 300,
-  'app/(public)/[category]/[state]/[city]/page.jsx': null, // category-cities fetches only; page stays dynamic
   // batch 2
   'app/page.jsx': 300,
   'app/(public)/gallery/page.jsx': 300,
@@ -60,6 +59,10 @@ const CACHED = {
   'app/(public)/vendors/[vendorId]/page.jsx': 900,
   'app/(public)/vendors/[vendorId]/vendorData.js': null, // the vendor page's cached fetches
   'app/api/stats/route.js': 300,
+  // batch 3: landing pages (admin preview = draft mode, never cached)
+  'app/(public)/[category]/page.jsx': 300,
+  'app/(public)/[category]/[state]/page.jsx': 300,
+  'app/(public)/[category]/[state]/[city]/page.jsx': 300,
   // pre-existing
   'app/sitemap.js': 300,
 };
@@ -67,8 +70,7 @@ const CACHED = {
 const MUST_STAY_UNCACHED = [
   'app/admin', 'app/vendor/dashboard', 'app/auth',
   'app/(public)/enquiry', 'app/(public)/review', 'app/(public)/contact', 'app/(public)/compare',
-  'app/(public)/vendors/(list)', 'app/api/revalidate',
-  'app/(public)/[category]/page.jsx', 'app/(public)/[category]/[state]/page.jsx',
+  'app/(public)/vendors/(list)', 'app/api/revalidate', 'app/api/landing-preview',
 ];
 
 test('only the allow-listed files under app/ carry any cache setting', () => {
@@ -79,7 +81,7 @@ test('only the allow-listed files under app/ carry any cache setting', () => {
   for (const f of Object.keys(CACHED)) assert.ok(existsSync(join(ROOT, f)), `${f} missing — update CACHED`);
 });
 
-test('must-stay-uncached routes (admin, vendor dashboard, auth, enquiry, review token, contact, compare, vendors list, landing hubs, /api/revalidate) have no cache settings and don\'t use the cached helpers', () => {
+test('must-stay-uncached routes (admin, vendor dashboard, auth, enquiry, review token, contact, compare, vendors list, /api/revalidate, /api/landing-preview) have no cache settings and don\'t use the cached helpers', () => {
   const files = MUST_STAY_UNCACHED.flatMap((d) => {
     assert.ok(existsSync(join(ROOT, d)), `${d} missing — update this list`);
     return statSync(join(ROOT, d)).isDirectory() ? sourceFiles(join(ROOT, d)) : [join(ROOT, d)];
@@ -100,29 +102,37 @@ test('/api/revalidate is POST-only and force-dynamic', () => {
 
 const LANDING_PAGES = ['app/(public)/[category]/page.jsx', 'app/(public)/[category]/[state]/page.jsx', 'app/(public)/[category]/[state]/[city]/page.jsx'];
 
-test('landing pages (?preview=) stay dynamic: no page-level revalidate / static settings', () => {
+test('landing pages: ISR 300 s, on-demand (generateStaticParams -> [], dynamicParams left true), no searchParams', () => {
   for (const f of LANDING_PAGES) {
-    assert.doesNotMatch(read(f), /export\s+const\s+(revalidate|fetchCache|dynamicParams)\b|force-static/, f);
+    const src = read(f);
+    assert.match(src, /export const revalidate = 300;/, f);
+    assert.match(src, /export function generateStaticParams\(\) \{\n  return \[\];\n\}/, f);
+    assert.doesNotMatch(src, /dynamicParams|force-static|force-dynamic|searchParams/, f);
+    assert.match(src, /landingPreviewToken\(\)/, f);
   }
 });
 
-test('every landing-page fetch (incl. the ?preview= token) is no-store', () => {
-  const calls = [...LANDING_PAGES, 'lib/landingHub.js'].flatMap((f) => fetchCalls(read(f)).map((c) => [f, c]))
-    .filter(([, c]) => c.includes('/public/landing-page'));
-  assert.ok(calls.length >= 2, 'landing-page fetches not found');
-  for (const [f, c] of calls) {
-    assert.match(c, /cache:\s*'no-store'/, `${f}: ${c.slice(0, 80)}`);
-    assert.doesNotMatch(c, /revalidate/, f);
-  }
+test('the only uncached landing fetch is the draft one, and only with a draft-mode token', () => {
+  const hub = read('lib/landingHub.js');
+  const noStore = fetchCalls(hub).filter((c) => /no-store/.test(c));
+  assert.equal(noStore.length, 1);
+  assert.match(hub, /if \(!token\) \{\n    const json = await cachedJson\(url, \{ revalidate: LIST_WINDOW, tags: \[TAGS\.LANDING, TAGS\.VENDORS\], nullOn404: true \}\);/);
+  for (const f of LANDING_PAGES) assert.doesNotMatch(read(f).replace(/^\s*\/\/.*$/gm, ''), /no-store/, f);
 });
 
-test('city page caches only the category-cities lookups (vendors, FAQ, category stay no-store)', () => {
+test('city page: category-cities lookups cached 1 h, purged on taxonomy AND vendors', () => {
   const src = read('app/(public)/[category]/[state]/[city]/page.jsx');
-  assert.match(src, /const TAXONOMY_FETCH = \{ next: \{ revalidate: 3600, tags: \[TAGS\.TAXONOMY\] \} \};/);
-  for (const c of fetchCalls(src)) {
-    if (c.includes('/public/category-cities')) assert.match(c, /TAXONOMY_FETCH/, c.slice(0, 80));
-    else assert.match(c, /cache:\s*'no-store'/, c.slice(0, 80));
-  }
+  assert.match(src, /const taxonomyFetch = \(\) => \(\{ next: \{ revalidate: 3600, tags: \[TAGS\.TAXONOMY, TAGS\.VENDORS\] \} \}\);/);
+  const cc = fetchCalls(src).filter((c) => c.includes('/public/category-cities'));
+  assert.equal(cc.length, 2);
+  for (const c of cc) assert.match(c, /taxonomyFetch\(\)/);
+});
+
+test('no module-level shared fetch options: Next deletes init.next from the object it is given', () => {
+  const offenders = ['app', 'lib', 'components'].flatMap((d) => sourceFiles(join(ROOT, d)))
+    .filter((f) => /^(export )?const [A-Za-z_]+ = \{ ?next:/m.test(readFileSync(f, 'utf8')))
+    .map((f) => posix(relative(ROOT, f)));
+  assert.deepEqual(offenders, []);
 });
 
 test('cached routes declare their window; their fetches are tagged and never no-store', () => {
@@ -133,7 +143,6 @@ test('cached routes declare their window; their fetches are tagged and never no-
     if (window !== null && /\b(DETAIL|LIST)_WINDOW\b/.test(src)) {
       assert.equal(window, /\bDETAIL_WINDOW\b/.test(src) || f.includes('vendors/[vendorId]') ? DETAIL_WINDOW : LIST_WINDOW, f);
     }
-    if (f === 'app/(public)/[category]/[state]/[city]/page.jsx') continue;
     const code = src.replace(/^\s*\/\/.*$/gm, ''); // comments may mention no-store
     assert.doesNotMatch(code, /cache:\s*'no-store'/, f);
     assert.match(src, /tags: \[|TAGS\.[A-Z]+/, `${f}: no cache tags`);

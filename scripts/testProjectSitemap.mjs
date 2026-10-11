@@ -137,4 +137,20 @@ await test('every entry is on www.intrafer.in, never the apex', async () => {
   assert.ok(out.every((e) => !e.url.startsWith('https://intrafer.in')));
 });
 
+await test('every page request gets its own tags/window even though Next deletes init.next after each fetch', async () => {
+  const all = Array.from({ length: 120 }, (_, i) => project(i + 1));
+  const { impl } = galleryApi(all);
+  const seen = [];
+  const nextLike = async (url, init) => {
+    seen.push(init?.next ? { ...init.next } : null);
+    if (init) delete init.next; // what Next's patched fetch does
+    return impl(url, init);
+  };
+  const options = { next: { revalidate: 300, tags: ['projects'] } };
+  const r = await fetchPublicProjects(API, options, nextLike, noSleep);
+  assert.equal(r.projects.length, 120);
+  assert.deepEqual(seen, [1, 2, 3].map(() => ({ revalidate: 300, tags: ['projects'] })));
+  assert.deepEqual(options, { next: { revalidate: 300, tags: ['projects'] } });
+});
+
 console.log(`\n${passed} passed`);

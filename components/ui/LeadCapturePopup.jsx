@@ -1,6 +1,6 @@
 'use client';
-import { Suspense, useState, useEffect, useRef } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { getSessionId, shouldShowPopup, markPopupDismissed, getSavedContact, recordFirstVisit, getSecondsSinceFirstVisit } from '@/lib/session';
 import CitySelect from './CitySelect';
@@ -25,24 +25,18 @@ const EXCLUDED_PATHS = [
   '/review/',
 ];
 
-// useSearchParams() needs a Suspense boundary or statically rendered pages
-// fail to build; the popup renders nothing on the server anyway.
 export default function LeadCapturePopup() {
-  return (
-    <Suspense fallback={null}>
-      <LeadCapturePopupInner />
-    </Suspense>
-  );
-}
-
-function LeadCapturePopupInner() {
   const pathname = usePathname();
   const router    = useRouter();
-  // ?preview=<token> is an admin's landing-page preview (see
-  // components/seo/LandingPreviewStrip.jsx): never pitch them, and — since
-  // an excluded page returns before shouldShowPopup()/recordFirstVisit() —
-  // never touch the popup's localStorage state from there either.
-  const isPreview  = useSearchParams().has('preview');
+  // An admin's landing-page preview renders the banner marked
+  // data-landing-preview (components/seo/LandingPreviewStrip.jsx): never
+  // pitch them, and — since an excluded page returns before
+  // shouldShowPopup()/recordFirstVisit() — never touch the popup's
+  // localStorage state from there either. Read from the DOM during the
+  // client render — before the effects below run — since a preview's URL
+  // no longer says so (draft mode). Previews only start with a full page
+  // load (app/api/landing-preview/), so the banner is already in the DOM.
+  const isPreview  = typeof document !== 'undefined' && document.querySelector('[data-landing-preview]') !== null;
   const isExcluded = isPreview || EXCLUDED_PATHS.some(p => pathname.startsWith(p));
 
   const [visible,  setVisible]  = useState(false);

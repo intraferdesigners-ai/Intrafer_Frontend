@@ -9,59 +9,66 @@ import {
   authoredContent, authoredRobots, buildFaqJsonLd, LandingIntro, LandingSections, visibleFaqItems, visibleSections,
 } from '@/components/seo/LandingAuthored';
 import Reveal from '@/components/ui/Reveal';
-import { fetchHubLandingPage, previewToken } from '@/lib/landingHub';
+import { fetchLandingData } from '@/lib/landingHub';
+import { landingPreviewToken } from '@/lib/landingDraft';
+import { cachedJson } from '@/lib/cachedFetch';
+import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
 import { placeholderValues } from '@/lib/landingLevel';
 import { landingPageTitle } from '@/lib/landingSerp';
 import { SITE_URL } from '@/lib/siteUrl';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
+// Cached (ISR, 5 min), purged by the backend on landing-page and vendor
+// writes (tags landing, vendors, taxonomy + the page path). Nothing is built
+// ahead; each path is rendered on its first request. An admin preview is
+// draft mode (app/api/landing-preview/): those requests bypass the cache,
+// and only they fetch the draft — uncached, with the token.
+export const revalidate = 300;
+
+export function generateStaticParams() {
+  return [];
+}
+
+// 404 (inactive / unknown category) -> null -> notFound(); any other
+// failure throws, so a backend blip is never cached as a 404.
 async function fetchCategory(slug) {
-  try {
-    const res = await fetch(`${API}/public/service-categories/${encodeURIComponent(slug)}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data?.category ?? null;
-  } catch {
-    return null;
-  }
+  const json = await cachedJson(`${API}/public/service-categories/${encodeURIComponent(slug)}`, {
+    revalidate: LIST_WINDOW, tags: [TAGS.TAXONOMY], nullOn404: true,
+  });
+  return json?.data?.category ?? null;
 }
 
 // Returns { state, cities } on a real state (cities may be empty), or null
 // if the state segment doesn't match any real Indian state at all — the
 // caller uses that to tell "empty state" apart from "404".
 async function fetchCities(categorySlug, stateSlug) {
-  try {
-    const res = await fetch(
-      `${API}/public/category-cities?category=${encodeURIComponent(categorySlug)}&state=${encodeURIComponent(stateSlug)}`,
-      { cache: 'no-store' }
-    );
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data ?? null;
-  } catch {
-    return null;
-  }
+  // 404 (unknown state) -> null -> notFound(); other failures throw.
+  const json = await cachedJson(
+    `${API}/public/category-cities?category=${encodeURIComponent(categorySlug)}&state=${encodeURIComponent(stateSlug)}`,
+    { revalidate: LIST_WINDOW, tags: [TAGS.TAXONOMY, TAGS.VENDORS], nullOn404: true },
+  );
+  return json?.data ?? null;
 }
 
 // Admin-authored state pages (Phase 4C): the landing page is fetched in
 // parallel with the automatic page's data, shared by generateMetadata and
 // the page through React cache() (the preview token is part of the key).
-// No published page — or any failure — means `landing.page` is null and
-// everything below renders exactly as before.
+// No published page means `landing.page` is null and everything below
+// renders the automatic page.
 const loadCategory = cache(fetchCategory);
 const loadState = cache(async (categorySlug, stateSlug, preview) => {
   const [landing, data] = await Promise.all([
-    fetchHubLandingPage({ category: categorySlug, state: stateSlug }, preview),
+    fetchLandingData({ category: categorySlug, state: stateSlug }, preview),
     fetchCities(categorySlug, stateSlug),
   ]);
   return { landing, data };
 });
 
-async function load(params, searchParams) {
+async function load(params) {
   const [category, { landing, data }] = await Promise.all([
     loadCategory(params.category),
-    loadState(params.category, params.state, previewToken(searchParams)),
+    loadState(params.category, params.state, landingPreviewToken()),
   ]);
   return { category, landing, data };
 }
@@ -105,8 +112,8 @@ function buildCollectionJsonLd(params, category, state, cities) {
   };
 }
 
-export async function generateMetadata({ params, searchParams }) {
-  const { category, landing, data } = await load(params, searchParams);
+export async function generateMetadata({ params }) {
+  const { category, landing, data } = await load(params);
   if (!category) return { title: 'Category Not Found' };
 
   if (landing?.page) {
@@ -139,8 +146,8 @@ export async function generateMetadata({ params, searchParams }) {
   };
 }
 
-export default async function StateHubPage({ params, searchParams }) {
-  const { category, landing, data } = await load(params, searchParams);
+export default async function StateHubPage({ params }) {
+  const { category, landing, data } = await load(params);
   if (!category) notFound();
 
   // A published authored page renders even when the state isn't in Place
@@ -234,7 +241,7 @@ function AuthoredStatePage({ params, category, landing, cities }) {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
-      {landing.preview === true && <LandingPreviewStrip published={landing.page.status === 'published'} />}
+      {landing.preview === true && <LandingPreviewStrip published={landing.page.status === 'published'} path={`/${params.category}/${params.state}/`} />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}

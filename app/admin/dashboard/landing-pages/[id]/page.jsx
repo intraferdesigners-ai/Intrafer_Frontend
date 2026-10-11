@@ -195,10 +195,12 @@ export default function LandingPageEditor() {
     setBusy(null);
   };
 
-  // Opens the SAVED page (draft or published) at its public URL via a
-  // 30-minute signed link. The tab is opened synchronously, inside the
-  // click, so popup blockers allow it; it's pointed at the link once the
-  // token arrives, with its opener cut (noopener).
+  // Opens the SAVED page (draft or published) at its public URL as a
+  // preview: /api/landing-preview/ checks the 30-minute signed token with
+  // the backend, turns on draft mode for that page only and redirects to
+  // it (the token ends up in an httpOnly cookie, not the page URL). The tab
+  // is opened synchronously, inside the click, so popup blockers allow it;
+  // it's pointed at the link once the token arrives, with its opener cut.
   const openPreview = async () => {
     if (dirty) {
       toast.error('Save your changes first — preview shows the saved version');
@@ -209,7 +211,8 @@ export default function LandingPageEditor() {
     setPreviewing(true);
     try {
       const { data } = await api.post(`/admin/landing-pages/${id}/preview-token`);
-      const url = `${window.location.origin}${data.data.path}`;
+      const pagePath = data.data.path.split('?')[0];
+      const url = `${window.location.origin}/api/landing-preview/?path=${encodeURIComponent(pagePath)}&token=${encodeURIComponent(data.data.token)}`;
       if (tab) tab.location.replace(url);
       else window.open(url, '_blank', 'noopener,noreferrer');
     } catch (err) {

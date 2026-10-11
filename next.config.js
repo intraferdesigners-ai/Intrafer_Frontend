@@ -1,5 +1,13 @@
 const { IMAGE_REMOTE_PATTERNS } = require('./lib/imageRemotePatterns');
 
+// <landing page path>?preview=<token> -> the preview entry route.
+const previewRedirect = (source, path) => ({
+  source,
+  has: [{ type: 'query', key: 'preview' }],
+  destination: `/api/landing-preview/?path=${path}`,
+  permanent: false,
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
@@ -23,6 +31,14 @@ const nextConfig = {
     return [
       { source: '/refer-a-friend', destination: '/', permanent: true },
       { source: '/refer-a-friend/', destination: '/', permanent: true },
+      // Old landing-page preview links (/<category>[/<state>[/<city>]]/?preview=<token>,
+      // from before draft mode) go through the preview entry route, which
+      // checks the token and turns on draft mode. Temporary (307); the
+      // `preview` query is passed through. api/_next are excluded so the
+      // entry route can't redirect to itself.
+      previewRedirect('/:a((?!(?:api|_next)/)[a-z0-9-]+)/', '/:a/'),
+      previewRedirect('/:a((?!(?:api|_next)/)[a-z0-9-]+)/:b([a-z0-9-]+)/', '/:a/:b/'),
+      previewRedirect('/:a((?!(?:api|_next)/)[a-z0-9-]+)/:b([a-z0-9-]+)/:c([a-z0-9-]+)/', '/:a/:b/:c/'),
     ];
   },
 };
