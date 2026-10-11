@@ -2,6 +2,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { IMAGES } from '../../../lib/images';
 
+// Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
+// the page's existing fallback, so a backend blip during regeneration can
+// show that fallback until the next regeneration.
+export const revalidate = 300;
+
 export const metadata = {
   title: 'Interior Design Styles | Find Your Design Language | Intrafer',
   description: 'Explore modern, Scandinavian, luxury, minimalist, bohemian, industrial, traditional, and contemporary interior design styles.',
@@ -20,7 +25,7 @@ const STYLES_DATA = [
 
 async function fetchStyleCounts() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/style-counts`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/style-counts`, { next: { revalidate: 300, tags: ['vendors'] } });
     if (!res.ok) throw new Error(`API ${res.status}`);
     const json = await res.json();
     return json.data?.counts || {};

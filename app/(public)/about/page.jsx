@@ -4,13 +4,18 @@ import { IMAGES } from '@/lib/images';
 import Reveal from '@/components/ui/Reveal';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 
+// Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
+// the page's existing fallback, so a backend blip during regeneration can
+// show that fallback until the next regeneration.
+export const revalidate = 300;
+
 export const metadata = {
   title: "About Intrafer | India's Interior Designer Marketplace",
 };
 
 async function fetchStats() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { next: { revalidate: 300, tags: ['stats'] } });
     if (!res.ok) throw new Error(`API ${res.status}`);
     const json = await res.json();
     return json.data || null;

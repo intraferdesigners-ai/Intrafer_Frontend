@@ -5,6 +5,14 @@ import { IMAGES } from '../../../../lib/images';
 import Reveal from '../../../../components/ui/Reveal';
 import RevealItem from '../../../../components/ui/RevealItem';
 
+// Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
+// the page's existing fallback, so a backend blip during regeneration can
+// show that fallback until the next regeneration.
+export const revalidate = 300;
+// Only the known slugs exist: anything else is a real 404, and can't add
+// an entry to the ISR cache.
+export const dynamicParams = false;
+
 const STYLE_META = {
   modern:       { label:'Modern',       desc:'Clean lines, functional furniture, and a neutral palette define the modern aesthetic. Expect open floor plans, hidden storage, and materials like glass, steel, and concrete.', hero: IMAGES.styles.modernHero },
   scandinavian: { label:'Scandinavian', desc:'Born in the Nordic countries, Scandinavian design embraces simplicity, natural light, and cosy warmth. Think white walls, pale wood, linen fabrics, and unfussy furnishings.', hero: IMAGES.styles.scandinavianHero },
@@ -41,7 +49,7 @@ async function fetchVendors(style) {
     const spec = STYLE_SPECIALIZATIONS[style] || style;
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/public/vendors?specialization=${encodeURIComponent(spec)}&limit=6`,
-      { cache: 'no-store' }
+      { next: { revalidate: 300, tags: ['vendors'] } }
     );
     if (!res.ok) return [];
     const json = await res.json();

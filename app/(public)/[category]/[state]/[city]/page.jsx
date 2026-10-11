@@ -19,6 +19,13 @@ import { SITE_URL } from '@/lib/siteUrl';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
+// The category-cities lookups below only drive the "nearby cities" and
+// "related categories" links, so they come from Next's data cache (1 h,
+// tag 'taxonomy') — 12 backend calls per render otherwise. Everything else
+// on this page (category, vendors, FAQ, the landing page and its ?preview=
+// token) stays no-store, and the page itself stays dynamic.
+const TAXONOMY_FETCH = { next: { revalidate: 3600, tags: ['taxonomy'] } };
+
 async function fetchCategory(slug) {
   try {
     const res = await fetch(`${API}/public/service-categories/${encodeURIComponent(slug)}`, { cache: 'no-store' });
@@ -139,7 +146,7 @@ async function fetchNearbyCities(categorySlug, stateSlug, currentCitySlug) {
   try {
     const res = await fetch(
       `${API}/public/category-cities?category=${encodeURIComponent(categorySlug)}&state=${encodeURIComponent(stateSlug)}`,
-      { cache: 'no-store' }
+      TAXONOMY_FETCH
     );
     if (!res.ok) return [];
     const json = await res.json();
@@ -169,7 +176,7 @@ async function fetchRelatedCategories(currentCategorySlug, stateSlug, citySlug) 
       try {
         const res = await fetch(
           `${API}/public/category-cities?category=${encodeURIComponent(c.slug)}&state=${encodeURIComponent(stateSlug)}`,
-          { cache: 'no-store' }
+          TAXONOMY_FETCH
         );
         if (!res.ok) return null;
         const json = await res.json();

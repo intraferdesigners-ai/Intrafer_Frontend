@@ -2,6 +2,11 @@ import Link from 'next/link';
 import TestimonialsGrid from './TestimonialsGrid';
 import Reveal from '../../../components/ui/Reveal';
 
+// Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
+// the page's existing fallback, so a backend blip during regeneration can
+// show that fallback until the next regeneration.
+export const revalidate = 300;
+
 export const metadata = {
   title: 'Testimonials | What Homeowners Say | Intrafer',
   description: 'Read verified reviews from homeowners who transformed their spaces with Intrafer designers.',
@@ -9,7 +14,7 @@ export const metadata = {
 
 async function fetchSiteReviews() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/site-reviews`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/site-reviews`, { next: { revalidate: 300, tags: ['reviews'] } });
     if (!res.ok) throw new Error(`API ${res.status}`);
     const json = await res.json();
     return { reviews: json.data?.reviews || [], stats: json.data?.stats || null };

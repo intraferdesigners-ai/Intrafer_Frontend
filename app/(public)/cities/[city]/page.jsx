@@ -4,6 +4,14 @@ import VendorCard from '../../../../components/vendor/VendorCard';
 import Reveal from '../../../../components/ui/Reveal';
 import RevealItem from '../../../../components/ui/RevealItem';
 
+// Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
+// the page's existing fallback, so a backend blip during regeneration can
+// show that fallback until the next regeneration.
+export const revalidate = 300;
+// Only the known slugs exist: anything else is a real 404, and can't add
+// an entry to the ISR cache.
+export const dynamicParams = false;
+
 const CITY_DATA = {
   bangalore: {
     name: 'Bangalore', state: 'Karnataka',
@@ -60,7 +68,7 @@ async function fetchVendors(cityName) {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/public/vendors?city=${encodeURIComponent(cityName)}&limit=6`,
-      { cache: 'no-store' }
+      { next: { revalidate: 300, tags: ['vendors'] } }
     );
     if (!res.ok) return [];
     const json = await res.json();
@@ -70,7 +78,7 @@ async function fetchVendors(cityName) {
 
 async function fetchStats() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { next: { revalidate: 300, tags: ['stats'] } });
     const json = await res.json();
     return json.data || null;
   } catch { return null; }
