@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
+import { canOptimize } from '@/lib/imageHost';
 
 const SLIDE_INTERVAL_MS = 3500;
 
@@ -19,15 +20,18 @@ const SLIDE_INTERVAL_MS = 3500;
 export default function VendorCardImage({ images, alt, sizes, priority = false }) {
   const shouldReduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
-  const hasMultiple = (images?.length || 0) > 1;
+  const list = (images || []).filter((src) => typeof src === 'string' && src.trim());
+  const hasMultiple = list.length > 1;
 
   useEffect(() => {
     if (!hasMultiple || shouldReduceMotion) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % images.length), SLIDE_INTERVAL_MS);
+    const id = setInterval(() => setIndex((i) => (i + 1) % list.length), SLIDE_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [hasMultiple, shouldReduceMotion, images?.length]);
+  }, [hasMultiple, shouldReduceMotion, list.length]);
 
-  if (!images?.length) return null;
+  if (!list.length) return null;
+
+  const src = list[hasMultiple ? index % list.length : 0];
 
   return (
     <motion.div
@@ -38,9 +42,12 @@ export default function VendorCardImage({ images, alt, sizes, priority = false }
       style={{ position: 'absolute', inset: 0 }}
     >
       <Image
-        src={images[hasMultiple ? index : 0]}
+        src={src}
         alt={alt || 'Project'}
         fill
+        // Hosts missing from lib/imageRemotePatterns.js, relative paths and
+        // data: URLs render as a plain image instead of erroring.
+        unoptimized={!canOptimize(src)}
         style={{ objectFit: 'cover' }}
         sizes={sizes || '(max-width: 768px) 100vw, 33vw'}
         // next/image errors if both `priority` and `loading` are passed

@@ -60,8 +60,8 @@ test('next.config.js uses the shared list (single source of truth)', () => {
   assert.ok(!('domains' in config.images), 'images.domains would bypass the shared list');
 });
 
-test('LandingBanner and ProjectImageSlider use canOptimize, not a private copy', () => {
-  for (const file of ['../components/seo/LandingBanner.jsx', '../components/vendor/ProjectImageSlider.jsx']) {
+test('LandingBanner, ProjectImageSlider and VendorCardImage use canOptimize, not a private copy', () => {
+  for (const file of ['../components/seo/LandingBanner.jsx', '../components/vendor/ProjectImageSlider.jsx', '../components/vendor/VendorCardImage.jsx']) {
     const src = readFileSync(new URL(file, import.meta.url), 'utf8');
     assert.match(src, /from '@\/lib\/imageHost'/, file);
     assert.match(src, /unoptimized=\{!canOptimize\(/, file);
