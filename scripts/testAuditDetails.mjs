@@ -36,6 +36,22 @@ test('duplicate landing page (with and without copy warnings)', () => {
   assert.match(formatAuditDetails('Duplicate landing page', d).title, /sourceId: s1/);
 });
 
+test('duplicate landing page with newPath (entries without it unchanged above)', () => {
+  const d = {
+    sourceId: 's1', sourceLabel: 'Interior Designers — Maharashtra',
+    newId: 'n1', newLabel: 'Interior Designers — Gujarat', newPath: '/interior-designers/gujarat/', warnings: 2,
+  };
+  assert.equal(
+    formatAuditDetails('Duplicate landing page', d).text,
+    'Interior Designers — Maharashtra → Interior Designers — Gujarat · /interior-designers/gujarat/ · 2 copy warnings',
+  );
+  assert.equal(
+    formatAuditDetails('Duplicate landing page', { ...d, warnings: 0, newPath: '/architects/' }).text,
+    'Interior Designers — Maharashtra → Interior Designers — Gujarat · /architects/',
+  );
+  assert.equal(formatAuditDetails('Duplicate landing page', { ...d, newPath: '' }).text, 'Interior Designers — Maharashtra → Interior Designers — Gujarat · 2 copy warnings');
+});
+
 test('singular / plural: "1 id", "0 ids", "1 item", "2 items"', () => {
   const one = formatAuditDetails('Bulk landing page action', { action: 'publish', ok: 1, ids: ['a'] });
   assert.equal(one.text, 'publish · 1 ok · 0 unchanged · 0 failed · 0 not found · 1 id');

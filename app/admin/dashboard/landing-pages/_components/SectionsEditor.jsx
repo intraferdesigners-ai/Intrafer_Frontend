@@ -26,9 +26,17 @@ export function withKeys(sections = []) {
 
 // Add / reorder / toggle / remove the page's sections. `errors` is the
 // server's per-field map ('sections.2.faqItems.0.answer', ...).
+// Where the sections land on the live page, per page type (see the
+// [category] / [state] / [city] routes).
+const PLACEMENT = {
+  city: 'Shown below the vendor list, in this order. Disabled sections are kept but not shown.',
+  state: 'Shown below the city list and the optional top vendors, in this order. Disabled sections are kept but not shown.',
+  category: 'Shown below the state list and the optional top vendors, in this order. Disabled sections are kept but not shown. An FAQ section here replaces the built-in category FAQ.',
+};
+
 // `localitiesTitle`: the live page's heading for an untitled localities
-// section (it differs per page type).
-export default function SectionsEditor({ sections, onChange, errors, localitiesTitle = 'Localities in {{city}}' }) {
+// section (it differs per page type). `level`: the page type.
+export default function SectionsEditor({ sections, onChange, errors, localitiesTitle = 'Localities in {{city}}', level = 'city' }) {
   const atLimit = sections.length >= LIMITS.sections;
 
   const update = (i, patch) => onChange(sections.map((s, j) => (j === i ? { ...s, ...patch } : s)));
@@ -46,7 +54,7 @@ export default function SectionsEditor({ sections, onChange, errors, localitiesT
     <section style={CARD}>
       <span style={SECTION_LABEL}>Sections</span>
       <p style={{ ...HINT, margin: '-6px 0 14px' }}>
-        Shown below the vendor list, in this order. Disabled sections are kept but not shown.
+        {PLACEMENT[level] || PLACEMENT.city}
       </p>
       {errors.sections && <p style={{ ...FIELD_ERROR, marginBottom: 10 }}>{errors.sections}</p>}
 

@@ -41,8 +41,8 @@ test('pass labels describe what is there', () => {
   const checks = evaluateChecklist(good(), ctx);
   assert.deepEqual(checks.map((c) => c.id), IDS);
   assert.deepEqual(labels(checks), {
-    metaTitle: 'Meta title fits in search results (≤ 60 characters)',
-    metaDescription: 'Meta description is 120–160 characters',
+    metaTitle: 'Meta title fits in search results (≤ 60 characters, counting “ | Intrafer”)',
+    metaDescription: 'Meta description is 70–160 characters',
     bannerImage: 'Banner image added',
     bannerHeadline: 'Banner headline added',
     cta: 'CTA button added',
@@ -78,7 +78,7 @@ test('warn labels say what is missing; ids, hints and count unchanged', () => {
     cta: 'Finish the CTA button', // half-filled; empty reads "Add a CTA button (optional)"
     words: 'Add more text — 10 of 150 words',
     faq: 'Add an FAQ with at least 2 questions',
-    localities: 'List at least 3 localities',
+    localities: 'List localities served (optional)',
     tokens: 'Unknown placeholders found',
     vendors: 'No vendors yet — the page will show an empty list',
     indexing: 'Forced indexing on a thin page',
@@ -160,13 +160,34 @@ test('meta title: blank warns with the automatic title; too long warns', () => {
   assert.equal(byId(evaluateChecklist(form, ctx)).metaTitle.level, 'warn');
 });
 
-test('meta description: blank, 119, 120, 160, 161 chars', () => {
-  const at = (s) => { const f = good(); f.seo.metaDescription = s; return byId(evaluateChecklist(f, ctx)).metaDescription.level; };
-  assert.equal(at(''), 'warn');
-  assert.equal(at('x'.repeat(119)), 'warn');
-  assert.equal(at('x'.repeat(120)), 'pass');
-  assert.equal(at('x'.repeat(160)), 'pass');
-  assert.equal(at('x'.repeat(161)), 'warn');
+test('meta description: blank, 69, 70, 160, 161 chars, with the length in the hint', () => {
+  const check = (str) => { const f = good(); f.seo.metaDescription = str; return byId(evaluateChecklist(f, ctx)).metaDescription; };
+  assert.equal(check('').level, 'warn');
+  assert.equal(check('x'.repeat(69)).level, 'warn');
+  assert.equal(check('x'.repeat(69)).label, 'Meta description is too short');
+  assert.equal(check('x'.repeat(69)).hint, "It's 69 characters — aim for 70–160.");
+  assert.equal(check('x'.repeat(70)).level, 'pass');
+  assert.equal(check('x'.repeat(160)).level, 'pass');
+  assert.equal(check('x'.repeat(161)).level, 'warn');
+  assert.equal(check('x'.repeat(161)).label, 'Meta description is too long');
+  assert.equal(check('x'.repeat(161)).hint, "It's 161 characters — aim for 70–160.");
+});
+
+test('meta title wording says “ | Intrafer” is counted', () => {
+  const f = good();
+  f.seo.metaTitle = 'x'.repeat(50); // 61 with the suffix
+  assert.match(byId(evaluateChecklist(f, ctx)).metaTitle.hint, /including “ \| Intrafer”/);
+  f.seo.metaTitle = 'x'.repeat(49);
+  assert.match(byId(evaluateChecklist(f, ctx)).metaTitle.label, /counting “ \| Intrafer”/);
+});
+
+test('localities check reads as optional when absent', () => {
+  const f = good();
+  f.sections = f.sections.filter((sec) => sec.type !== 'localities');
+  const c = byId(evaluateChecklist(f, ctx)).localities;
+  assert.equal(c.level, 'warn');
+  assert.equal(c.label, 'List localities served (optional)');
+  assert.equal(c.hint, 'Optional — listing the areas you cover helps local searches.');
 });
 
 test('banner, CTA, FAQ, localities and heading checks', () => {

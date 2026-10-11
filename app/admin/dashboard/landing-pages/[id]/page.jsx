@@ -408,6 +408,8 @@ export default function LandingPageEditor() {
               </span>
             ))}
             {' '}— filled in on the live page; unknown ones are dropped.
+            {level === 'state' && ' {{city}} is empty on state pages.'}
+            {level === 'category' && ' {{city}} and {{state}} are empty on category pages.'}
           </p>
         </div>
       </section>
@@ -417,6 +419,7 @@ export default function LandingPageEditor() {
         onChange={set('sections')}
         errors={errors}
         localitiesTitle={{ category: 'Areas we cover', state: 'Localities in {{state}}', city: 'Localities in {{city}}' }[level]}
+        level={level}
       />
 
       {/* Vendor list */}
