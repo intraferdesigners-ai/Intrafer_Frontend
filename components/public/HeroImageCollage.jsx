@@ -35,8 +35,8 @@ export default function HeroImageCollage() {
 
   // Scoped to this collage only (not the global page scroll) — the photo
   // layer in each card drifts a few px slower than the page as it scrolls
-  // past, while the studio badge sitting on top stays put. Reduced motion
-  // locks the transform range to [0, 0] rather than skipping the hook.
+  // past, while any badge sitting on top stays put. (No badge here now: it
+  // was a made-up studio name and rating.) Reduced motion locks the transform range to [0, 0] rather than skipping the hook.
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] });
   const photoY = useTransform(scrollYProgress, [0, 1], shouldReduceMotion ? [0, 0] : [-16, 16]);
@@ -51,12 +51,6 @@ export default function HeroImageCollage() {
         image={IMAGES.hero.main}
         alt="Modern interior design"
         priority
-        badge={
-          <div className="vendor-img-badge" style={{ position: 'absolute', bottom: '12px', left: '12px', borderRadius: 'var(--r-sm)', padding: '7px 12px', border: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '12px', fontWeight: 500 }}>Priya Design Studio</div>
-            <div style={{ fontSize: '11px', opacity: 0.65, marginTop: '1px' }}>Bangalore · ★ 4.9</div>
-          </div>
-        }
       />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
         <ParallaxCard

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import Honeypot from '../ui/Honeypot';
+import { realCount, realAvgRating } from '../../lib/trustStats';
 
 const FOOTER_LINKS = [
   {
@@ -68,12 +69,6 @@ const FOOTER_LINKS = [
 
 const CITIES = ['Bangalore', 'Mumbai', 'Delhi', 'Hyderabad', 'Chennai', 'Pune'];
 
-const TRUST_STATS_FALLBACK = [
-  { value: '500+', label: 'VERIFIED DESIGNERS' },
-  { value: '4.8★', label: 'AVERAGE RATING'      },
-  { value: '1200+',label: 'PROJECTS COMPLETED'  },
-];
-
 const POPULAR_SEARCHES = [
   { label: 'Modular Kitchen Designers in Bangalore', href: '/vendors?city=Bangalore&specialization=Modular+Kitchen' },
   { label: 'Interior Designers in Mumbai',            href: '/vendors?city=Mumbai' },
@@ -83,7 +78,9 @@ const POPULAR_SEARCHES = [
 ];
 
 export default function Footer() {
-  const [trustStats, setTrustStats] = useState(TRUST_STATS_FALLBACK);
+  // Empty until real figures arrive — no placeholder numbers (see
+  // lib/trustStats.js); the row stays hidden if none come back.
+  const [trustStats, setTrustStats] = useState([]);
   const [email, setEmail] = useState('');
   const [subscribing, setSubscribing] = useState(false);
   const [website, setWebsite] = useState(''); // honeypot — see components/ui/Honeypot.jsx
@@ -100,14 +97,17 @@ export default function Footer() {
         const json = await res.json();
         const data = json.data;
         if (!cancelled && data) {
+          const vendors = realCount(data.vendorCount);
+          const rating = realAvgRating(data);
+          const projects = realCount(data.projectCount);
           setTrustStats([
-            { value: `${data.vendorCount}+`, label: 'VERIFIED DESIGNERS' },
-            { value: `${data.avgRating}★`,   label: 'AVERAGE RATING'      },
-            { value: `${data.projectCount}+`,label: 'PROJECTS COMPLETED'  },
-          ]);
+            vendors !== null && { value: vendors, label: 'VERIFIED DESIGNERS' },
+            rating !== null && { value: `${rating.toFixed(1)}★`, label: 'AVERAGE RATING' },
+            projects !== null && { value: projects, label: 'PROJECTS COMPLETED' },
+          ].filter(Boolean));
         }
       } catch {
-        // keep fallback values
+        // no stats row
       }
     }
 
@@ -141,7 +141,7 @@ export default function Footer() {
     <footer className="site-footer" style={{ background: '#0F172A', padding: '56px 40px 24px' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Trust stats row */}
-        <div style={{
+        {trustStats.length > 0 && <div style={{
           display: 'flex', flexWrap: 'wrap', gap: '32px',
           paddingBottom: '32px', marginBottom: '32px',
           borderBottom: '1px solid rgba(240,246,255,.08)',
@@ -156,7 +156,7 @@ export default function Footer() {
               </div>
             </div>
           ))}
-        </div>
+        </div>}
 
         {/* Top grid */}
         <div style={{ marginBottom: '40px' }} className="footer-grid">
@@ -187,7 +187,7 @@ export default function Footer() {
               </div>
             </Link>
             <p style={{ fontSize: '13px', color: 'rgba(240,246,255,.35)', lineHeight: 1.7, maxWidth: '220px', marginBottom: '16px' }}>
-              India&apos;s most trusted interior designer marketplace. Verified designers across India.
+              India&apos;s interior designer marketplace. Verified designers across India.
             </p>
             <a
               href="https://wa.me/919217211408"

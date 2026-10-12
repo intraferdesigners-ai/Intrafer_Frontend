@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Shield, Star, Clock, Lock } from 'lucide-react';
+import { Shield, Star, UserCheck, Lock } from 'lucide-react';
 import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
 import { SITE_URL } from '@/lib/siteUrl';
@@ -17,7 +17,7 @@ const STEPS = [
     num: '01', title: 'Browse verified designers',
     desc: 'Search by city, specialization, budget, and style. Every designer is manually verified before listing. Read real reviews from completed projects.',
     image: '/images/how-it-works/step1.jpg',
-    features: ['500+ verified designers', 'Real portfolio photos only', 'Transparent ratings'],
+    features: ['Verified designer profiles', 'Real portfolio photos only', 'Transparent ratings'],
   },
   {
     num: '02', title: 'Submit your enquiry',
@@ -45,11 +45,13 @@ const STEPS = [
   },
 ];
 
+// Each badge restates something the steps above already describe — no
+// figures or response-time promises that aren't backed by real data.
 const TRUST_BADGES = [
-  { Icon: Shield, title: 'Verified designers only' },
-  { Icon: Star,   title: '4.9★ average rating' },
-  { Icon: Clock,  title: '48h response guarantee' },
-  { Icon: Lock,   title: 'Privacy protected' },
+  { Icon: Shield,    title: 'Verified designers only' },
+  { Icon: Star,      title: 'Reviews only from real enquiries' },
+  { Icon: UserCheck, title: 'No account needed' },
+  { Icon: Lock,      title: 'Privacy protected' },
 ];
 
 export default function HowItWorksPage() {
@@ -157,7 +159,7 @@ export default function HowItWorksPage() {
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '36px', color: '#FAFAF8', fontWeight: 400, marginBottom: '12px' }}>
           Ready to find your designer?
         </h2>
-        <p style={{ fontSize: '14px', color: 'rgba(255,255,255,.5)', marginBottom: '24px' }}>Join 1,200+ homeowners who transformed their homes through Intrafer.</p>
+        <p style={{ fontSize: '14px', color: 'rgba(255,255,255,.5)', marginBottom: '24px' }}>Browse designer portfolios, or send one enquiry with your requirements.</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
           {/* Wrapped in <button>, not styled directly on the <a>, because
               .cta-always-dark's `a { color: #60A5FA !important }` carve-out

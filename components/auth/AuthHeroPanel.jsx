@@ -5,6 +5,7 @@ import Image from 'next/image';
 import api from '@/lib/api';
 import { IMAGES } from '@/lib/images';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
+import { realCount, realAvgRating } from '@/lib/trustStats';
 
 // Same fixed navy as the enquiry page's always-dark context panel
 // (#0F172A) — used here as a photo scrim rather than a flat fill. At 0.72
@@ -24,11 +25,15 @@ export default function AuthHeroPanel() {
       .catch(() => {});
   }, []);
 
-  // Same fallback numbers app/page.jsx uses when /public/stats is unavailable
-  // — not the stale hardcoded "500+ / 1200+" copy also present there.
-  const vendorCount  = stats?.vendorCount  ?? 8;
-  const projectCount = stats?.projectCount ?? 24;
-  const avgRating    = stats?.avgRating    ?? '4.8';
+  // Real figures only, no fallback numbers (see lib/trustStats.js): a tile
+  // with no real value is dropped, and the row stays hidden until data
+  // arrives.
+  const avgRating = realAvgRating(stats);
+  const tiles = [
+    { end: realCount(stats?.vendorCount), label: 'Verified designers' },
+    { end: avgRating, suffix: '★', decimals: 1, label: 'Average rating' },
+    { end: realCount(stats?.projectCount), label: 'Projects delivered' },
+  ].filter((t) => t.end !== null);
 
   return (
     <div className="hide-mobile" style={{
@@ -62,30 +67,22 @@ export default function AuthHeroPanel() {
         </p>
       </div>
 
-      <div style={{
-        position: 'relative', zIndex: 2, display: 'flex', gap: '24px',
-        paddingTop: '20px', marginTop: '20px',
-        borderTop: '1px solid rgba(240,246,255,.18)',
-      }}>
-        <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 500, color: FG }}>
-            <AnimatedCounter end={vendorCount} suffix="+" />
-          </div>
-          <div style={{ fontSize: '10px', letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(240,246,255,.6)', marginTop: '2px' }}>Verified designers</div>
+      {tiles.length > 0 && (
+        <div style={{
+          position: 'relative', zIndex: 2, display: 'flex', gap: '24px',
+          paddingTop: '20px', marginTop: '20px',
+          borderTop: '1px solid rgba(240,246,255,.18)',
+        }}>
+          {tiles.map((t) => (
+            <div key={t.label}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 500, color: FG }}>
+                <AnimatedCounter end={t.end} suffix={t.suffix || ''} decimals={t.decimals || 0} />
+              </div>
+              <div style={{ fontSize: '10px', letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(240,246,255,.6)', marginTop: '2px' }}>{t.label}</div>
+            </div>
+          ))}
         </div>
-        <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 500, color: FG }}>
-            <AnimatedCounter end={parseFloat(avgRating)} suffix="★" decimals={1} />
-          </div>
-          <div style={{ fontSize: '10px', letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(240,246,255,.6)', marginTop: '2px' }}>Average rating</div>
-        </div>
-        <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 500, color: FG }}>
-            <AnimatedCounter end={projectCount} suffix="+" />
-          </div>
-          <div style={{ fontSize: '10px', letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(240,246,255,.6)', marginTop: '2px' }}>Projects delivered</div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

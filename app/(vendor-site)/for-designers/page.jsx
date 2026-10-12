@@ -8,6 +8,7 @@ import { IMAGES } from '@/lib/images';
 import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
 import api from '@/lib/api';
+import { realAvgRating } from '@/lib/trustStats';
 
 const BENEFITS = [
   { Icon: TrendingUp, title: 'Qualified leads only',    desc: "Every lead is from a verified homeowner actively planning an interior project. No tire-kickers, no spam." },
@@ -53,13 +54,13 @@ const FAQS = [
 export default function ForDesignersPage() {
   useEffect(() => { document.title = 'List Your Interior Design Studio | Intrafer'; }, []);
   const [openFaq, setOpenFaq] = useState(null);
-  const [avgRating, setAvgRating] = useState('4.8');
+  // Shown only when backed by real stored reviews (lib/trustStats.js) —
+  // no fallback figure; the rating tile is dropped otherwise.
+  const [avgRating, setAvgRating] = useState(null);
 
   useEffect(() => {
     api.get('/public/stats')
-      .then(({ data }) => {
-        if (data?.data?.avgRating) setAvgRating(data.data.avgRating);
-      })
+      .then(({ data }) => setAvgRating(realAvgRating(data?.data)))
       .catch(() => {});
   }, []);
 
@@ -88,8 +89,8 @@ export default function ForDesignersPage() {
               {[
                 { val: 'Unlimited',   label: 'LEADS' },
                 { val: 'Zero',        label: 'COMMISSION' },
-                { val: `${avgRating}★`, label: 'DESIGNER RATING' },
-              ].map((s) => (
+                avgRating !== null && { val: `${avgRating.toFixed(1)}★`, label: 'DESIGNER RATING' },
+              ].filter(Boolean).map((s) => (
                 <div key={s.label}>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 400, color: 'var(--primary)', lineHeight: 1 }}>{s.val}</div>
                   <div style={{ fontSize: '10px', letterSpacing: '.1em', color: 'var(--text-hint)', textTransform: 'uppercase', marginTop: '4px' }}>{s.label}</div>

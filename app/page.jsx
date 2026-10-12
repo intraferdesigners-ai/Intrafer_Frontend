@@ -22,6 +22,7 @@ import CostEstimatorTeaser from '../components/public/CostEstimatorTeaser';
 import TestimonialCarousel from '../components/public/TestimonialCarousel';
 import { cachedJson } from '../lib/cachedFetch';
 import { LIST_WINDOW, TAGS } from '../lib/cacheTags';
+import { realCount, realAvgRating } from '../lib/trustStats';
 
 export const metadata = {
   // absolute: the brand is already in it, so skip the root "%s | Intrafer" template.
@@ -117,6 +118,15 @@ export default async function Home() {
     fetchStats(), fetchFeaturedProjects(), fetchHomepageContent(), fetchSiteReviews(), fetchStyleCounts(),
   ]);
   const REVIEWS = siteReviews.filter((r) => r.comment).slice(0, 8);
+  // Real figures from /public/stats only — a tile with no real value is
+  // dropped (see lib/trustStats.js), and the strip goes if none are left.
+  const avgRating = realAvgRating(statsData);
+  const trustStats = [
+    { end: realCount(statsData?.vendorCount),  label: 'VERIFIED DESIGNERS' },
+    { end: realCount(statsData?.projectCount), label: 'PROJECTS DELIVERED' },
+    { end: avgRating, suffix: '★', decimals: 1, label: 'AVG RATING' },
+    { end: realCount(statsData?.enquiryCount), label: 'ENQUIRIES SUBMITTED' },
+  ].filter((s) => s.end !== null);
   const styleGalleryData = STYLES_FEATURED.map((s) => ({ ...s, count: styleCounts[s.slug] || 0 }));
 
   return (
@@ -190,31 +200,27 @@ export default async function Home() {
       <div className="divider" />
 
       {/* ── TRUST STATS ── */}
-      <section style={{ background: 'var(--bg)', padding: 'clamp(32px,5vw,48px) clamp(16px,4vw,40px)' }}>
-        <div className="stats-strip" style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          {[
-            // Nullish coalescing (not ||) so a genuine 0 from the API — e.g.
-            // projectCount before any project is published — doesn't get
-            // mistaken for "falsy" and silently replaced by the fallback.
-            { end: statsData?.vendorCount ?? 8,                     suffix: '+', label: 'VERIFIED DESIGNERS' },
-            { end: statsData?.projectCount ?? 24,                   suffix: '+', label: 'PROJECTS DELIVERED'  },
-            { end: parseFloat(statsData?.avgRating ?? '4.8'), suffix: '★', decimals: 1, label: 'AVG RATING' },
-            { end: statsData?.enquiryCount ?? 15,                   suffix: '+', label: 'ENQUIRIES SUBMITTED' },
-          ].map((s) => (
-            <div key={s.label} style={{ padding: 'clamp(16px,3vw,28px) 16px', textAlign: 'center' }}>
-              {/* Sans-serif with lining/tabular figures, not font-display —
-                  the serif's old-style numerals are hard to parse at a
-                  glance for a key stat. */}
-              <div style={{ fontFamily: 'var(--font-ui)', fontSize: 'clamp(32px,4vw,44px)', fontWeight: 700, fontVariantNumeric: 'lining-nums tabular-nums', color: 'var(--text)', lineHeight: 1 }}>
-                <AnimatedCounter end={s.end} suffix={s.suffix} decimals={s.decimals || 0} />
-              </div>
-              <div style={{ fontSize: '11px', letterSpacing: '.08em', color: 'var(--text-hint)', marginTop: '6px' }}>{s.label}</div>
+      {trustStats.length > 0 && (
+        <>
+          <section style={{ background: 'var(--bg)', padding: 'clamp(32px,5vw,48px) clamp(16px,4vw,40px)' }}>
+            <div className="stats-strip" data-count={trustStats.length} style={{ maxWidth: '1280px', margin: '0 auto' }}>
+              {trustStats.map((s) => (
+                <div key={s.label} style={{ padding: 'clamp(16px,3vw,28px) 16px', textAlign: 'center' }}>
+                  {/* Sans-serif with lining/tabular figures, not font-display —
+                      the serif's old-style numerals are hard to parse at a
+                      glance for a key stat. */}
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: 'clamp(32px,4vw,44px)', fontWeight: 700, fontVariantNumeric: 'lining-nums tabular-nums', color: 'var(--text)', lineHeight: 1 }}>
+                    <AnimatedCounter end={s.end} suffix={s.suffix || ''} decimals={s.decimals || 0} />
+                  </div>
+                  <div style={{ fontSize: '11px', letterSpacing: '.08em', color: 'var(--text-hint)', marginTop: '6px' }}>{s.label}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      <div className="divider" />
+          <div className="divider" />
+        </>
+      )}
 
       {/* ── OFFER STRIP ── */}
       <section style={{ background: 'var(--bg)', padding: '0 clamp(16px,4vw,40px)' }}>

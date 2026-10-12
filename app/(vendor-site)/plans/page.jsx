@@ -249,7 +249,7 @@ export default function PlansPage() {
               Ready to grow your studio?
             </h2>
             <p style={{ fontSize: '15px', color: 'rgba(255,255,255,.5)', marginBottom: '28px' }}>
-              Join 500+ verified designers on Intrafer.
+              Join the verified designers on Intrafer.
             </p>
             <Link href="/auth/register?role=vendor">
               <button style={{

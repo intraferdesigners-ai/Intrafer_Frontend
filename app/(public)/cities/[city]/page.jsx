@@ -18,12 +18,12 @@ const CITY_DATA = {
   bangalore: {
     name: 'Bangalore', state: 'Karnataka',
     image: '/images/cities/bangalore.jpg',
-    description: 'Find the best interior designers in Bangalore. From modern apartments in Whitefield to luxury villas in Sarjapur, our verified designers cover every neighbourhood and style.',
+    description: 'Find interior designers in Bangalore. From modern apartments in Whitefield to luxury villas in Sarjapur, our verified designers cover every neighbourhood and style.',
   },
   mumbai: {
     name: 'Mumbai', state: 'Maharashtra',
     image: '/images/cities/mumbai.jpg',
-    description: 'Top-rated interior designers in Mumbai. Whether you need a compact sea-facing flat redesigned or a luxury Bandra home transformed, our Mumbai designers deliver.',
+    description: 'Interior designers in Mumbai. Whether you need a compact sea-facing flat redesigned or a luxury Bandra home transformed, our Mumbai designers deliver.',
   },
   delhi: {
     name: 'Delhi NCR', state: 'Delhi',
@@ -43,7 +43,7 @@ const CITY_DATA = {
   pune: {
     name: 'Pune', state: 'Maharashtra',
     image: '/images/cities/delhi.jpg',
-    description: 'Connect with Pune\'s best interior designers. Aundh, Koregaon Park, Hinjewadi — our designers bring style to every Pune neighbourhood.',
+    description: 'Connect with interior designers in Pune. Aundh, Koregaon Park, Hinjewadi — our designers bring style to every Pune neighbourhood.',
   },
 };
 
@@ -76,18 +76,13 @@ async function fetchVendors(cityName) {
       `${process.env.NEXT_PUBLIC_API_URL}/public/vendors?city=${encodeURIComponent(cityName)}&limit=6`,
       { next: { revalidate: 300, tags: [TAGS.VENDORS] } }
     );
-    if (!res.ok) return [];
+    if (!res.ok) return { vendors: [], total: null };
     const json = await res.json();
-    return json.data?.vendors || json.vendors || [];
-  } catch { return []; }
-}
-
-async function fetchStats() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/stats`, { next: { revalidate: 300, tags: [TAGS.STATS] } });
-    const json = await res.json();
-    return json.data || null;
-  } catch { return null; }
+    const vendors = json.data?.vendors || json.vendors || [];
+    // The API's real match count — the list itself is capped at 6.
+    const total = json.data?.total ?? null;
+    return { vendors, total };
+  } catch { return { vendors: [], total: null }; }
 }
 
 export default async function CityPage({ params }) {
@@ -101,7 +96,13 @@ export default async function CityPage({ params }) {
     );
   }
 
-  const [vendors, stats] = await Promise.all([fetchVendors(cityData.name), fetchStats()]);
+  const { vendors, total: designerCount } = await fetchVendors(cityData.name);
+  // Only figures this page can back with real data: the city's designer
+  // count. (A site-wide rating or a response-time promise doesn't belong
+  // on a city page.)
+  const cityStats = [
+    designerCount > 0 && { label: 'Designers', value: designerCount },
+  ].filter(Boolean);
 
   const coords = CITY_MAP_COORDS[params.city] || CITY_MAP_COORDS.bangalore;
   const mapSrc = `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d${Math.round(50000 / coords.zoom)}!2d${coords.lng}!3d${coords.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1234567890`;
@@ -124,18 +125,14 @@ export default async function CityPage({ params }) {
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '64px clamp(16px,4vw,40px) 80px' }}>
         {/* Stats strip */}
         <Reveal>
-          <div className="city-stats-grid" style={{ marginBottom: '48px' }}>
-            {[
-              { label: 'Designers', value: vendors.length > 0 ? vendors.length : 'New' },
-              { label: 'Avg rating', value: stats ? `${stats.avgRating}★` : '4.9★' },
-              { label: 'Response', value: '48h' },
-            ].map((s) => (
+          {cityStats.length > 0 && <div className="city-stats-grid" data-count={cityStats.length} style={{ marginBottom: '48px' }}>
+            {cityStats.map((s) => (
               <div key={s.label} style={{ background: 'var(--surface)', padding: 'clamp(14px,3vw,20px)', textAlign: 'center' }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--primary)' }}>{s.value}</div>
                 <div style={{ fontSize: '11px', color: 'var(--text-hint)', letterSpacing: '.08em', marginTop: '4px' }}>{s.label.toUpperCase()}</div>
               </div>
             ))}
-          </div>
+          </div>}
 
           <p style={{ fontSize: '16px', color: 'var(--text-mid)', lineHeight: 1.8, maxWidth: '680px', marginBottom: '64px' }}>
             {cityData.description}

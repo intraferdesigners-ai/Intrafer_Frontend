@@ -45,7 +45,10 @@ export default async function TestimonialsPage() {
               <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)' }}>
                 {stats.totalCount} verified review{stats.totalCount !== 1 ? 's' : ''}
               </p>
-              <div style={{ fontSize: '20px', color: 'var(--primary)', letterSpacing: '3px' }}>★★★★★</div>
+              {/* The real average, rounded — not five fixed stars. */}
+              <div style={{ fontSize: '20px', color: 'var(--primary)', letterSpacing: '3px' }}>
+                {'★'.repeat(Math.round(stats.avgRating))}{'☆'.repeat(5 - Math.round(stats.avgRating))}
+              </div>
             </div>
           </Reveal>
 
