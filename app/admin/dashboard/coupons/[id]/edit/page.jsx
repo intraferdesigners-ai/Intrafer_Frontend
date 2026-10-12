@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../../../../../lib/api';
 import Button from '../../../../../../components/ui/Button';
 import Input from '../../../../../../components/ui/Input';
+import { sortPlans } from '../../../../../../lib/plans';
 import Spinner from '../../../../../../components/ui/Spinner';
 
 const SECTION_LABEL = {
@@ -20,8 +21,6 @@ const FIELD_LABEL = {
   display: 'block', fontSize: 12, fontWeight: 500,
   color: 'var(--color-text-sub)', marginBottom: 6, letterSpacing: '0.01em',
 };
-
-const PLAN_NAMES = ['1 Month', '6 Month', '12 Month'];
 
 function toDateInputValue(dateString) {
   if (!dateString) return '';
@@ -63,6 +62,15 @@ export default function EditCouponPage() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [couponId]);
+
+  // Currently sold plans, from the same endpoint vendors buy from.
+  const [planNames, setPlanNames] = useState([]);
+  const [plansError, setPlansError] = useState(false);
+  useEffect(() => {
+    api.get('/subscriptions/plans')
+      .then(({ data }) => setPlanNames(sortPlans(data.data?.plans).map((p) => p.name)))
+      .catch(() => setPlansError(true));
+  }, []);
 
   const togglePlan = (plan) => {
     setForm((p) => ({
@@ -206,8 +214,13 @@ export default function EditCouponPage() {
             <p style={{ fontSize: 12, color: 'var(--color-text-hint)', margin: '-6px 0 12px' }}>
               Leave all unchecked to apply this coupon to every plan.
             </p>
+            {plansError && (
+              <p style={{ fontSize: 12, color: 'var(--color-danger)', margin: '0 0 12px' }}>
+                Couldn&apos;t load plans. Refresh before changing the plans this coupon applies to.
+              </p>
+            )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {PLAN_NAMES.map((plan) => (
+              {planNames.map((plan) => (
                 <button
                   key={plan}
                   type="button"
@@ -215,6 +228,20 @@ export default function EditCouponPage() {
                   onClick={() => togglePlan(plan)}
                 >
                   {plan}
+                </button>
+              ))}
+              {/* Names this coupon still lists that are no longer sold (e.g.
+                  '1 Month'): shown so they can be removed — the API won't
+                  save a coupon that names them. */}
+              {planNames.length > 0 && form.applicablePlans.filter((plan) => !planNames.includes(plan)).map((plan) => (
+                <button
+                  key={plan}
+                  type="button"
+                  title="No longer sold: click to remove"
+                  style={{ ...pillStyle(true), textDecoration: 'line-through' }}
+                  onClick={() => togglePlan(plan)}
+                >
+                  {plan} (no longer sold)
                 </button>
               ))}
             </div>

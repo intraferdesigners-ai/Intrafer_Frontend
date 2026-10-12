@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../../../../lib/api';
 import Button from '../../../../../components/ui/Button';
 import Input from '../../../../../components/ui/Input';
+import { sortPlans } from '../../../../../lib/plans';
 
 const SECTION_LABEL = {
   fontSize: 10, fontWeight: 600, letterSpacing: '0.1em',
@@ -20,8 +21,6 @@ const FIELD_LABEL = {
   color: 'var(--color-text-sub)', marginBottom: 6, letterSpacing: '0.01em',
 };
 
-const PLAN_NAMES = ['1 Month', '6 Month', '12 Month'];
-
 export default function NewCouponPage() {
   const router = useRouter();
 
@@ -30,6 +29,15 @@ export default function NewCouponPage() {
     applicablePlans: [], maxUses: '', validFrom: '', validUntil: '', isActive: true,
   });
   const [saving, setSaving] = useState(false);
+
+  // Currently sold plans, from the same endpoint vendors buy from.
+  const [planNames, setPlanNames] = useState([]);
+  const [plansError, setPlansError] = useState(false);
+  useEffect(() => {
+    api.get('/subscriptions/plans')
+      .then(({ data }) => setPlanNames(sortPlans(data.data?.plans).map((p) => p.name)))
+      .catch(() => setPlansError(true));
+  }, []);
 
   const togglePlan = (plan) => {
     setForm((p) => ({
@@ -156,8 +164,13 @@ export default function NewCouponPage() {
             <p style={{ fontSize: 12, color: 'var(--color-text-hint)', margin: '-6px 0 12px' }}>
               Leave all unchecked to apply this coupon to every plan.
             </p>
+            {plansError && (
+              <p style={{ fontSize: 12, color: 'var(--color-danger)', margin: '0 0 12px' }}>
+                Couldn&apos;t load plans. Refresh before restricting this coupon to specific plans.
+              </p>
+            )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {PLAN_NAMES.map((plan) => (
+              {planNames.map((plan) => (
                 <button
                   key={plan}
                   type="button"

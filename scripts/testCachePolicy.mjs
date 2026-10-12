@@ -63,6 +63,9 @@ const CACHED = {
   'app/(public)/[category]/page.jsx': 300,
   'app/(public)/[category]/[state]/page.jsx': 300,
   'app/(public)/[category]/[state]/[city]/page.jsx': 300,
+  // plan prices (purged by the backend on every boot)
+  'app/(vendor-site)/plans/page.jsx': 300,
+  'app/(vendor-site)/for-designers/page.jsx': 300,
   // pre-existing
   'app/sitemap.js': 300,
 };

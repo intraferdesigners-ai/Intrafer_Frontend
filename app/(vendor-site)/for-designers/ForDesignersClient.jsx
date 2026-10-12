@@ -1,0 +1,390 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowRight, CheckCircle, TrendingUp, Users, Star, Zap, BarChart3, Plus, Minus, MessageSquare } from 'lucide-react';
+import { IMAGES } from '@/lib/images';
+import Reveal from '@/components/ui/Reveal';
+import RevealItem from '@/components/ui/RevealItem';
+import api from '@/lib/api';
+import { realAvgRating } from '@/lib/trustStats';
+import { formatINR } from '@/lib/utils';
+import { POPULAR_PLAN, planLabel, planPeriod } from '@/lib/plans';
+
+const BENEFITS = [
+  { Icon: TrendingUp, title: 'Qualified leads only',    desc: "Every lead is from a verified homeowner actively planning an interior project. No tire-kickers, no spam." },
+  { Icon: Users,      title: 'You choose your leads',   desc: "Browse leads that match your specialization and location. Accept only the ones that fit your capacity." },
+  { Icon: Star,       title: 'Build your reputation',   desc: "Collect verified reviews from completed projects. A strong profile compounds over time." },
+  { Icon: Zap,        title: 'Instant notifications',   desc: "Get WhatsApp and email alerts the moment a new lead matches your profile. Never miss an opportunity." },
+  { Icon: CheckCircle,title: 'No commission cuts',      desc: "We charge a flat subscription. Every rupee of project revenue goes directly to you." },
+  { Icon: BarChart3,  title: 'Analytics dashboard',     desc: "Track your leads, conversion rate, and win rate in one place to see exactly where your pipeline is strong or slipping." },
+];
+
+const STEPS = [
+  { n: '01', title: 'Create your profile',       desc: 'Sign up free, add your portfolio, set your specializations and service areas. Takes under 15 minutes.' },
+  { n: '02', title: 'Get verified',               desc: 'Our team reviews your portfolio and credentials. Once verified, your listing goes live and leads start flowing.' },
+  { n: '03', title: 'Receive & convert leads',    desc: 'Accept leads that match your expertise. Client contact details revealed instantly on acceptance.' },
+];
+
+// Card copy by tier, shortest plan first. Names, prices and terms come from
+// the plans API (the `plans` prop); nothing here is a price.
+const TIER_COPY = [
+  {
+    desc: 'Perfect for designers just getting started.',
+    features: ['Unlimited leads', 'Profile listing', 'Portfolio showcase', 'Email support'],
+  },
+  {
+    desc: 'For active designers who want to grow.',
+    features: ['Unlimited leads', 'Priority listing', 'WhatsApp + Email alerts', 'Analytics dashboard', 'Priority support'],
+  },
+  {
+    desc: 'For established studios managing high volume.',
+    features: ['Unlimited leads', 'Top of search listing', 'Featured badge', 'Dedicated account manager', 'Custom portfolio pages'],
+  },
+];
+
+const FAQS = [
+  { q: 'How are leads verified?',              a: 'Every user submits an OTP-verified enquiry. We confirm phone and email before the lead reaches you.' },
+  { q: 'Can I cancel my subscription?',        a: 'Yes, cancel anytime. Your listing stays active until the end of your current billing period.' },
+  { q: 'How many leads will I get?',           a: "Depends on your location and specialization — there's no monthly lead cap on any plan." },
+  { q: 'What happens after I accept a lead?',  a: "The client's phone and email are instantly revealed. You contact them directly — Intrafer is not involved." },
+  { q: 'Is my portfolio public?',              a: 'Yes, your profile and portfolio are publicly visible on the marketplace, which also helps your own SEO.' },
+];
+
+// `plans` comes from the server page (GET /subscriptions/plans, sorted by
+// duration). Empty only if the API was unreachable during `next build`.
+export default function ForDesignersClient({ plans }) {
+  useEffect(() => { document.title = 'List Your Interior Design Studio | Intrafer'; }, []);
+  const [openFaq, setOpenFaq] = useState(null);
+  // Shown only when backed by real stored reviews (lib/trustStats.js) —
+  // no fallback figure; the rating tile is dropped otherwise.
+  const [avgRating, setAvgRating] = useState(null);
+
+  useEffect(() => {
+    api.get('/public/stats')
+      .then(({ data }) => setAvgRating(realAvgRating(data?.data)))
+      .catch(() => {});
+  }, []);
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+
+      {/* ── HERO ── */}
+      {/* .vendor-page-offset's padding-top is !important (shared with
+          terms/privacy/plans, clears VendorNavbar's fixed header+promo
+          strip exactly) — extra breathing room below that has to come from
+          this wrapper's own marginTop instead of fighting that specificity,
+          same clamp() used by the CTA section further down this page. */}
+      <section className="vendor-page-offset" style={{ background: 'var(--bg-parchment)', paddingLeft: '40px', paddingRight: '40px', paddingBottom: '80px' }}>
+        <Reveal style={{ maxWidth: '1280px', margin: 'clamp(40px, 5vw, 60px) auto 0', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '64px', alignItems: 'center' }} className="grid-mobile-1">
+          <div>
+            <p className="caps-label-primary" style={{ marginBottom: '12px' }}>FOR INTERIOR DESIGNERS</p>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(38px,4vw,52px)', fontWeight: 400, color: 'var(--text)', lineHeight: 1.1, letterSpacing: '-.025em', marginBottom: '18px' }}>
+              Grow your <em style={{ color: 'var(--primary)', fontStyle: 'italic' }}>design business</em> with Intrafer
+            </h1>
+            <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.75, maxWidth: '480px' }}>
+              Verified designers receive qualified leads directly from homeowners actively looking for interior design services. No cold calling, no agencies, no commission.
+            </p>
+
+            {/* Stats row */}
+            <div style={{ display: 'flex', gap: '32px', marginTop: '28px', flexWrap: 'wrap' }}>
+              {[
+                { val: 'Unlimited',   label: 'LEADS' },
+                { val: 'Zero',        label: 'COMMISSION' },
+                avgRating !== null && { val: `${avgRating.toFixed(1)}★`, label: 'DESIGNER RATING' },
+              ].filter(Boolean).map((s) => (
+                <div key={s.label}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 400, color: 'var(--primary)', lineHeight: 1 }}>{s.val}</div>
+                  <div style={{ fontSize: '10px', letterSpacing: '.1em', color: 'var(--text-hint)', textTransform: 'uppercase', marginTop: '4px' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '32px', flexWrap: 'wrap' }}>
+              <Link href="/auth/register?role=vendor" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                background: 'var(--primary)', color: '#fff',
+                padding: '13px 28px', borderRadius: 'var(--r-md)',
+                fontSize: '14px', fontWeight: 500, textDecoration: 'none',
+                boxShadow: '0 4px 14px rgba(181,84,30,.3)',
+              }}>
+                List your studio free <ArrowRight size={14} />
+              </Link>
+              <Link href="/plans" style={{
+                display: 'inline-flex', alignItems: 'center',
+                background: 'var(--surface)', color: 'var(--text-sub)',
+                padding: '12px 24px', borderRadius: 'var(--r-md)',
+                fontSize: '14px', border: '1px solid var(--border-sub)',
+                textDecoration: 'none', boxShadow: 'var(--shadow-sm)',
+              }}>
+                View pricing
+              </Link>
+            </div>
+          </div>
+
+          {/* Dashboard UI-preview panel — generic mock, no fabricated names/numbers */}
+          <div style={{ background: '#0F172A', border: '1px solid rgba(255,255,255,.08)', borderRadius: 'var(--r-xl)', padding: '22px', boxShadow: 'var(--shadow-md)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
+              <BarChart3 size={14} color="#60A5FA" />
+              <span style={{ fontSize: '11px', letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,.5)' }}>
+                Your dashboard, at a glance
+              </span>
+            </div>
+
+            {/* Stat tiles — labels only, no invented figures */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 'var(--r-lg)', padding: '14px' }}>
+                <TrendingUp size={16} color="#60A5FA" style={{ marginBottom: '10px' }} />
+                <div style={{ fontSize: '13px', fontWeight: 500, color: '#fff' }}>New leads</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,.5)', marginTop: '2px' }}>This month</div>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 'var(--r-lg)', padding: '14px' }}>
+                <Star size={16} color="#60A5FA" style={{ marginBottom: '10px' }} />
+                <div style={{ fontSize: '13px', fontWeight: 500, color: '#fff' }}>Reviews</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,.5)', marginTop: '2px' }}>Verified only</div>
+              </div>
+            </div>
+
+            {/* Activity rows */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'rgba(255,255,255,.03)', borderRadius: 'var(--r-md)' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(96,165,250,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <MessageSquare size={13} color="#60A5FA" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: '#fff' }}>New enquiry — Modular Kitchen</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,.5)' }}>OTP-verified homeowner</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'rgba(255,255,255,.03)', borderRadius: 'var(--r-md)' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(96,165,250,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Star size={13} color="#60A5FA" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: '#fff' }}>New review received</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,.5)' }}>Tied to a completed project</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      <div className="divider" />
+
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" style={{ background: 'var(--bg)', padding: '80px 40px', scrollMarginTop: '104px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <Reveal>
+            <p className="caps-label-primary" style={{ marginBottom: '10px' }}>HOW IT WORKS</p>
+            <h2 className="section-heading">Start receiving leads in 3 steps</h2>
+          </Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px', marginTop: '44px' }} className="grid-mobile-1">
+            {STEPS.map((s, i) => (
+              <RevealItem
+                key={s.n}
+                index={i}
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '28px', boxShadow: 'var(--shadow-sm)' }}
+              >
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: '52px', fontWeight: 400, color: 'var(--border-emp)', lineHeight: 1, marginBottom: '14px' }}>{s.n}</div>
+                <div style={{ width: '28px', height: '2px', background: 'var(--primary)', marginBottom: '14px' }} />
+                <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', marginBottom: '8px' }}>{s.title}</p>
+                <p style={{ fontSize: '13px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{s.desc}</p>
+              </RevealItem>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ── BENEFITS ── */}
+      <section id="benefits" style={{ background: 'var(--bg-parchment)', padding: '80px 40px', scrollMarginTop: '104px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <Reveal>
+            <p className="caps-label-primary" style={{ marginBottom: '10px' }}>WHY INTRAFER</p>
+            <h2 className="section-heading">Better leads, no commission, full control</h2>
+          </Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px', marginTop: '44px' }} className="grid-mobile-1">
+            {BENEFITS.map(({ Icon, title, desc }, i) => (
+              <RevealItem
+                key={title}
+                index={i}
+                hoverLift
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-xl)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}
+              >
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+                  <Icon size={20} color="var(--primary)" />
+                </div>
+                <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text)', marginBottom: '8px' }}>{title}</p>
+                <p style={{ fontSize: '13px', color: 'var(--text-mid)', lineHeight: 1.7 }}>{desc}</p>
+              </RevealItem>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ── PRICING ── */}
+      <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <Reveal>
+            <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PRICING</p>
+            <h2 className="section-heading">Simple, transparent plans</h2>
+          </Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px', marginTop: '44px' }} className="grid-mobile-1">
+            {plans.length === 0 && (
+              <p style={{ gridColumn: '1 / -1', fontSize: '14px', color: 'var(--text-mid)' }}>
+                Plan prices are temporarily unavailable. Please refresh in a minute.
+              </p>
+            )}
+            {plans.map((plan, i) => {
+              const tier = TIER_COPY[Math.min(i, TIER_COPY.length - 1)];
+              const highlight = plan.name === POPULAR_PLAN;
+              return (
+                <RevealItem
+                  key={plan.name}
+                  index={i}
+                  hoverLift={!highlight}
+                  style={{
+                    background: highlight ? 'var(--primary-bg)' : 'var(--surface)',
+                    border: `${highlight ? '2px' : '1px'} solid ${highlight ? 'var(--primary)' : 'var(--border)'}`,
+                    borderRadius: 'var(--r-2xl)', padding: '28px',
+                    boxShadow: highlight ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+                    position: 'relative',
+                  }}
+                >
+                  {highlight && (
+                    <span style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary)', color: '#fff', fontSize: '10px', fontWeight: 700, letterSpacing: '.1em', padding: '4px 14px', borderRadius: '20px' }}>
+                      MOST POPULAR
+                    </span>
+                  )}
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>{planLabel(plan)}</div>
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '36px', fontWeight: 600, color: highlight ? 'var(--primary)' : 'var(--text)', lineHeight: 1, marginBottom: '4px' }}>
+                    {formatINR(plan.price)}<span style={{ fontSize: '14px', color: 'var(--text-hint)', fontFamily: 'var(--font-ui)' }}> for {planPeriod(plan)}</span>
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--text-mid)', marginBottom: '20px', lineHeight: 1.6 }}>{tier.desc}</p>
+                  {tier.features.map((f) => (
+                    <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', color: 'var(--text-sub)', marginBottom: '8px' }}>
+                      <CheckCircle size={14} color="var(--success)" style={{ flexShrink: 0, marginTop: '1px' }} />
+                      {f}
+                    </div>
+                  ))}
+                  <Link href="/auth/register?role=vendor" style={{
+                    display: 'block', marginTop: '24px',
+                    background: highlight ? 'var(--primary)' : 'var(--surface)',
+                    color: highlight ? '#fff' : 'var(--text-sub)',
+                    border: highlight ? 'none' : '1px solid var(--border)',
+                    borderRadius: 'var(--r-md)', padding: '12px',
+                    textAlign: 'center', fontSize: '13px', fontWeight: 500,
+                    textDecoration: 'none',
+                  }}>
+                    Get started
+                  </Link>
+                </RevealItem>
+              );
+            })}
+          </div>
+
+          {/* FAQ */}
+          <div id="faq" style={{ maxWidth: '700px', margin: '60px auto 0', scrollMarginTop: '104px' }}>
+            <Reveal>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 400, color: 'var(--text)', marginBottom: '24px', textAlign: 'center' }}>
+                Frequently asked questions
+              </h3>
+              {FAQS.map((faq, i) => {
+                const isOpen = openFaq === i;
+                return (
+                  <div key={i} style={{ borderBottom: '1px solid var(--border)', padding: '18px 0' }}>
+                    <button
+                      onClick={() => setOpenFaq(isOpen ? null : i)}
+                      aria-expanded={isOpen}
+                      style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    >
+                      <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)' }}>{faq.q}</span>
+                      <span style={{
+                        flexShrink: 0, width: '24px', height: '24px', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: isOpen ? 'var(--primary)' : 'var(--primary-bg)',
+                        marginLeft: '16px', transition: 'background 200ms ease-out',
+                      }}>
+                        {isOpen
+                          ? <Minus size={14} color="#fff" />
+                          : <Plus size={14} color="var(--primary)" />}
+                      </span>
+                    </button>
+                    {isOpen && (
+                      <p style={{ fontSize: '13px', color: 'var(--text-mid)', lineHeight: 1.75, marginTop: '12px' }}>{faq.a}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ── CTA ── */}
+      <section style={{ background: 'var(--bg)', padding: '60px 40px 80px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <div className="cta-always-dark" style={{ position: 'relative', overflow: 'hidden', borderRadius: 'var(--r-2xl)', padding: '80px 60px', textAlign: 'center' }}>
+            <Image
+              src={IMAGES.gallery.bedroom[2]}
+              alt=""
+              fill
+              style={{ objectFit: 'cover' }}
+              sizes="100vw"
+            />
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(135deg, rgba(15,23,42,.88) 0%, rgba(15,23,42,.82) 100%)',
+            }} />
+
+            <Reveal style={{ position: 'relative' }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '14px' }}>START TODAY</p>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 400, color: '#FAFAF8', letterSpacing: '-.02em', marginBottom: '14px' }}>
+                Start growing your design business today
+              </h2>
+              <p style={{ fontSize: '15px', color: 'rgba(255,255,255,.5)', lineHeight: 1.7, maxWidth: '520px', margin: '0 auto 32px' }}>
+                Free to list. No commission. Just a flat subscription and direct access to clients who want to work with you.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                {/* Wrapped in <button>, not styled directly on the <a>, because
+                    .cta-always-dark's `a { color: #60A5FA !important }` carve-out
+                    (globals.css) overrides any inline color set on the Link
+                    itself — that carve-out is meant for plain text links, and
+                    a solid-background button using it renders invisible text
+                    in dark mode where --primary is also #60A5FA. Wrapping in
+                    <button> sidesteps the `a` rule (falls to `* { #F0F6FF }`
+                    instead), same pattern already used by this exact CTA on
+                    /plans and the homepage. */}
+                <Link href="/auth/register?role=vendor">
+                  <button style={{
+                    background: 'var(--primary)', color: '#fff',
+                    padding: '14px 32px', borderRadius: 'var(--r-md)',
+                    fontSize: '14px', fontWeight: 500, border: 'none', cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(181,84,30,.4)',
+                  }}>
+                    List your studio free
+                  </button>
+                </Link>
+                <Link href="/plans" style={{
+                  background: 'transparent', color: 'rgba(255,255,255,.5)',
+                  padding: '13px 28px', borderRadius: 'var(--r-md)',
+                  fontSize: '14px', border: '1px solid rgba(255,255,255,.15)',
+                  textDecoration: 'none',
+                }}>
+                  View all plans
+                </Link>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

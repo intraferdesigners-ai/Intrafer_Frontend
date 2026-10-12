@@ -1,0 +1,244 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { formatINR } from '@/lib/utils';
+import { POPULAR_PLAN, cheapestPlan, planLabel, planPeriod, termList } from '@/lib/plans';
+import Reveal from '@/components/ui/Reveal';
+import RevealItem from '@/components/ui/RevealItem';
+
+
+// Every plan shows this same feature list — price/duration is the only
+// distinction between tiers, so the list is the union of what used to be
+// spread unevenly across the three (the strongest phrasing wins where two
+// tiers had overlapping items, e.g. "Full analytics + export" over the old
+// 6-month tier's "Advanced analytics dashboard"). "Best value — 12 month
+// billing" was dropped rather than generalized — it's a claim about the
+// 12-month plan specifically, not a feature every tier can honestly list.
+const PLAN_FEATURES = [
+  'Unlimited leads sent directly to you',
+  'Verified designer badge',
+  'Portfolio showcase',
+  'Top featured placement in search',
+  'Full analytics dashboard + export',
+  'Priority email + WhatsApp support',
+  'Dedicated account manager',
+  'Lead quality guarantee',
+];
+
+function FAQItem({ q, a }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{
+      border: '1px solid var(--border)', borderRadius: 'var(--r-xl)',
+      overflow: 'hidden', marginBottom: '8px', background: 'var(--surface)',
+    }}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          width: '100%', display: 'flex', justifyContent: 'space-between',
+          alignItems: 'center', padding: '18px 20px',
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: '14px', fontWeight: 500, color: 'var(--text)',
+          textAlign: 'left',
+        }}
+      >
+        {q}
+        {open ? <ChevronUp size={16} color="var(--text-hint)" /> : <ChevronDown size={16} color="var(--text-hint)" />}
+      </button>
+      {open && (
+        <div style={{
+          padding: '0 20px 18px',
+          fontSize: '14px', color: 'var(--text-mid)', lineHeight: 1.75,
+          borderTop: '1px solid var(--border)',
+          paddingTop: '14px',
+        }}>
+          {a}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Prices and terms in the answers come from the same plans as the cards.
+function buildFaqs(plans) {
+  const entry = cheapestPlan(plans);
+  const terms = plans.length ? `${termList(plans)}-month` : 'prepaid';
+  return [
+    {
+      q: 'Can I cancel my subscription anytime?',
+      a: `You can stop renewing at any time from your dashboard. Plans are prepaid for their full ${terms} term and are non-refundable, but your listing stays live for the term you've already paid for.`,
+    },
+    {
+      q: 'What counts as a "lead"?',
+      a: 'A lead is a verified homeowner enquiry assigned to your studio. Each lead includes the homeowner\'s name, project details, and contact information (revealed after you accept). Spam or duplicate enquiries are not counted.',
+    },
+    {
+      q: 'Do unused leads roll over?',
+      a: 'Unused leads do not roll over to the next month. We recommend upgrading to a higher plan if you consistently reach your monthly limit.',
+    },
+    {
+      q: 'Is there a free trial?',
+      a: entry
+        ? `We don't offer a free trial, but the ${entry.name} plan at ${formatINR(entry.price)} is a low-risk way to evaluate the platform. Most designers recoup this within their first accepted project.`
+        : "We don't offer a free trial, but our shortest plan is a low-risk way to evaluate the platform. Most designers recoup this within their first accepted project.",
+    },
+    {
+      q: 'How do I get paid — do you take a commission?',
+      a: 'Intrafer charges a flat subscription fee only. We take zero commission on your projects. All revenue from your clients goes directly to you.',
+    },
+  ];
+}
+
+// `plans` comes from the server page (GET /subscriptions/plans, sorted by
+// duration). Empty only if the API was unreachable during `next build`.
+export default function PlansClient({ plans }) {
+  const faqs = buildFaqs(plans);
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+
+      {/* Header */}
+      <section className="vendor-page-offset" style={{ background: 'var(--bg-parchment)', paddingLeft: '40px', paddingRight: '40px', paddingBottom: '60px', textAlign: 'center' }}>
+        <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PRICING</p>
+          <h1 className="section-heading" style={{ marginBottom: '14px' }}>
+            Simple, transparent pricing
+          </h1>
+          <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.7, maxWidth: '480px', margin: '0 auto' }}>
+            Pay a flat subscription. Receive qualified leads. Zero commission on your projects — ever.
+          </p>
+        </Reveal>
+      </section>
+
+      {/* Plan cards */}
+      <section style={{ padding: '60px 40px 80px' }}>
+        <div style={{
+          maxWidth: '1100px', margin: '0 auto',
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px',
+        }} className="grid-mobile-1">
+          {plans.length === 0 && (
+            <p style={{ gridColumn: '1 / -1', textAlign: 'center', fontSize: '14px', color: 'var(--text-mid)' }}>
+              Plan prices are temporarily unavailable. Please refresh in a minute.
+            </p>
+          )}
+          {plans.map((plan, i) => {
+            const popular = plan.name === POPULAR_PLAN;
+            return (
+              <RevealItem
+                key={plan.name}
+                index={i}
+                className={popular ? 'plan-card-popular' : undefined}
+                style={{
+                  background: 'var(--surface)',
+                  border: popular ? '2px solid var(--primary)' : '1px solid var(--border)',
+                  borderRadius: 'var(--r-xl)', padding: '28px',
+                  boxShadow: popular ? '0 4px 24px rgba(59,130,246,.15)' : 'var(--shadow-sm)',
+                  position: 'relative',
+                }}
+              >
+                {popular && (
+                  <div style={{
+                    position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
+                    background: 'var(--primary)', color: '#fff',
+                    fontSize: '10px', fontWeight: 600, letterSpacing: '.1em',
+                    padding: '4px 12px', borderRadius: '20px', whiteSpace: 'nowrap',
+                  }}>
+                    MOST POPULAR
+                  </div>
+                )}
+
+                <p className="caps-label-primary" style={{ marginBottom: '8px' }}>{planLabel(plan).toUpperCase()}</p>
+
+                <div style={{ marginBottom: '20px' }}>
+                  {/* Sans-serif with lining/tabular figures, not font-display —
+                      the serif's old-style numerals are hard to parse at a
+                      glance for a price visitors actually need to read. */}
+                  <span style={{ fontFamily: 'var(--font-ui)', fontSize: '36px', fontWeight: 700, fontVariantNumeric: 'lining-nums tabular-nums', color: 'var(--text)' }}>
+                    {formatINR(plan.price)}
+                  </span>
+                  <span style={{ fontSize: '13px', color: 'var(--text-hint)', marginLeft: '4px' }}>
+                    for {planPeriod(plan)}
+                  </span>
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px', marginBottom: '24px' }}>
+                  {PLAN_FEATURES.map((f) => (
+                    <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '10px' }}>
+                      <Check size={15} color="var(--success)" style={{ flexShrink: 0, marginTop: '1px' }} />
+                      <span style={{ fontSize: '13px', color: 'var(--text-sub)', lineHeight: 1.5 }}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <Link href="/auth/register?role=vendor" style={{ display: 'block' }}>
+                  <button style={{
+                    width: '100%', padding: '13px',
+                    background: popular ? 'var(--primary)' : 'var(--surface)',
+                    color: popular ? '#fff' : 'var(--text)',
+                    border: popular ? 'none' : '1.5px solid var(--border-emp)',
+                    borderRadius: 'var(--r-md)', fontSize: '14px', fontWeight: 500,
+                    cursor: 'pointer', transition: 'all 150ms ease-out',
+                    boxShadow: popular ? '0 4px 14px rgba(181,84,30,.3)' : 'none',
+                  }}>
+                    Get started →
+                  </button>
+                </Link>
+              </RevealItem>
+            );
+          })}
+        </div>
+
+        <p style={{ textAlign: 'center', marginTop: '28px', fontSize: '13px', color: 'var(--text-hint)' }}>
+          All prices exclusive of GST · Payments secured by Razorpay
+        </p>
+      </section>
+
+      <div className="divider" />
+
+      {/* FAQ */}
+      <section style={{ padding: '80px 40px' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+          <p className="caps-label-primary" style={{ textAlign: 'center', marginBottom: '10px' }}>FAQ</p>
+          <h2 className="section-heading" style={{ textAlign: 'center', marginBottom: '40px' }}>
+            Frequently asked questions
+          </h2>
+          {faqs.map((faq) => (
+            <FAQItem key={faq.q} q={faq.q} a={faq.a} />
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{ background: 'var(--bg)', padding: '40px 40px 80px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <div className="cta-always-dark" style={{
+            borderRadius: 'var(--r-2xl)',
+            padding: '60px', textAlign: 'center',
+          }}>
+            <h2 style={{
+              fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 400,
+              color: '#FAFAF8', letterSpacing: '-.02em', marginBottom: '14px',
+            }}>
+              Ready to grow your studio?
+            </h2>
+            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,.5)', marginBottom: '28px' }}>
+              Join the verified designers on Intrafer.
+            </p>
+            <Link href="/auth/register?role=vendor">
+              <button style={{
+                background: 'var(--primary)', color: '#fff',
+                padding: '14px 36px', borderRadius: 'var(--r-md)',
+                fontSize: '14px', fontWeight: 500, border: 'none',
+                cursor: 'pointer', boxShadow: '0 4px 14px rgba(181,84,30,.4)',
+              }}>
+                List your studio free
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

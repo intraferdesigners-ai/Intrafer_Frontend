@@ -29,7 +29,7 @@ const req = (body, headers = { 'x-revalidate-secret': SECRET }) => new Request('
 });
 
 await test('tag constants are exactly the agreed set', () => {
-  assert.deepEqual(Object.values(TAGS).sort(), ['homepage', 'landing', 'projects', 'reviews', 'stats', 'taxonomy', 'vendors']);
+  assert.deepEqual(Object.values(TAGS).sort(), ['homepage', 'landing', 'plans', 'projects', 'reviews', 'stats', 'taxonomy', 'vendors']);
   assert.deepEqual(TAG_PREFIXES, { VENDOR: 'vendor:', PROJECT: 'project:' });
   assert.equal(vendorTag('abc'), 'vendor:abc');
   assert.equal(projectTag('p1'), 'project:p1');

@@ -8,6 +8,7 @@ import api from '../../../../lib/api';
 import Button from '../../../../components/ui/Button';
 import Spinner from '../../../../components/ui/Spinner';
 import { formatDate, formatINR } from '../../../../lib/utils';
+import { POPULAR_PLAN, planLabel, planPeriod, sortPlans } from '../../../../lib/plans';
 import useAuthStore from '../../../../store/authStore';
 
 const HISTORY_STATUS = {
@@ -18,63 +19,39 @@ const HISTORY_STATUS = {
   failed:    { label: 'Failed',    bg: 'var(--color-danger-bg)',   color: 'var(--color-danger)'    },
 };
 
-// name is also what's sent to /subscriptions/create-order and stored as
-// Subscription.planName — must match the backend PLANS array exactly.
-const PLANS = [
-  {
-    name: '1 Month',
-    displayName: '1 Month',
-    price: 599900,
-    period: '1 month',
-    leadsPerMonth: 10,
-    durationDays: 30,
-    badge: null,
-    features: [
-      'Unlimited leads sent directly to you',
-      'Profile listing',
-      'Portfolio showcase',
-      'WhatsApp alerts',
-      'Analytics dashboard',
-      'Email support',
-    ],
-  },
-  {
-    name: '6 Month',
-    displayName: '6 Months',
-    price: 1499900,
-    period: '6 months',
-    leadsPerMonth: 10,
-    durationDays: 180,
-    badge: 'MOST POPULAR',
-    features: [
-      'Unlimited leads sent directly to you',
-      'Profile listing',
-      'Portfolio showcase',
-      'WhatsApp alerts',
-      'Analytics dashboard',
-      'Priority listing',
-      'Email + Phone support',
-    ],
-  },
-  {
-    name: '12 Month',
-    displayName: '12 Months',
-    price: 1999900,
-    period: '12 months',
-    leadsPerMonth: 10,
-    durationDays: 365,
-    badge: 'BEST VALUE',
-    features: [
-      'Unlimited leads sent directly to you',
-      'Profile listing',
-      'Portfolio showcase',
-      'WhatsApp alerts',
-      'Analytics dashboard',
-      'Priority listing',
-      'Featured badge',
-      'Dedicated support',
-    ],
-  },
+// Feature lists by tier, shortest plan first. The plans themselves (name,
+// price, term) come from GET /subscriptions/plans — plan.name is what's sent
+// to create-order, and the backend charges its own price for it.
+// No "best value" badge: at the current prices every plan costs about the
+// same per month, so no tier is cheaper.
+const TIER_FEATURES = [
+  [
+    'Unlimited leads sent directly to you',
+    'Profile listing',
+    'Portfolio showcase',
+    'WhatsApp alerts',
+    'Analytics dashboard',
+    'Email support',
+  ],
+  [
+    'Unlimited leads sent directly to you',
+    'Profile listing',
+    'Portfolio showcase',
+    'WhatsApp alerts',
+    'Analytics dashboard',
+    'Priority listing',
+    'Email + Phone support',
+  ],
+  [
+    'Unlimited leads sent directly to you',
+    'Profile listing',
+    'Portfolio showcase',
+    'WhatsApp alerts',
+    'Analytics dashboard',
+    'Priority listing',
+    'Featured badge',
+    'Dedicated support',
+  ],
 ];
 
 function loadRazorpay() {
@@ -93,6 +70,9 @@ export default function SubscriptionPage() {
   const { user } = useAuthStore();
   const [currentPlan,     setCurrentPlan]     = useState(null);
   const [loading,         setLoading]         = useState(true);
+  const [plans,           setPlans]           = useState([]);
+  const [plansLoading,    setPlansLoading]    = useState(true);
+  const [plansError,      setPlansError]      = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(null);
   const [history,         setHistory]         = useState([]);
   const [historyLoading,  setHistoryLoading]  = useState(true);
@@ -107,6 +87,13 @@ export default function SubscriptionPage() {
       .then(({ data }) => setCurrentPlan(data.data))
       .catch(() => {})
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    api.get('/subscriptions/plans')
+      .then(({ data }) => setPlans(sortPlans(data.data?.plans)))
+      .catch(() => setPlansError(true))
+      .finally(() => setPlansLoading(false));
   }, []);
 
   useEffect(() => {
@@ -142,7 +129,7 @@ export default function SubscriptionPage() {
     setApplyingCoupon(true);
     setCouponError('');
     try {
-      const entries = await Promise.all(PLANS.map(async (plan) => {
+      const entries = await Promise.all(plans.map(async (plan) => {
         try {
           const { data } = await api.post('/subscriptions/check-coupon', { code, planName: plan.name });
           return [plan.name, { valid: true, ...data.data }];
@@ -346,35 +333,43 @@ export default function SubscriptionPage() {
       {!appliedCoupon && !couponError && <div style={{ marginBottom: 20 }} />}
 
       {/* Plan cards */}
+      {plansLoading && <div style={{ padding: '32px 0' }}><Spinner size="md" /></div>}
+      {!plansLoading && (plansError || plans.length === 0) && (
+        <p style={{ fontSize: 13, color: 'var(--color-danger)', margin: '0 0 8px' }}>
+          Couldn&apos;t load plans. Please refresh the page to try again.
+        </p>
+      )}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
         gap: 16,
       }}>
-        {PLANS.map((plan) => {
+        {plans.map((plan, i) => {
           const isCurrentPlan = activePlanName === plan.name;
           const couponResult  = appliedCoupon?.results?.[plan.name];
           const hasDiscount   = couponResult?.valid;
+          const badge         = plan.name === POPULAR_PLAN ? 'MOST POPULAR' : null;
+          const features      = TIER_FEATURES[Math.min(i, TIER_FEATURES.length - 1)];
 
           return (
             <div
               key={plan.name}
               style={{
                 background: 'var(--color-surface)',
-                border: plan.badge ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
+                border: badge ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-xl)', padding: 24,
                 position: 'relative',
               }}
             >
               {/* Badge */}
-              {plan.badge && (
+              {badge && (
                 <div style={{
                   position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)',
                   background: 'var(--color-primary)', color: '#fff',
                   fontSize: 10, padding: '3px 14px', borderRadius: 20,
                   letterSpacing: '0.06em', fontWeight: 600, whiteSpace: 'nowrap',
                 }}>
-                  {plan.badge}
+                  {badge}
                 </div>
               )}
 
@@ -383,7 +378,7 @@ export default function SubscriptionPage() {
                 fontSize: 13, fontWeight: 600, color: 'var(--color-primary)',
                 letterSpacing: '0.04em', margin: '0 0 8px',
               }}>
-                {plan.displayName.toUpperCase()}
+                {planLabel(plan).toUpperCase()}
               </p>
 
               {/* Price */}
@@ -408,7 +403,7 @@ export default function SubscriptionPage() {
                     {formatINR(plan.price)}
                   </span>
                 )}
-                <span style={{ fontSize: 13, color: 'var(--color-text-hint)' }}>for {plan.period}</span>
+                <span style={{ fontSize: 13, color: 'var(--color-text-hint)' }}>for {planPeriod(plan)}</span>
               </div>
               {appliedCoupon && !hasDiscount && (
                 <p style={{ fontSize: 11, color: 'var(--color-text-hint)', margin: '0 0 8px' }}>
@@ -418,7 +413,7 @@ export default function SubscriptionPage() {
 
               {/* Features */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
-                {plan.features.map((f) => (
+                {features.map((f) => (
                   <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <CheckCircle size={12} color="var(--color-success)" style={{ flexShrink: 0 }} />
                     <span style={{ fontSize: 12, color: 'var(--color-text-sub)' }}>{f}</span>
