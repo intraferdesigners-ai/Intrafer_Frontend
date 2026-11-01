@@ -25,6 +25,8 @@
 // - the BreadcrumbList equals the visible breadcrumb (labels and hrefs).
 // Exits 1 on any failure.
 
+import { guideDateLabel } from '../lib/guides-data.js';
+
 const args = process.argv.slice(2);
 const base = (args.shift() || '').replace(/\/+$/, '');
 if (!/^https?:\/\//.test(base)) {
@@ -153,6 +155,19 @@ async function checkPage(label, path) {
     if (node['@id'] && Object.keys(node).length === 1 && !defined.has(node['@id'])) fail(`@id ${node['@id']} (${key}) not defined on the page`);
   }
   for (const id of [`${WWW}/#organization`, `${WWW}/#website`]) if (!defined.has(id)) fail(`layout entity ${id} missing`);
+
+  // Article dates are the ones shown: a <time datetime> with the same value
+  // whose text is that date (lib/guides-data.js guideDateLabel).
+  for (const { node } of nodes.filter(({ node }) => node['@type'] === 'Article')) {
+    for (const [key, label] of [['datePublished', 'Published'], ['dateModified', 'Updated']]) {
+      if (!node[key]) continue;
+      const re = new RegExp(`${label}(?:<!-- -->)?\\s*<time dateTime="([^"]+)"[^>]*>([^<]*)</time>`, 'i');
+      const m = body.match(re);
+      const shown = m && decode(m[1]) === node[key] ? m : null;
+      if (!shown) fail(`Article ${key} ${node[key]} not shown as "${label} <time>" on the page`);
+      else if (norm(shown[2]) !== guideDateLabel(node[key])) fail(`Article ${key}: page shows "${norm(shown[2])}", expected "${guideDateLabel(node[key])}"`);
+    }
+  }
 
   // FAQ text is on the page.
   for (const { node } of nodes.filter(({ node }) => node['@type'] === 'Question')) {

@@ -20,7 +20,7 @@ import { vendorJsonLd, vendorAreasServed, reviewAuthorName, DEFAULT_VENDOR_TYPE 
 import { projectJsonLd, projectImages, galleryAlt, beforeAlt, afterAlt } from '../lib/projectSchema.js';
 import { PHONE, SOCIAL_PROFILES, SUPPORT_EMAIL, WHATSAPP_URL } from '../lib/siteConfig.js';
 import { FAQ_GROUPS, faqItems } from '../lib/faqData.js';
-import { GUIDES } from '../lib/guides-data.js';
+import { GUIDES, guideDateLabel } from '../lib/guides-data.js';
 import { PLAN_FEATURES, planLabel, planPeriod } from '../lib/plans.js';
 
 const require = createRequire(import.meta.url);
@@ -157,6 +157,21 @@ test('Plans: Product + Offer per tier; Offer price (number, INR) equals the pric
   assert.equal(plansJsonLd([]), null);
 });
 
+test('guide page shows the same dates as its Article markup (same fields, same instant)', () => {
+  const src = read('app/(public)/guides/[slug]/page.jsx');
+  assert.match(src, /Published <time dateTime=\{guide\.datePublished\}>\{guideDateLabel\(guide\.datePublished\)\}<\/time>/);
+  assert.match(src, /Updated <time dateTime=\{guide\.dateModified\}>\{guideDateLabel\(guide\.dateModified\)\}<\/time>/);
+  assert.match(src, /<JsonLd data=\{guideArticleJsonLd\(guide\)\} \/>/);
+  for (const g of GUIDES) {
+    const ld = guideArticleJsonLd(g);
+    assert.equal(ld.datePublished, g.datePublished, g.slug);
+    assert.equal(ld.dateModified, g.dateModified, g.slug);
+  }
+  // India time, so 23:30 UTC is already the next day — as shown on the page.
+  assert.equal(guideDateLabel('2026-07-12T12:51:56+05:30'), '12 July 2026');
+  assert.equal(guideDateLabel('2026-07-12T23:30:00Z'), '13 July 2026');
+});
+
 test('Guides index: CollectionPage + ItemList of every guide URL', () => {
   const ld = guidesIndexJsonLd({ name: 'Guides', description: 'd', guides: GUIDES });
   assert.equal(ld['@type'], 'CollectionPage');
@@ -179,10 +194,16 @@ test('Guide Article: headline/description/image from the guide, author+publisher
     }
     if (!g.datePublished && !g.dateModified) assert.ok(!('datePublished' in ld) && !('dateModified' in ld), g.slug);
   }
+  // Every guide has both dates today (from git history, hard-coded).
+  for (const g of GUIDES) {
+    assert.match(g.datePublished || '', /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/, `${g.slug}.datePublished`);
+    assert.match(g.dateModified || '', /^\d{4}-\d{2}-\d{2}T/, `${g.slug}.dateModified`);
+    assert.ok(g.dateModified >= g.datePublished, g.slug);
+  }
   const dated = guideArticleJsonLd({ ...GUIDES[0], datePublished: '2026-03-14', dateModified: '2026-05-01' });
   assert.equal(dated.datePublished, '2026-03-14');
   assert.equal(dated.dateModified, '2026-05-01');
-  assert.equal(guideArticleJsonLd({ ...GUIDES[0], datePublished: '2026-03-14' }).dateModified, '2026-03-14');
+  assert.equal(guideArticleJsonLd({ ...GUIDES[0], datePublished: '2026-03-14', dateModified: undefined }).dateModified, '2026-03-14');
 });
 
 // ── Vendor ──────────────────────────────────────────────────────────────

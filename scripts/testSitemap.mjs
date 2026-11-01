@@ -85,8 +85,16 @@ await test('pages: static pages + every /design-styles/<style>/ + every /cities/
   assert.ok(!locs(xml).includes(`${BASE}/guides/`));
 });
 
-await test('guides: /guides/ and every guide', async () => {
-  assert.deepEqual(locs(await buildSitemapChild('guides-1.xml', ctx())), [`${BASE}/guides/`, ...GUIDES.map((g) => `${BASE}/guides/${g.slug}/`)]);
+await test('guides: /guides/ and every guide; <lastmod> = each guide\'s dateModified, the index = the newest', async () => {
+  const xml = await buildSitemapChild('guides-1.xml', ctx());
+  assert.deepEqual(locs(xml), [`${BASE}/guides/`, ...GUIDES.map((g) => `${BASE}/guides/${g.slug}/`)]);
+  const lastmods = [...xml.matchAll(/<url>\n<loc>([^<]+)<\/loc>\n(?:<lastmod>([^<]+)<\/lastmod>\n)?/g)].map((m) => [m[1], m[2]]);
+  for (const g of GUIDES) {
+    assert.ok(g.dateModified, g.slug);
+    assert.equal(lastmods.find(([u]) => u === `${BASE}/guides/${g.slug}/`)[1], new Date(g.dateModified).toISOString(), g.slug);
+  }
+  const newest = GUIDES.map((g) => new Date(g.dateModified).toISOString()).sort().at(-1);
+  assert.equal(lastmods[0][1], newest);
 });
 
 await test('designers: every approved + listed vendor, paged, deduped; lastmod from updatedAt', async () => {

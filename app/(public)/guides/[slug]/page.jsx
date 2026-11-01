@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { GUIDES, getGuide } from '../../../../lib/guides-data';
+import { GUIDES, getGuide, guideDateLabel } from '../../../../lib/guides-data';
 import { notFound } from 'next/navigation';
 import Reveal from '../../../../components/ui/Reveal';
 import { SITE_URL } from '@/lib/siteUrl';
@@ -48,9 +48,19 @@ export default function GuideDetailPage({ params }) {
             <span style={{ fontSize: '12px', color: 'var(--text-hint)' }}>{guide.readTime} read</span>
           </div>
 
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,4vw,40px)', fontWeight: 400, color: 'var(--text)', letterSpacing: '-.02em', marginBottom: '24px', lineHeight: 1.2 }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,4vw,40px)', fontWeight: 400, color: 'var(--text)', letterSpacing: '-.02em', marginBottom: guide.datePublished ? '10px' : '24px', lineHeight: 1.2 }}>
             {guide.title}
           </h1>
+
+          {/* Same fields as the Article markup's datePublished/dateModified. */}
+          {guide.datePublished && (
+            <p style={{ fontSize: '12px', color: 'var(--text-hint)', margin: '0 0 24px' }}>
+              Published <time dateTime={guide.datePublished}>{guideDateLabel(guide.datePublished)}</time>
+              {guide.dateModified && (
+                <> · Updated <time dateTime={guide.dateModified}>{guideDateLabel(guide.dateModified)}</time></>
+              )}
+            </p>
+          )}
 
           <div style={{ position: 'relative', height: '320px', borderRadius: '16px', overflow: 'hidden', marginBottom: '40px' }}>
             <Image src={guide.image} alt={guide.title} fill style={{ objectFit: 'cover' }} priority sizes="(max-width:768px) 100vw, 700px" />
