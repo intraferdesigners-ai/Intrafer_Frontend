@@ -6,6 +6,7 @@ import RevealItem from '../../../../components/ui/RevealItem';
 import { TAGS } from '../../../../lib/cacheTags';
 import { SITE_URL } from '../../../../lib/siteUrl';
 import Breadcrumb from '@/components/seo/Breadcrumb';
+import { CITY_DATA } from '../../../../lib/cityPages';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -14,39 +15,6 @@ export const revalidate = 300;
 // Only the known slugs exist: anything else is a real 404, and can't add
 // an entry to the ISR cache.
 export const dynamicParams = false;
-
-const CITY_DATA = {
-  bangalore: {
-    name: 'Bangalore', state: 'Karnataka',
-    image: '/images/cities/bangalore.jpg',
-    description: 'Find interior designers in Bangalore. From modern apartments in Whitefield to luxury villas in Sarjapur, our verified designers cover every neighbourhood and style.',
-  },
-  mumbai: {
-    name: 'Mumbai', state: 'Maharashtra',
-    image: '/images/cities/mumbai.jpg',
-    description: 'Interior designers in Mumbai. Whether you need a compact sea-facing flat redesigned or a luxury Bandra home transformed, our Mumbai designers deliver.',
-  },
-  delhi: {
-    name: 'Delhi NCR', state: 'Delhi',
-    image: '/images/cities/delhi.jpg',
-    description: 'Discover interior designers in Delhi NCR. From South Delhi farmhouses to Gurgaon high-rises, find designers who know the city\'s unique aesthetic sensibility.',
-  },
-  hyderabad: {
-    name: 'Hyderabad', state: 'Telangana',
-    image: '/images/cities/bangalore.jpg',
-    description: 'Find interior designers in Hyderabad. HITEC City apartments, Jubilee Hills villas, and everything in between — our designers know Hyderabad intimately.',
-  },
-  chennai: {
-    name: 'Chennai', state: 'Tamil Nadu',
-    image: '/images/cities/mumbai.jpg',
-    description: 'Interior designers in Chennai who blend Tamil craftsmanship with contemporary design. From Adyar to OMR, find designers who understand Chennai homes.',
-  },
-  pune: {
-    name: 'Pune', state: 'Maharashtra',
-    image: '/images/cities/delhi.jpg',
-    description: 'Connect with interior designers in Pune. Aundh, Koregaon Park, Hinjewadi — our designers bring style to every Pune neighbourhood.',
-  },
-};
 
 const CITY_MAP_COORDS = {
   bangalore: { lat: 12.9716, lng: 77.5946, zoom: 12 },

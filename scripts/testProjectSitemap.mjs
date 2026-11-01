@@ -4,7 +4,7 @@ import { fetchPublicProjects, projectEntries, isPublicProject, MAX_PROJECTS, PRO
 import { mergeLandingPages } from '../lib/landingSitemap.js';
 import { SITE_URL } from '../lib/siteUrl.js';
 
-// The sitemap's real base (app/sitemap.js uses SITE_URL), not a copy of it.
+// The sitemap's real base (the sitemap routes pass SITE_URL to lib/sitemap.js), not a copy of it.
 const BASE = SITE_URL;
 // Every <loc> must be on the one canonical host — apex or any other host fails.
 const CANONICAL = /^https:\/\/www\.intrafer\.in\//;
@@ -103,7 +103,7 @@ await test('API failure → null → no project entries, every other group intac
   const malformed = await fetchPublicProjects(API, {}, async () => ({ ok: true, json: async () => ({ data: {} }) }), noSleep);
   assert.equal(malformed, null);
 
-  // Composed as app/sitemap.js does it.
+  // Composed as lib/sitemap.js does it.
   const others = [
     { url: `${BASE}/`, priority: 1, lastModified: NOW },
     { url: `${BASE}/vendors/${id(77)}/`, priority: 0.7, lastModified: NOW },

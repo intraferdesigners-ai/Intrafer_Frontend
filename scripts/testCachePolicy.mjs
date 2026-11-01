@@ -66,8 +66,9 @@ const CACHED = {
   // plan prices (purged by the backend on every boot)
   'app/(vendor-site)/plans/page.jsx': 300,
   'app/(vendor-site)/for-designers/page.jsx': 300,
-  // pre-existing
-  'app/sitemap.js': 300,
+  // sitemap index + children (lib/sitemap.js)
+  'app/sitemap.xml/route.js': 300,
+  'app/sitemaps/[file]/route.js': 300,
 };
 
 const MUST_STAY_UNCACHED = [
@@ -148,7 +149,10 @@ test('cached routes declare their window; their fetches are tagged and never no-
     }
     const code = src.replace(/^\s*\/\/.*$/gm, ''); // comments may mention no-store
     assert.doesNotMatch(code, /cache:\s*'no-store'/, f);
-    assert.match(src, /tags: \[|TAGS\.[A-Z]+/, `${f}: no cache tags`);
+    // The sitemap routes' fetches (and their tags) live in lib/sitemap.js.
+    const fetchSrc = /^app\/sitemaps?[./]/.test(f) ? read('lib/sitemap.js') : src;
+    assert.doesNotMatch(fetchSrc.replace(/^\s*\/\/.*$/gm, ''), /cache:\s*'no-store'/, f);
+    assert.match(fetchSrc, /tags: \[|TAGS\.[A-Z]+/, `${f}: no cache tags`);
   }
 });
 

@@ -21,6 +21,7 @@ import { landingPageTitle } from '@/lib/landingSerp';
 import { SITE_URL } from '@/lib/siteUrl';
 import JsonLd from '@/components/seo/JsonLd';
 import { ORG_ID, idRef, pageNode } from '@/lib/structuredData';
+import { SERVICE_CATEGORIES } from '@/lib/categories';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -181,7 +182,36 @@ export default async function CategoryHubPage({ params }) {
       <StateGrid params={params} states={states} />
 
       {faq && <FaqSection title="Frequently asked questions" questions={faq} />}
+
+      <OtherServices current={params.category} />
     </div>
+  );
+}
+
+// Crawlable links to the sibling category hubs (lib/categories.js, the same
+// list the sitemap's categories group checks), so every hub is reachable
+// through links — not only the ones with vendors linked from elsewhere.
+function OtherServices({ current }) {
+  const others = SERVICE_CATEGORIES.filter((c) => c.slug !== current);
+  return (
+    <section style={{ marginTop: '48px' }}>
+      <p className="caps-label-primary" style={{ marginBottom: '10px' }}>OTHER SERVICES</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+        {others.map((c) => (
+          <Link
+            key={c.slug}
+            href={`/${c.slug}/`}
+            style={{
+              display: 'block', padding: '10px 16px', borderRadius: 'var(--r-md)',
+              border: '1px solid var(--border)', background: 'var(--surface)',
+              textDecoration: 'none', color: 'var(--text)', fontSize: '13px',
+            }}
+          >
+            {c.name}
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -256,6 +286,8 @@ function AuthoredCategoryPage({ params, category, landing, states }) {
       <LandingSections sections={shown} localitiesTitle="Areas we cover" />
 
       {builtInFaq && <FaqSection title="Frequently asked questions" questions={builtInFaq} />}
+
+      <OtherServices current={params.category} />
     </div>
   );
 }

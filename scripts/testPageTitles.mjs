@@ -65,7 +65,8 @@ test('meta descriptions on /about/ and every /cities/[city]/ are 110–160 chara
   assert.ok(about.length >= 110 && about.length <= 160, `about: ${about.length}`);
   const cities = readFileSync(join(ROOT, 'app/(public)/cities/[city]/page.jsx'), 'utf8');
   const tpl = cities.match(/description: `([^`]*\$\{city\.name\}[^`]*)`/)[1];
-  const entries = [...cities.matchAll(/name: '([^']+)', state: '([^']+)'/g)];
+  // The city table lives in lib/cityPages.js (shared with the sitemap).
+  const entries = [...readFileSync(join(ROOT, 'lib/cityPages.js'), 'utf8').matchAll(/name: '([^']+)', state: '([^']+)'/g)];
   assert.ok(entries.length >= 6);
   for (const [, name, state] of entries) {
     const d = tpl.replace('${city.name}', name).replace('${city.state}', state);

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { fetchLandingSitemapPages, mergeLandingPages } from '../lib/landingSitemap.js';
 import { SITE_URL } from '../lib/siteUrl.js';
 
-// The sitemap's real base (app/sitemap.js uses SITE_URL), not a copy of it.
+// The sitemap's real base (the sitemap routes pass SITE_URL to lib/sitemap.js), not a copy of it.
 const BASE = SITE_URL;
 const NOW = '2026-01-01T00:00:00.000Z';
 let passed = 0;

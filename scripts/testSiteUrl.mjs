@@ -95,8 +95,10 @@ test('every canonical is built from SITE_URL or is a relative path (resolved aga
 
 test('sitemap, robots and metadataBase all come from lib/siteUrl', () => {
   const src = (rel) => files.find((f) => f.rel === rel).src;
-  assert.match(src('app/sitemap.js'), /from '@\/lib\/siteUrl'/);
-  assert.match(src('app/sitemap.js'), /const baseUrl = SITE_URL;/);
+  for (const route of ['app/sitemap.xml/route.js', 'app/sitemaps/[file]/route.js']) {
+    assert.match(src(route), /import \{ SITE_URL \} from '@\/lib\/siteUrl'/, route);
+    assert.match(src(route), /baseUrl: SITE_URL/, route);
+  }
   assert.match(src('app/robots.js'), /sitemap: absoluteUrl\('\/sitemap\.xml'\)/);
   assert.match(src('app/layout.jsx'), /metadataBase: new URL\(SITE_URL\)/);
 });
@@ -119,6 +121,8 @@ const NOT_INDEXABLE = ['/enquiry/', '/enquiry/success/', '/enquiry/verify/', '/r
 // Indexable pages allowed to have no canonical: none (the backlog was
 // cleared in the SEO polish batch). Shrink-only if ever used again.
 const KNOWN_MISSING = [];
+// Paginated listings: page N > 1 canonicalises to itself, page 1 to the route.
+const PAGINATED = ['/vendors/'];
 
 // "/cities/[city]/" -> `${SITE_URL}/cities/${params.city}/` (as written in source); "/" -> '/'.
 const expectedCanonical = (route) => (route === '/'
@@ -133,7 +137,9 @@ test('every indexable public page sets its own canonical: SITE_URL + its route, 
     if (NOT_INDEXABLE.includes(route) || KNOWN_MISSING.includes(route)) continue;
     const found = [...src.matchAll(/canonical:\s*(`[^`]*`|'[^']*')/g)].map((m) => m[1]);
     if (found.length === 0) missing.push(`${route} (${rel})`);
-    for (const c of found) if (c !== expectedCanonical(route)) wrong.push(`${route}: ${c}`);
+    // A paginated listing's page 2+ is its own canonical (?page=N).
+    const paged = PAGINATED.includes(route) ? expectedCanonical(route).replace(/`$/, '?page=${page}`') : null;
+    for (const c of found) if (c !== expectedCanonical(route) && c !== paged) wrong.push(`${route}: ${c}`);
   }
   assert.deepEqual(missing, [], 'pages without a canonical');
   assert.deepEqual(wrong, [], 'canonicals not equal to SITE_URL + route');

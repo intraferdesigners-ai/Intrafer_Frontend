@@ -8,11 +8,29 @@ import AnimatedCounter from '../../../../components/ui/AnimatedCounter';
 import { SITE_URL } from '@/lib/siteUrl';
 import Breadcrumb from '@/components/seo/Breadcrumb';
 
-export const metadata = {
-  title: 'Find Interior Designers',
-  // Filters (?city=, ?sort=, ...) all canonicalise to the unfiltered list.
-  alternates: { canonical: `${SITE_URL}/vendors/` },
-};
+const FILTER_KEYS = ['city', 'locality', 'specialization', 'sort'];
+
+// The unfiltered list's page number when it is a real page 2+ ("?page=3"),
+// else null (page 1, a filtered/sorted view, or junk like ?page=abc).
+function listPageNumber(searchParams = {}) {
+  if (FILTER_KEYS.some((k) => searchParams[k])) return null;
+  const raw = searchParams.page;
+  const n = typeof raw === 'string' && /^[1-9]\d{0,5}$/.test(raw) ? Number(raw) : null;
+  return n && n > 1 ? n : null;
+}
+
+// Pagination: each page of the unfiltered list is its own canonical
+// (/vendors/?page=N), page 1 is /vendors/ without the parameter. Filters
+// (?city=, ?sort=, ...) all canonicalise to the unfiltered list, as before.
+export function generateMetadata({ searchParams }) {
+  const page = listPageNumber(searchParams);
+  return {
+    title: 'Find Interior Designers',
+    alternates: page
+      ? { canonical: `${SITE_URL}/vendors/?page=${page}` }
+      : { canonical: `${SITE_URL}/vendors/` },
+  };
+}
 
 async function fetchVendors(searchParams) {
   try {
@@ -43,8 +61,9 @@ function buildPageUrl(searchParams, p) {
   if (searchParams.locality)       q.set('locality', searchParams.locality);
   if (searchParams.specialization) q.set('specialization', searchParams.specialization);
   if (searchParams.sort)           q.set('sort', searchParams.sort);
-  q.set('page', String(p));
-  return '/vendors?' + q.toString();
+  if (p > 1) q.set('page', String(p));
+  const qs = q.toString();
+  return qs ? `/vendors/?${qs}` : '/vendors/';
 }
 
 export default async function VendorsPage({ searchParams }) {

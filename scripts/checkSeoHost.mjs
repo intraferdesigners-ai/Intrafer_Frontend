@@ -5,7 +5,8 @@
 //   node scripts/checkSeoHost.mjs <origin> [page paths...] [--404 <path>]...
 //   node scripts/checkSeoHost.mjs http://localhost:3000 /vendors/<id>/ --404 /projects/000000000000000000000000/
 //
-// Checks: robots.txt's Sitemap line; every sitemap <loc>; each page's
+// Checks: robots.txt's Sitemap line; the sitemap index's child <loc>s and
+// every <loc> in every child; each page's
 // canonical, og:url and JSON-LD url/@id/item values. Each --404 path must
 // answer HTTP 404 with a noindex robots meta. Exits 1 on any failure.
 
@@ -41,11 +42,28 @@ if (sitemapLines.length === 0) failures.push('robots.txt: no Sitemap line');
 sitemapLines.forEach((u) => onHost('robots.txt Sitemap', u));
 console.log(`robots.txt ${robots.status}: Sitemap ${sitemapLines.join(', ')}`);
 
+// /sitemap.xml is a <sitemapindex>: every child <loc> must be on www, and
+// each child is fetched (by path, from this origin) and its <loc>s checked.
+const locsOf = (xml) => [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
 const sitemap = await get('/sitemap.xml');
-const locs = [...sitemap.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-if (locs.length === 0) failures.push('sitemap.xml: no <loc> entries');
-const badLocs = locs.filter((u) => !onHost('sitemap <loc>', u));
-console.log(`sitemap.xml ${sitemap.status}: ${locs.length} <loc>, ${badLocs.length} off-host`);
+const isIndex = /<sitemapindex[\s>]/.test(sitemap.body);
+if (!isIndex) failures.push('sitemap.xml: not a <sitemapindex>');
+const children = locsOf(sitemap.body);
+if (children.length === 0) failures.push('sitemap.xml: no child sitemaps');
+children.forEach((u) => onHost('sitemap index <loc>', u));
+console.log(`sitemap.xml ${sitemap.status}: index of ${children.length} child sitemaps`);
+const locs = [];
+for (const child of children) {
+  const path = new URL(child).pathname;
+  const res = await get(path);
+  if (res.status !== 200) { failures.push(`${path}: HTTP ${res.status}`); continue; }
+  if (!/<urlset[\s>]/.test(res.body)) failures.push(`${path}: not a <urlset>`);
+  const childLocs = locsOf(res.body);
+  const bad = childLocs.filter((u) => !onHost(`${path} <loc>`, u));
+  locs.push(...childLocs);
+  console.log(`  ${path} ${res.status}: ${childLocs.length} <loc>, ${bad.length} off-host`);
+}
+if (locs.length === 0) failures.push('sitemaps: no <loc> entries');
 
 for (const path of pages) {
   const { status, body } = await get(path);
