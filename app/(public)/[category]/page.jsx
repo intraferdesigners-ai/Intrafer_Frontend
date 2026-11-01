@@ -21,7 +21,7 @@ import { landingPageTitle } from '@/lib/landingSerp';
 import { SITE_URL } from '@/lib/siteUrl';
 import JsonLd from '@/components/seo/JsonLd';
 import { ORG_ID, idRef, pageNode } from '@/lib/structuredData';
-import { SERVICE_CATEGORIES } from '@/lib/categories';
+import { activeCategories } from '@/lib/activeCategories';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -188,11 +188,13 @@ export default async function CategoryHubPage({ params }) {
   );
 }
 
-// Crawlable links to the sibling category hubs (lib/categories.js, the same
-// list the sitemap's categories group checks), so every hub is reachable
-// through links — not only the ones with vendors linked from elsewhere.
-function OtherServices({ current }) {
-  const others = SERVICE_CATEGORIES.filter((c) => c.slug !== current);
+// Crawlable links to the sibling category hubs, so every hub is reachable
+// through links. Only categories whose hub answers 200 right now
+// (lib/activeCategories.js: the same API check the hub page itself makes)
+// are linked — an inactive or unknown category is never a link.
+async function OtherServices({ current }) {
+  const others = await activeCategories(API, { exceptSlug: current });
+  if (others.length === 0) return null;
   return (
     <section style={{ marginTop: '48px' }}>
       <p className="caps-label-primary" style={{ marginBottom: '10px' }}>OTHER SERVICES</p>

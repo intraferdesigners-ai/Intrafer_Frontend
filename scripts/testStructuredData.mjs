@@ -18,7 +18,7 @@ import {
 } from '../lib/structuredData.js';
 import { vendorJsonLd, vendorAreasServed, reviewAuthorName, DEFAULT_VENDOR_TYPE } from '../lib/vendorSchema.js';
 import { projectJsonLd, projectImages, galleryAlt, beforeAlt, afterAlt } from '../lib/projectSchema.js';
-import { CONTACT_EMAIL, LEGAL_EMAIL, PHONE, SOCIAL_PROFILES, WHATSAPP_URL } from '../lib/siteConfig.js';
+import { CONTACT_EMAIL, LEGAL_EMAIL, ORG_EMAIL, PHONE, SOCIAL_PROFILES, WHATSAPP_URL } from '../lib/siteConfig.js';
 import { FAQ_GROUPS, faqItems } from '../lib/faqData.js';
 import { GUIDES } from '../lib/guides-data.js';
 import { PLAN_FEATURES, planLabel, planPeriod } from '../lib/plans.js';
@@ -61,7 +61,9 @@ test('Organization: @id, logo, ContactPoint and sameAs all from siteConfig, www 
   assert.equal(cp['@id'], CONTACT_POINT_ID);
   assert.equal(cp.contactType, 'customer support');
   assert.equal(cp.telephone, PHONE.e164);
-  assert.equal(cp.email, CONTACT_EMAIL);
+  assert.equal(cp.email, ORG_EMAIL);
+  assert.equal(org.email, ORG_EMAIL);
+  assert.equal(ORG_EMAIL, LEGAL_EMAIL, 'the business chose the support@ address for the schema');
   assert.equal(cp.areaServed, 'IN');
   assert.deepEqual(cp.availableLanguage, ['English']);
   assert.deepEqual(cp.hoursAvailable.dayOfWeek, [...PHONE.hours.days]);
@@ -113,7 +115,7 @@ test('AboutPage / ContactPage reference the Organization / ContactPoint by @id o
   assert.equal(contact['@type'], 'ContactPage');
   assert.deepEqual(contact.mainEntity, { '@id': CONTACT_POINT_ID });
   // No duplicated phone/email literal: the ContactPoint lives in the layout.
-  assert.doesNotMatch(JSON.stringify(contact), new RegExp(`${PHONE.e164.slice(1)}|${CONTACT_EMAIL}`));
+  assert.doesNotMatch(JSON.stringify(contact), new RegExp(`${PHONE.e164.slice(1)}|${ORG_EMAIL}|${CONTACT_EMAIL}`));
 });
 
 test('FAQPage on /faq/: one Question per visible item, text identical to the rendered array', () => {

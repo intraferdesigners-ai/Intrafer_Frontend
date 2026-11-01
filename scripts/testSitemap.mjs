@@ -212,9 +212,9 @@ await test('routes: /sitemap.xml is the index route, children under /sitemaps/[f
   assert.match(readFileSync(join(ROOT, 'app/robots.js'), 'utf8'), /sitemap: absoluteUrl\('\/sitemap\.xml'\)/);
 });
 
-await test('every category hub the sitemap can list is linked from the other hubs (no orphan hubs)', () => {
+await test('every active category hub the sitemap can list is linked from the other hubs (no orphan hubs)', () => {
   const src = readFileSync(join(ROOT, 'app/(public)/[category]/page.jsx'), 'utf8');
-  assert.match(src, /SERVICE_CATEGORIES\.filter\(\(c\) => c\.slug !== current\)/);
+  assert.match(src, /await activeCategories\(API, \{ exceptSlug: current \}\)/); // active hubs only (testActiveCategories)
   assert.equal((src.match(/<OtherServices current=\{params\.category\} \/>/g) || []).length, 2, 'automatic and authored hub');
   assert.match(readFileSync(join(ROOT, 'lib/sitemap.js'), 'utf8'), /CATEGORY_SLUGS = Object\.freeze\(SERVICE_CATEGORIES\.map/);
 });
