@@ -20,7 +20,9 @@ import { landingPageTitle } from '@/lib/landingSerp';
 import { SITE_URL } from '@/lib/siteUrl';
 import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
 import JsonLd from '@/components/seo/JsonLd';
-import { ORG_ID, idRef, pageNode } from '@/lib/structuredData';
+import { ORG_ID, idRef } from '@/lib/structuredData';
+import VendorPagination from '@/components/seo/VendorPagination';
+import { buildCollectionJsonLd, cityPathOf, fetchCategory, fetchVendors } from './cityData';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -42,24 +44,7 @@ export function generateStaticParams() {
 // is given, so a reused object would leave every later call untagged.
 const taxonomyFetch = () => ({ next: { revalidate: 3600, tags: [TAGS.TAXONOMY, TAGS.VENDORS] } });
 
-// 404 (inactive / unknown category) -> null -> notFound(); any other
-// failure throws, so a backend blip is never cached as a 404.
-async function fetchCategory(slug) {
-  const json = await cachedJson(`${API}/public/service-categories/${encodeURIComponent(slug)}`, {
-    revalidate: LIST_WINDOW, tags: [TAGS.TAXONOMY], nullOn404: true,
-  });
-  return json?.data?.category ?? null;
-}
 
-async function fetchVendors(categorySlug, stateSlug, citySlug) {
-  // 404 (unknown state/city) -> null -> notFound(); a 500 or network error
-  // throws instead — never a cached 404 for a real city.
-  const json = await cachedJson(
-    `${API}/public/vendors?category=${encodeURIComponent(categorySlug)}&state=${encodeURIComponent(stateSlug)}&city=${encodeURIComponent(citySlug)}`,
-    { revalidate: LIST_WINDOW, tags: [TAGS.VENDORS], nullOn404: true },
-  );
-  return json?.data ?? null;
-}
 
 // Admin-managed landing pages: lib/landingHub.js (cached publicly; the
 // draft, uncached, only with a draft-mode preview token).
@@ -180,38 +165,6 @@ function buildBusinessJsonLd(category, city) {
   };
 }
 
-function buildCollectionJsonLd(params, category, city, state, vendors) {
-  if (vendors.length === 0) return null;
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    ...pageNode(cityPath(params)),
-    name: `${category.name} in ${city}, ${state}`,
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: vendors.map((v, i) => {
-        const image = v.profilePhoto || v.cardImages?.[0] || v.bannerImage || undefined;
-        // Only real review data earns an aggregateRating — an unrated
-        // vendor (rating 0 / reviewCount 0, true for everyone here today)
-        // gets none, rather than fabricated 0-star markup.
-        const aggregateRating = v.rating > 0 && v.reviewCount > 0
-          ? { '@type': 'AggregateRating', ratingValue: v.rating, reviewCount: v.reviewCount }
-          : undefined;
-        return {
-          '@type': 'ListItem',
-          position: i + 1,
-          item: {
-            '@type': category.schemaOrgType,
-            name: v.businessName,
-            url: `${SITE_URL}/vendors/${v._id}/`,
-            ...(image && { image }),
-            ...(aggregateRating && { aggregateRating }),
-          },
-        };
-      }),
-    },
-  };
-}
 
 // Nearby cities + related services, shared by both page variants.
 function RelatedLinks({ params, category, state, city, nearbyCities, relatedCategories }) {
@@ -322,6 +275,7 @@ export default async function CityHubPage({ params }) {
   if (!data) notFound();
 
   const { state, city, vendors } = data;
+  const vendorPages = data.totalPages || 1;
   const faq = await fetchFAQ(params.category, params.state, params.city);
   const hasFaq = faq && faq.questions?.length > 0;
 
@@ -332,7 +286,7 @@ export default async function CityHubPage({ params }) {
 
   const businessJsonLd = buildBusinessJsonLd(category, city);
   const collectionJsonLd = buildCollectionJsonLd(params, category, city, state, vendors);
-  const faqJsonLd = !hasFaq ? null : buildFaqJsonLd(faq.questions, cityPath(params));
+  const faqJsonLd = !hasFaq ? null : buildFaqJsonLd(faq.questions, cityPathOf(params));
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
@@ -356,11 +310,8 @@ export default async function CityHubPage({ params }) {
       </Reveal>
 
       {vendors.length > 0 ? (
-        // Renders whatever page 1 of GET /api/public/vendors returns — no
-        // real pagination UI yet since no city has more than a couple of
-        // listings today. `total`/`totalPages` from the response are
-        // available but unused; revisit before any city with heavy listing
-        // volume goes live, so results past page 1 aren't silently hidden.
+        // Page 1 of GET /api/public/vendors (12 per page); later pages are
+        // ?page=N (./p/[page]/page.jsx), linked below.
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px,1fr))', gap: '20px' }}>
           {vendors.map((v, i) => (
             <RevealItem key={v._id} index={i % 6}>
@@ -382,6 +333,8 @@ export default async function CityHubPage({ params }) {
           </p>
         </div>
       )}
+
+      <VendorPagination basePath={cityPathOf(params)} current={1} total={vendorPages} />
 
       {hasFaq && <FaqSection title="Frequently asked questions" questions={faq.questions} />}
 
@@ -407,7 +360,7 @@ async function AuthoredCityPage({ params, category, landing }) {
   const collectionJsonLd = buildCollectionJsonLd(params, category, city, state, vendors);
   // Every enabled FAQ section's items, exactly as rendered below.
   const faqItems = visibleFaqItems(shown);
-  const faqJsonLd = faqItems.length === 0 ? null : buildFaqJsonLd(faqItems, cityPath(params));
+  const faqJsonLd = faqItems.length === 0 ? null : buildFaqJsonLd(faqItems, cityPathOf(params));
 
   // With a banner image, that image is the LCP — no vendor card competes
   // for priority. Without one, same first-two-cards rule as the automatic page.
@@ -454,6 +407,8 @@ async function AuthoredCityPage({ params, category, landing }) {
           </p>
         </div>
       )}
+
+      <VendorPagination basePath={cityPathOf(params)} current={1} total={landing.vendorPages || 1} />
 
       <LandingSections sections={shown} localitiesTitle={`Localities in ${city}`} />
 

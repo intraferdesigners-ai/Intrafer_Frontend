@@ -123,6 +123,10 @@ const NOT_INDEXABLE = ['/enquiry/', '/enquiry/success/', '/enquiry/verify/', '/r
 const KNOWN_MISSING = [];
 // Paginated listings: page N > 1 canonicalises to itself, page 1 to the route.
 const PAGINATED = ['/vendors/'];
+// Internal rewrite targets: canonical is the public URL they serve.
+const INTERNAL = {
+  '/[category]/[state]/[city]/p/[page]/': '`${SITE_URL}/${params.category}/${params.state}/${params.city}/?page=${r.n}`',
+};
 
 // "/cities/[city]/" -> `${SITE_URL}/cities/${params.city}/` (as written in source); "/" -> '/'.
 const expectedCanonical = (route) => (route === '/'
@@ -139,7 +143,7 @@ test('every indexable public page sets its own canonical: SITE_URL + its route, 
     if (found.length === 0) missing.push(`${route} (${rel})`);
     // A paginated listing's page 2+ is its own canonical (?page=N).
     const paged = PAGINATED.includes(route) ? expectedCanonical(route).replace(/`$/, '?page=${page}`') : null;
-    for (const c of found) if (c !== expectedCanonical(route) && c !== paged) wrong.push(`${route}: ${c}`);
+    for (const c of found) if (c !== (INTERNAL[route] || expectedCanonical(route)) && c !== paged) wrong.push(`${route}: ${c}`);
   }
   assert.deepEqual(missing, [], 'pages without a canonical');
   assert.deepEqual(wrong, [], 'canonicals not equal to SITE_URL + route');

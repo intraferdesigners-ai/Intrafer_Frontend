@@ -201,7 +201,10 @@ await test('cachedJson: a 500 or network error throws (never a cached 404 / fall
 
 await test('city page: vendors fetch is cachedJson(nullOn404) and only a null result reaches notFound()', () => {
   const src = readFileSync(new URL('../app/(public)/[category]/[state]/[city]/page.jsx', import.meta.url), 'utf8');
-  const fn = src.slice(src.indexOf('async function fetchVendors('), src.indexOf('\n}\n', src.indexOf('async function fetchVendors(')));
+  // fetchVendors lives in ./cityData.js (shared with the ?page=N pages).
+  const data = readFileSync(new URL('../app/(public)/[category]/[state]/[city]/cityData.js', import.meta.url), 'utf8');
+  const fn = data.slice(data.indexOf('export async function fetchVendors('), data.indexOf('\n}\n', data.indexOf('export async function fetchVendors(')));
+  assert.ok(fn.length > 0);
   assert.match(fn, /cachedJson\(/);
   assert.match(fn, /nullOn404: true/);
   assert.doesNotMatch(fn, /try \{|catch/);

@@ -63,6 +63,9 @@ const CACHED = {
   'app/(public)/[category]/page.jsx': 300,
   'app/(public)/[category]/[state]/page.jsx': 300,
   'app/(public)/[category]/[state]/[city]/page.jsx': 300,
+  // city vendor-list pages 2+ (?page=N rewrite) and their shared fetchers
+  'app/(public)/[category]/[state]/[city]/p/[page]/page.jsx': 300,
+  'app/(public)/[category]/[state]/[city]/cityData.js': null,
   // plan prices (purged by the backend on every boot)
   'app/(vendor-site)/plans/page.jsx': 300,
   'app/(vendor-site)/for-designers/page.jsx': 300,
@@ -150,7 +153,9 @@ test('cached routes declare their window; their fetches are tagged and never no-
     const code = src.replace(/^\s*\/\/.*$/gm, ''); // comments may mention no-store
     assert.doesNotMatch(code, /cache:\s*'no-store'/, f);
     // The sitemap routes' fetches (and their tags) live in lib/sitemap.js.
-    const fetchSrc = /^app\/sitemaps?[./]/.test(f) ? read('lib/sitemap.js') : src;
+    // City pages 2+ fetch through the colocated cityData.js.
+    const fetchSrc = /^app\/sitemaps?[./]/.test(f) ? read('lib/sitemap.js')
+      : f.endsWith('[city]/p/[page]/page.jsx') ? read('app/(public)/[category]/[state]/[city]/cityData.js') : src;
     assert.doesNotMatch(fetchSrc.replace(/^\s*\/\/.*$/gm, ''), /cache:\s*'no-store'/, f);
     assert.match(fetchSrc, /tags: \[|TAGS\.[A-Z]+/, `${f}: no cache tags`);
   }

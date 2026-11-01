@@ -8,6 +8,12 @@ const previewRedirect = (source, path) => ({
   permanent: false,
 });
 
+// City landing pages: /<category>/<state>/<city>/ — first segment never one
+// of the app's own top-level routes (same exclusion idea as the preview
+// redirects above).
+const NOT_CATEGORY = '(?!(?:api|_next|admin|vendor|vendors|auth|projects|guides|design-styles|cities|for-designers|sitemaps|enquiry|review)(?:/|$))';
+const CITY = `/:category(${NOT_CATEGORY}[a-z0-9-]+)/:state([a-z0-9-]+)/:city([a-z0-9-]+)`;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
@@ -54,6 +60,24 @@ const nextConfig = {
       previewRedirect('/:a((?!(?:api|_next)/)[a-z0-9-]+)/', '/:a/'),
       previewRedirect('/:a((?!(?:api|_next)/)[a-z0-9-]+)/:b([a-z0-9-]+)/', '/:a/:b/'),
       previewRedirect('/:a((?!(?:api|_next)/)[a-z0-9-]+)/:b([a-z0-9-]+)/:c([a-z0-9-]+)/', '/:a/:b/:c/'),
+      // The internal vendor-list page route is only reached through the
+      // rewrite below; a direct visit goes to its public ?page=N URL.
+      { source: `${CITY}/p/:page/`, destination: '/:category/:state/:city/?page=:page', permanent: true },
+    ];
+  },
+  // City vendor-list pagination (lib/cityPagination.js): ?page=<value> on a
+  // city URL is served by app/(public)/[category]/[state]/[city]/p/[page]/,
+  // which validates it (1 -> redirect to the city URL, out of range or
+  // malformed -> 404). The city page itself never reads searchParams, so it
+  // stays fully static/ISR. Values with other characters aren't rewritten
+  // and just get page 1 (whose canonical is the bare city URL).
+  async rewrites() {
+    return [
+      {
+        source: `${CITY}/`,
+        has: [{ type: 'query', key: 'page', value: '(?<page>[0-9A-Za-z._-]{1,20})' }],
+        destination: '/:category/:state/:city/p/:page/',
+      },
     ];
   },
 };

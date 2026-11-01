@@ -470,20 +470,25 @@ export default function LandingPageEditor() {
               <option value="newest">Newest</option>
             </select>
           </div>
-          <div style={{ width: 120 }}>
-            <TextField
-              label="Show up to"
-              type="number"
-              min={1}
-              max={50}
-              value={String(form.vendorList.limit)}
-              onChange={(v) => set('vendorList')({ ...form.vendorList, limit: v === '' ? '' : Math.max(1, Math.min(50, Number(v) || 1)) })}
-              disabled={hub && !form.vendorList.enabled}
-              error={errors['vendorList.limit']}
-            />
-          </div>
+          {/* City pages list every matching vendor, 12 per page with
+              ?page=N pagination; the limit applies to hubs' "Top vendors". */}
+          {hub && (
+            <div style={{ width: 120 }}>
+              <TextField
+                label="Show up to"
+                type="number"
+                min={1}
+                max={50}
+                value={String(form.vendorList.limit)}
+                onChange={(v) => set('vendorList')({ ...form.vendorList, limit: v === '' ? '' : Math.max(1, Math.min(50, Number(v) || 1)) })}
+                disabled={!form.vendorList.enabled}
+                error={errors['vendorList.limit']}
+              />
+            </div>
+          )}
           <p style={{ ...HINT, margin: '0 0 12px' }}>
-            1–50 vendors.{vendorCount != null && ` ${vendorCount} currently match this ${level === 'category' ? 'category' : level}.`}
+            {hub ? '1–50 vendors.' : 'All matching vendors, 12 per page (later pages at ?page=2, ?page=3…).'}
+            {vendorCount != null && ` ${vendorCount} currently match this ${level === 'category' ? 'category' : level}.`}
           </p>
         </div>
       </section>
