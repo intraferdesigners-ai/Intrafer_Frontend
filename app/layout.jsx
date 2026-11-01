@@ -5,6 +5,7 @@ import ThemeProvider from '../context/ThemeContext';
 import CompareProvider from '../context/CompareContext';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import LeadCapturePopup from '../components/ui/LeadCapturePopupLazy';
+import HydrationMarker from '../components/ui/HydrationMarker';
 import { SITE_URL } from '../lib/siteUrl';
 import { GOOGLE_SITE_VERIFICATION } from '../lib/siteConfig';
 import { organizationJsonLd, websiteJsonLd } from '../lib/structuredData';
@@ -15,12 +16,21 @@ import JsonLd from '../components/seo/JsonLd';
 // Cormorant Garamond needs one loader call (not two) so italic text keeps
 // switching automatically via font-style, without every downstream
 // font-family reference needing to change.
+//
+// Not preloaded: only Inter — the font of every text LCP element on the
+// audited pages — is. Measured 2026-11-01 (Lighthouse mobile, median of 3):
+// without this preload LCP was lower on all 8 audited pages; first paint
+// was ~0.15–0.6 s later where the hero heading is set in Cormorant (it
+// waits briefly for the font, then swaps; next/font's size-adjusted
+// fallback keeps that shift-free). Its italic file is now fetched only on
+// pages that set italic text instead of everywhere.
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ['latin'],
   weight: ['300', '400', '500'],
   style: ['normal', 'italic'],
   variable: '--font-cormorant-garamond',
   display: 'swap',
+  preload: false,
 });
 
 const inter = Inter({
@@ -103,6 +113,7 @@ export default function RootLayout({ children }) {
               />
               {children}
               <LeadCapturePopup />
+              <HydrationMarker />
             </ErrorBoundary>
           </CompareProvider>
         </ThemeProvider>

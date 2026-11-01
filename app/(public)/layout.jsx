@@ -3,7 +3,7 @@ import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import StickyMobileCTA from '../../components/ui/StickyMobileCTA';
 import PageTransition from '../../components/ui/PageTransition';
-import RouteProgressBar from '../../components/ui/RouteProgressBar';
+import { RouteProgressBar } from '../../components/ui/DeferredWidgets';
 
 export default function PublicLayout({ children }) {
   return (

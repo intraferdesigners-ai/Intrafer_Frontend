@@ -1,35 +1,46 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useInView } from 'framer-motion';
 
-// Core Web Vitals: scroll-reveal without hiding the first screen.
+// Core Web Vitals: scroll-reveal without hiding the first screen, and
+// without framer-motion (plain IntersectionObserver + the .m-reveal CSS in
+// app/globals.css — same 24px slide, .45s ease-out, 120px lead).
 //
-// The old pattern (`initial={{ opacity: 0 }}` + whileInView) server-rendered
-// every revealed block at opacity 0, so nothing in the first viewport —
-// usually the LCP heading or image — could paint until React hydrated and
-// the fade finished. Now the server HTML and the first client render are
-// always visible. Right after mount (before the browser paints that
-// commit) a block that starts below the fold is switched to its hidden
-// state, and fades in when it scrolls into view, exactly as before.
-// Above-the-fold blocks simply stay visible.
+// The server HTML and the first client render are always visible. Right
+// after mount (before the browser paints that commit) a block that starts
+// below the fold is switched to data-reveal="hidden", and to "shown" (CSS
+// transition) when it scrolls within 120px of the viewport; "done" once the
+// transition ends, so later hover effects aren't slowed by a reveal delay.
+// Above-the-fold blocks never get the attribute and stay visible.
 //
-// Returns { ref, visible }: put `ref` on the motion element and animate to
-// the visible/hidden variant from `visible`.
-const MARGIN_PX = 120; // same lead as the old viewport margin
+// Returns { phase, revealProps }: spread revealProps (ref, data-reveal,
+// onTransitionEnd) on the element, which also needs the m-reveal class.
+const MARGIN_PX = 120;
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 export default function useRevealState() {
   const ref = useRef(null);
-  const [armed, setArmed] = useState(false);
-  const inView = useInView(ref, { once: true, amount: 0, margin: `0px 0px ${MARGIN_PX}px 0px` });
+  const [phase, setPhase] = useState(undefined); // undefined | 'hidden' | 'shown' | 'done'
 
   useIsoLayoutEffect(() => {
     const el = ref.current;
-    if (el && el.getBoundingClientRect().top > window.innerHeight + MARGIN_PX) setArmed(true);
+    if (!el || el.getBoundingClientRect().top <= window.innerHeight + MARGIN_PX) return undefined;
+    setPhase('hidden');
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        setPhase('shown');
+        io.disconnect();
+      }
+    }, { rootMargin: `0px 0px ${MARGIN_PX}px 0px` });
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
-  return { ref, visible: !armed || inView };
+  const onTransitionEnd = (e) => {
+    if (e.target === ref.current) setPhase((p) => (p === 'shown' ? 'done' : p));
+  };
+
+  return { phase, revealProps: { ref, 'data-reveal': phase, onTransitionEnd } };
 }
 
 // True only for the first render of a component instance on the page

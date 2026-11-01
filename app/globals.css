@@ -1586,3 +1586,55 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
     gap: 16px;
   }
 }
+
+/* ── Motion utilities ───────────────────────────────────────────────────
+   CSS replacements for the small framer-motion effects on the public
+   pages (same durations and ease-out curves), so those pages don't ship
+   the animation library in their first-load JS. Reduced motion: no
+   movement, no transitions (same as the old useReducedMotion branches). */
+
+/* Press feedback: scale while pressed (--m-tap, default .97). */
+.m-tap { transition: transform .1s ease-out; }
+.m-tap:not(:disabled):active { transform: scale(var(--m-tap, .97)); }
+
+/* Button: hover lift (-1px via --btn-y, set inline) + press scale. */
+.m-btn { transform: translateY(var(--btn-y, 0px)); }
+.m-btn:not(:disabled):active { transform: translateY(var(--btn-y, 0px)) scale(.97); }
+
+/* Photo zoom on hover. */
+.m-hover-zoom { transition: transform .4s ease-out; }
+.m-hover-zoom:hover { transform: scale(1.06); }
+
+/* Hover lift (--m-lift, default -4px; --m-lift-duration, default .18s). */
+.m-lift { transition: transform var(--m-lift-duration, .18s) ease-out; }
+.m-lift:hover { transform: translateY(var(--m-lift, -4px)); }
+
+/* Scroll reveal (components/ui/useRevealState.js): visible by default;
+   data-reveal="hidden" only for blocks that start below the fold, then
+   "shown" fades/slides them in. Once done, transitions fall back to the
+   hover lift's so a reveal delay never delays hover. */
+.m-reveal[data-reveal="hidden"] { opacity: 0; transform: translateY(24px); transition: none; }
+.m-reveal[data-reveal="shown"] { transition: opacity .45s ease-out, transform .45s ease-out; }
+
+/* Fade in on mount (slides/crossfades, route changes). */
+.m-fade-in { animation: m-fade-in var(--m-fade-duration, .6s) ease-out both; }
+@keyframes m-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.m-fade-up { animation: m-fade-up .35s ease-out both; }
+@keyframes m-fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Show/hide with a small slide (vendor card hover actions). */
+.m-toggle { transition: opacity .22s ease-out, transform .22s ease-out; }
+.m-toggle[data-show="false"] { opacity: 0; transform: translateY(var(--m-toggle-y, -6px)); }
+
+/* Pulse (save heart). */
+.m-pulse { transition: transform .16s ease-out; }
+.m-pulse[data-pulse="true"] { transform: scale(1.35); }
+
+@media (prefers-reduced-motion: reduce) {
+  .m-tap:not(:disabled):active, .m-hover-zoom:hover, .m-lift:hover, .m-toggle[data-show="false"] { transform: none; }
+  /* The button keeps its 1px hover lift (it never depended on motion settings); only the press scale goes. */
+  .m-btn:not(:disabled):active { transform: translateY(var(--btn-y, 0px)); }
+  .m-tap, .m-hover-zoom, .m-lift, .m-reveal[data-reveal="shown"], .m-toggle, .m-pulse { transition: none; }
+  .m-reveal[data-reveal="hidden"] { transform: none; }
+  .m-fade-in, .m-fade-up { animation: none; }
+}

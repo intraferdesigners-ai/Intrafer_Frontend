@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import usePrefersReducedMotion from '../../lib/usePrefersReducedMotion';
 
 const VARIANTS = {
   primary:   { bg: 'var(--primary)',      color: '#fff',             border: 'none',                           hoverBg: 'var(--primary-dark)' },
@@ -24,20 +24,18 @@ export default function Button({
   loading = false, className = '', style: styleProp = {}, ...rest
 }) {
   const [hov, setHov] = useState(false);
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = usePrefersReducedMotion();
   const v = VARIANTS[variant] || VARIANTS.primary;
   const s = SIZES[size] || SIZES.md;
 
   return (
-    <motion.button
-      className={className}
+    // Press scale (0.97) and the hover lift are CSS (.m-btn in
+    // app/globals.css); the lift amount comes in through --btn-y.
+    <button
+      className={className ? `m-btn ${className}` : 'm-btn'}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       disabled={loading || rest.disabled}
-      whileTap={loading || rest.disabled ? undefined : {
-        scale: shouldReduceMotion ? 1 : 0.97,
-        transition: { duration: shouldReduceMotion ? 0 : 0.1, ease: 'easeOut' },
-      }}
       style={{
         ...s,
         background:     hov && !loading ? v.hoverBg : v.bg,
@@ -52,13 +50,9 @@ export default function Button({
         justifyContent: 'center',
         gap:            '7px',
         whiteSpace:     'nowrap',
-        // Expressed as motion's own `y` style key (not a raw transform
-        // string) so it composes correctly with whileTap's animated scale
-        // below — Framer Motion builds one combined transform from its own
-        // x/y/scale/etc. style keys, but silently overwrites a literal
-        // `transform` CSS string with whatever it's currently animating.
-        // Same trigger condition, same -1px value — hover-lift is unchanged.
-        y:              hov && !loading && !rest.disabled ? -1 : 0,
+        // Hover lift: same trigger and -1px value as before; .m-btn turns it
+        // into translateY() and composes the press scale with it.
+        '--btn-y':      hov && !loading && !rest.disabled ? '-1px' : '0px',
         boxShadow:      hov && !loading && !rest.disabled && variant === 'primary'
                           ? '0 4px 12px rgba(59,130,246,.35)' : 'none',
         ...styleProp,
@@ -77,6 +71,6 @@ export default function Button({
       )}
       {children}
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-    </motion.button>
+    </button>
   );
 }

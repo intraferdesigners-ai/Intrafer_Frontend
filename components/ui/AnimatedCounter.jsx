@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { useReducedMotion } from 'framer-motion';
+import usePrefersReducedMotion from '../../lib/usePrefersReducedMotion';
 
 // Counts up from 0 the first time it scrolls into view, then re-tweens from
 // the previous value to the new one whenever `end` changes afterward (slider
@@ -17,7 +17,7 @@ export default function AnimatedCounter({
   const started  = useRef(false);
   const prevEnd  = useRef(end);
   const rafId    = useRef(null);
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = usePrefersReducedMotion();
 
   const live = useRef({});
   live.current = { end, duration, decimals, shouldReduceMotion };

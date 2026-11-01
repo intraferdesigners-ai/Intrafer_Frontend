@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { motion, useReducedMotion } from 'framer-motion';
 import useRevealState from './useRevealState';
 
 // Shared (not per-card inline) so all 4 numeral chips stay pixel-identical.
@@ -19,29 +18,17 @@ const CARD_STYLE = {
   borderRadius: 'var(--r-xl)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)',
 };
 
-// Always renders motion.div (server/client consistent — see Reveal.jsx for
-// why branching to a plain div under reduced-motion caused a hydration
-// mismatch that left content stuck invisible). Reduced motion instead zeroes
-// out durations and the hover lift's offset.
+// CSS reveal + hover lift (.m-reveal / .m-lift); reduced motion: neither.
 export default function HowItWorksCard({ step, index }) {
-  const shouldReduceMotion = useReducedMotion();
-  // Server-rendered visible; hidden after mount only when below the fold.
-  const { ref, visible } = useRevealState();
+  // Reveal (server-rendered visible; below-the-fold cards fade in on
+  // scroll) + 4px hover lift, CSS only (app/globals.css).
+  const { phase, revealProps } = useRevealState();
 
   return (
-    <motion.div
-      ref={ref}
-      style={CARD_STYLE}
-      initial={false}
-      animate={visible ? 'visible' : 'hidden'}
-      variants={{
-        hidden: { opacity: 0, y: 24, transition: { duration: 0 } },
-        visible: { opacity: 1, y: 0, transition: { duration: shouldReduceMotion ? 0 : 0.45, ease: 'easeOut', delay: shouldReduceMotion ? 0 : index * 0.08 } },
-      }}
-      whileHover={{
-        y: shouldReduceMotion ? 0 : -4,
-        transition: { duration: shouldReduceMotion ? 0 : 0.18, ease: 'easeOut' },
-      }}
+    <div
+      className="m-reveal m-lift"
+      style={phase === 'shown' && index > 0 ? { ...CARD_STYLE, transitionDelay: `${index * 0.08}s` } : CARD_STYLE}
+      {...revealProps}
     >
       {/* Photo strip — outer wrapper lets the numeral chip overlap below it */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -56,6 +43,6 @@ export default function HowItWorksCard({ step, index }) {
         <p style={{ fontSize: '15px', fontWeight: 500, color: '#fff', margin: '0 0 8px' }}>{step.title}</p>
         <p style={{ fontSize: '12px', color: 'rgba(255,255,255,.6)', lineHeight: 1.7, margin: 0 }}>{step.desc}</p>
       </div>
-    </motion.div>
+    </div>
   );
 }

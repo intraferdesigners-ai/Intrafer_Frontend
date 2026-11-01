@@ -4,15 +4,20 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
-import { motion, useReducedMotion } from 'framer-motion';
+import usePrefersReducedMotion from '../../lib/usePrefersReducedMotion';
 import { MapPin, ShieldCheck, Heart, Scale, Star, ArrowRight } from 'lucide-react';
-import QuickEnquiryModal from './QuickEnquiryModal';
+import dynamic from 'next/dynamic';
 import VendorTooltip from './VendorTooltip';
 import VendorCardImage from './VendorCardImage';
 import { trackVendorInterest } from '@/lib/trackInterest';
 import { useCompare } from '@/context/CompareContext';
 import { getSavedContact, hasEngagedVendor } from '@/lib/session';
-import { autoSendVendorEnquiry } from '@/lib/enquiryFlow';
+
+// Interaction-only: the enquiry form and the silent auto-send (both use the
+// API client) load on demand instead of in every card page's first-load JS.
+// The modal renders nothing while closed.
+const QuickEnquiryModal = dynamic(() => import('./QuickEnquiryModal'), { ssr: false });
+const autoSendVendorEnquiry = (vendor) => import('@/lib/enquiryFlow').then((m) => m.autoSendVendorEnquiry(vendor));
 
 // Last-resort fallback when a vendor has neither published project photos
 // nor a banner image — a colored initial reads as an intentional identity
@@ -66,7 +71,7 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
   const [savePulse,      setSavePulse]      = useState(false);
   const [hovered,        setHovered]        = useState(false);
   const tooltipTimeout = useRef(null);
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = usePrefersReducedMotion();
 
   const { isSelected, addToCompare, removeFromCompare } = useCompare();
   const compared = isSelected(vendor._id);
@@ -222,24 +227,25 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
                   }}
                   aria-label={saved ? 'Remove from saved' : 'Save designer'}
                 >
-                  <motion.span
-                    animate={{ scale: savePulse ? 1.35 : 1 }}
-                    transition={{ duration: 0.16, ease: 'easeOut' }}
+                  <span
+                    className="m-pulse"
+                    data-pulse={savePulse ? 'true' : 'false'}
                     style={{ display: 'flex' }}
-                  >
+                    >
                     <Heart
                       size={16}
                       fill={saved ? '#E24B4A' : 'none'}
                       color={saved ? '#E24B4A' : '#666'}
                     />
-                  </motion.span>
+                  </span>
                 </button>
 
                 {/* Compare toggle — pill shape, visually distinct from the round save button */}
-                <motion.button
+                <button
                   onClick={toggleCompare}
-                  whileTap={{ scale: shouldReduceMotion ? 1 : 0.93 }}
+                  className="m-tap"
                   style={{
+                    '--m-tap': 0.93,
                     position: 'absolute', top: '48px', right: '10px',
                     display: 'flex', alignItems: 'center', gap: '4px',
                     padding: '5px 9px', borderRadius: '20px',
@@ -247,13 +253,13 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
                     color: compared ? '#fff' : '#444',
                     border: 'none', fontSize: '10px', fontWeight: 600,
                     cursor: 'pointer', zIndex: 2, letterSpacing: '.02em',
-                    transition: 'background 150ms ease, color 150ms ease',
+                    transition: 'background 150ms ease, color 150ms ease, transform .1s ease-out',
                   }}
                   aria-label={compared ? 'Remove from compare' : 'Add to compare'}
                 >
                   <Scale size={12} />
                   {compared ? 'Comparing' : 'Compare'}
-                </motion.button>
+                </button>
               </div>
 
               {/* Circular avatar — overlaps bottom of image into card body */}
@@ -425,9 +431,8 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
             the banner — falling back to bannerImage alone for vendors with
             no published projects yet, and finally to the monogram below for
             vendors with neither. */}
-        <motion.div
-          whileHover={{ scale: shouldReduceMotion ? 1 : 1.06 }}
-          transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: 'easeOut' }}
+        <div
+          className="m-hover-zoom"
           style={{ position: 'absolute', inset: 0 }}
         >
           {cardImages.length > 0 ? (
@@ -437,7 +442,7 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
               <VendorMonogram name={vendor.businessName} size={88} />
             </div>
           )}
-        </motion.div>
+        </div>
 
         {/* Bottom gradient scrim — always on, dark-mode-aware (see .dark rule) */}
         <div aria-hidden="true" className="vendor-card-editorial-scrim" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
@@ -468,14 +473,10 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
             bottom actions below, rather than always-on, so the resting card
             reads as a clean photo and every actionable control appears
             together on hover/touch. */}
-        <motion.div
-          initial={false}
-          animate={{
-            opacity: showActions ? 1 : 0,
-            y: showActions ? 0 : (shouldReduceMotion ? 0 : -6),
-          }}
-          transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: 'easeOut' }}
-          style={{
+        <div
+          className="m-toggle"
+          data-show={showActions ? 'true' : 'false'}
+          style={{ '--m-toggle-y': '-6px',
             position: 'absolute', top: 12, right: 12, zIndex: 2, display: 'flex', gap: 8,
             pointerEvents: showActions ? 'auto' : 'none',
           }}
@@ -486,19 +487,19 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
             style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
             aria-label={saved ? 'Remove from saved' : 'Save designer'}
           >
-            <motion.span
-              animate={{ scale: savePulse ? 1.35 : 1 }}
-              transition={{ duration: 0.16, ease: 'easeOut' }}
+            <span
+              className="m-pulse"
+              data-pulse={savePulse ? 'true' : 'false'}
               style={{ display: 'flex' }}
-            >
+              >
               <Heart size={14} fill={saved ? '#E24B4A' : 'none'} color={saved ? '#E24B4A' : 'currentColor'} />
-            </motion.span>
+            </span>
           </button>
-          <motion.button
+          <button
             onClick={toggleCompare}
-            whileTap={{ scale: shouldReduceMotion ? 1 : 0.9 }}
-            className="vendor-glass-circle"
+            className="vendor-glass-circle m-tap"
             style={{
+              '--m-tap': 0.9,
               width: 28, height: 28, borderRadius: '50%', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: compared ? 'var(--primary)' : undefined,
@@ -507,8 +508,8 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
             aria-label={compared ? 'Remove from compare' : 'Add to compare'}
           >
             <Scale size={14} />
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
 
         {/* Bottom info overlay — name, location, rating, tags, all on the photo */}
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 2, padding: 16 }}>
@@ -562,14 +563,10 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
           </div>
 
           {/* Hover-reveal actions — always shown on touch (no hover state there) */}
-          <motion.div
-            initial={false}
-            animate={{
-              opacity: showActions ? 1 : 0,
-              y: showActions ? 0 : (shouldReduceMotion ? 0 : 10),
-            }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: 'easeOut' }}
-            style={{ display: 'flex', gap: 8, marginTop: 12, pointerEvents: showActions ? 'auto' : 'none' }}
+          <div
+            className="m-toggle"
+            data-show={showActions ? 'true' : 'false'}
+            style={{ '--m-toggle-y': '10px', display: 'flex', gap: 8, marginTop: 12, pointerEvents: showActions ? 'auto' : 'none' }}
           >
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -589,7 +586,7 @@ export default function VendorCard({ vendor, variant = 'editorial', priority = f
             >
               Get quote
             </button>
-          </motion.div>
+          </div>
         </div>
       </Link>
 

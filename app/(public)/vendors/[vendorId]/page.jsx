@@ -8,7 +8,7 @@ import BeforeAfterSlider from '../../../../components/ui/BeforeAfterSlider';
 import { getInitials, formatDate } from '../../../../lib/utils';
 import VendorProfileTracker from '../../../../components/vendor/VendorProfileTracker';
 import VendorMobileCTA from '../../../../components/vendor/VendorMobileCTA';
-import VendorEnquiryOverlay from '../../../../components/vendor/VendorEnquiryOverlay';
+import { VendorEnquiryOverlay } from '../../../../components/ui/DeferredWidgets';
 import Reveal from '../../../../components/ui/Reveal';
 import Breadcrumb from '../../../../components/seo/Breadcrumb';
 import { slugify } from '../../../../lib/slug';

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, useReducedMotion } from 'framer-motion';
+import usePrefersReducedMotion from '../../lib/usePrefersReducedMotion';
 import { canOptimize } from '@/lib/imageHost';
 import { useIsFirstRender } from '../ui/useRevealState';
 
@@ -26,7 +26,7 @@ const SLIDE_INTERVAL_MS = 3500;
 export default function ProjectImageSlider({
   images, alt, style, sizes = '(max-width: 768px) 100vw, 33vw', priority = false,
 }) {
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
   const firstRender = useIsFirstRender();
   const list = (images || []).filter((src) => typeof src === 'string' && src.trim());
@@ -42,13 +42,11 @@ export default function ProjectImageSlider({
 
   const src = list[hasMultiple ? index % list.length : 0];
   return (
-    <motion.div
+    <div
       key={hasMultiple ? index : 0}
       // First photo server-rendered visible (it is often the LCP image);
-      // later slides fade in.
-      initial={firstRender ? false : { opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: shouldReduceMotion ? 0 : 0.6, ease: 'easeOut' }}
+      // later slides fade in over 0.6 s (CSS .m-fade-in).
+      className={firstRender ? undefined : 'm-fade-in'}
       style={{ position: 'absolute', inset: 0 }}
     >
       <Image
@@ -62,6 +60,6 @@ export default function ProjectImageSlider({
         // together — priority implies eager loading on its own.
         {...(priority ? { priority: true } : { loading: 'lazy' })}
       />
-    </motion.div>
+    </div>
   );
 }
