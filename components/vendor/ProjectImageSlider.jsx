@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
 import { canOptimize } from '@/lib/imageHost';
+import { useIsFirstRender } from '../ui/useRevealState';
 
 const SLIDE_INTERVAL_MS = 3500;
 
@@ -27,6 +28,7 @@ export default function ProjectImageSlider({
 }) {
   const shouldReduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
+  const firstRender = useIsFirstRender();
   const list = (images || []).filter((src) => typeof src === 'string' && src.trim());
   const hasMultiple = list.length > 1;
 
@@ -42,7 +44,9 @@ export default function ProjectImageSlider({
   return (
     <motion.div
       key={hasMultiple ? index : 0}
-      initial={{ opacity: 0 }}
+      // First photo server-rendered visible (it is often the LCP image);
+      // later slides fade in.
+      initial={firstRender ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: shouldReduceMotion ? 0 : 0.6, ease: 'easeOut' }}
       style={{ position: 'absolute', inset: 0 }}

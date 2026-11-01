@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
+import useRevealState from './useRevealState';
 
 // Shared (not per-card inline) so all 4 numeral chips stay pixel-identical.
 const STEP_CHIP_STYLE = {
@@ -24,20 +25,23 @@ const CARD_STYLE = {
 // out durations and the hover lift's offset.
 export default function HowItWorksCard({ step, index }) {
   const shouldReduceMotion = useReducedMotion();
+  // Server-rendered visible; hidden after mount only when below the fold.
+  const { ref, visible } = useRevealState();
 
   return (
     <motion.div
+      ref={ref}
       style={CARD_STYLE}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{
-        opacity: 1, y: 0,
-        transition: { duration: shouldReduceMotion ? 0 : 0.45, ease: 'easeOut', delay: shouldReduceMotion ? 0 : index * 0.08 },
+      initial={false}
+      animate={visible ? 'visible' : 'hidden'}
+      variants={{
+        hidden: { opacity: 0, y: 24, transition: { duration: 0 } },
+        visible: { opacity: 1, y: 0, transition: { duration: shouldReduceMotion ? 0 : 0.45, ease: 'easeOut', delay: shouldReduceMotion ? 0 : index * 0.08 } },
       }}
       whileHover={{
         y: shouldReduceMotion ? 0 : -4,
         transition: { duration: shouldReduceMotion ? 0 : 0.18, ease: 'easeOut' },
       }}
-      viewport={{ once: true, amount: 0, margin: '0px 0px 120px 0px' }}
     >
       {/* Photo strip — outer wrapper lets the numeral chip overlap below it */}
       <div style={{ position: 'relative', flexShrink: 0 }}>

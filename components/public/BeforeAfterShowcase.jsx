@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import BeforeAfterSlider from '../ui/BeforeAfterSlider';
+import { useIsFirstRender } from '../ui/useRevealState';
 
 // Crossfade keyed by activeIndex, mirroring PageTransition.jsx's pattern —
 // no AnimatePresence needed since there's no exit animation to coordinate,
@@ -10,6 +11,7 @@ import BeforeAfterSlider from '../ui/BeforeAfterSlider';
 export default function BeforeAfterShowcase({ pairs }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const shouldReduceMotion = useReducedMotion();
+  const firstRender = useIsFirstRender();
   const active = pairs[activeIndex];
 
   // Subtle scroll-linked parallax — the slider (photo layer) drifts a few
@@ -27,7 +29,8 @@ export default function BeforeAfterShowcase({ pairs }) {
       <div style={{ position: 'relative' }}>
         <motion.div
           key={activeIndex}
-          initial={{ opacity: 0 }}
+          // First pair server-rendered visible; later picks crossfade.
+          initial={firstRender ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: shouldReduceMotion ? 0 : 0.3, ease: 'easeOut' }}
           style={{ y: photoY }}

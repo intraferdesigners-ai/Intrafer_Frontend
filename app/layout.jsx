@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import ThemeProvider from '../context/ThemeContext';
 import CompareProvider from '../context/CompareContext';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
-import LeadCapturePopup from '../components/ui/LeadCapturePopup';
+import LeadCapturePopup from '../components/ui/LeadCapturePopupLazy';
 import { SITE_URL } from '../lib/siteUrl';
 import { organizationJsonLd, websiteJsonLd } from '../lib/structuredData';
 import JsonLd from '../components/seo/JsonLd';
@@ -29,11 +29,14 @@ const inter = Inter({
   display: 'swap',
 });
 
+// Not preloaded: monospace is never first-screen text, and every preload
+// competes with the page's LCP image for early bandwidth.
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   weight: ['400', '500'],
   variable: '--font-jetbrains-mono',
   display: 'swap',
+  preload: false,
 });
 
 export const metadata = {

@@ -110,7 +110,7 @@ export default function Navbar() {
             }}>
               <Image src="/images/logo/logo.png" alt="Intrafer" width={28} height={28}
                 style={{ objectFit: 'contain', mixBlendMode: theme === 'dark' ? 'normal' : 'multiply' }}
-                priority />
+                loading="eager" />
             </div>
             <span style={{ fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: '18px',
               color: 'var(--text)', letterSpacing: '-0.02em' }}>

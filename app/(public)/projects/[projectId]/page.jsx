@@ -178,6 +178,7 @@ export default async function ProjectDetailPage({ params }) {
                 after={project.afterImage}
                 beforeAlt={beforeAlt(project)}
                 afterAlt={afterAlt(project)}
+                priority
               />
             </div>
           )}
@@ -200,6 +201,8 @@ export default async function ProjectDetailPage({ params }) {
                       src={img}
                       alt={galleryAlt(project, i)}
                       fill
+                      // The first photo is the LCP when there is no slider above it.
+                      priority={i === 0 && !hasBeforeAfter(project)}
                       style={{ objectFit: 'cover' }}
                       sizes="(max-width: 768px) 100vw, 280px"
                     />
@@ -240,7 +243,7 @@ export default async function ProjectDetailPage({ params }) {
                 flexShrink: 0, overflow: 'hidden', position: 'relative',
               }}>
                 {vendor.profilePhoto ? (
-                  <Image src={vendor.profilePhoto} alt={vendor.businessName} fill style={{ objectFit: 'cover' }} />
+                  <Image src={vendor.profilePhoto} alt={vendor.businessName} fill style={{ objectFit: 'cover' }} sizes="52px" />
                 ) : (
                   <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--primary)' }}>
                     {vendor.businessName?.charAt(0)}

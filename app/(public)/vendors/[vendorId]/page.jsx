@@ -180,6 +180,9 @@ export default async function VendorProfilePage({ params }) {
                   src={coverImg}
                   alt=""
                   fill
+                  // The cover is the page's largest above-the-fold image
+                  // (its LCP): loaded eagerly and preloaded.
+                  priority
                   style={{ objectFit: 'cover', opacity: bannerImg ? 1 : 0.45 }}
                   sizes="(max-width: 768px) 100vw, 860px"
                 />

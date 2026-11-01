@@ -18,7 +18,9 @@ export default function VendorResultsGrid({ vendors, resultsKey }) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <AnimatePresence mode="wait">
+    // initial={false}: the server-rendered first grid shows at once (it holds
+    // the LCP card); only later result sets cross-fade.
+    <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={resultsKey}
         initial={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.98 }}

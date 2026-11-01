@@ -55,7 +55,7 @@ export default function VendorNavbar() {
               width: '32px', height: '32px', flexShrink: 0, borderRadius: '6px',
               background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px',
             }}>
-              <Image src="/images/logo/logo.png" alt="Intrafer" width={28} height={28} style={{ objectFit: 'contain' }} priority />
+              <Image src="/images/logo/logo.png" alt="Intrafer" width={28} height={28} style={{ objectFit: 'contain' }} loading="eager" />
             </div>
             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: '20px', color: '#F0F6FF', letterSpacing: '-.01em' }}>
               Intrafer

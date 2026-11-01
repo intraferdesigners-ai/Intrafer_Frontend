@@ -113,6 +113,8 @@ export default function GalleryGrid({ projects }) {
                     images={item.images}
                     alt={item.title}
                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 400px"
+                    // The first tile is the page's LCP image; the rest stay lazy.
+                    priority={idx === 0}
                   />
                   <div
                     className="gallery-overlay"

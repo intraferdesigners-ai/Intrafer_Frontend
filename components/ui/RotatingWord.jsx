@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useIsFirstRender } from './useRevealState';
 
 // Crossfade-on-interval, same key-remount pattern as BeforeAfterShowcase's
 // thumbnail crossfade. The interval itself always runs — even under reduced
@@ -11,6 +12,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 export default function RotatingWord({ words, interval = 2200, style }) {
   const [index, setIndex] = useState(0);
   const shouldReduceMotion = useReducedMotion();
+  const firstRender = useIsFirstRender();
 
   useEffect(() => {
     const id = setInterval(() => setIndex((i) => (i + 1) % words.length), interval);
@@ -20,7 +22,8 @@ export default function RotatingWord({ words, interval = 2200, style }) {
   return (
     <motion.span
       key={index}
-      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 8 }}
+      // First word server-rendered visible; later words fade in.
+      initial={firstRender ? false : { opacity: 0, y: shouldReduceMotion ? 0 : 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: shouldReduceMotion ? 0 : 0.35, ease: 'easeOut' }}
       style={{ display: 'inline-block', ...style }}
