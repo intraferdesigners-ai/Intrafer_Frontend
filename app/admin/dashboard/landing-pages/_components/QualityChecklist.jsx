@@ -8,11 +8,11 @@ import { CARD, SECTION_LABEL, HINT } from './shared';
 // Advisory quality checks (lib/landingChecklist.js), re-evaluated as the
 // form changes. Never blocks saving or publishing. Open by default for
 // drafts, collapsed for published pages.
-export default function QualityChecklist({ form, categoryName, city, state, level = 'city', vendorCount, published }) {
+export default function QualityChecklist({ form, categoryName, city, state, level = 'city', vendorCount, published, duplicates }) {
   const [open, setOpen] = useState(!published);
   const checks = useMemo(
-    () => evaluateChecklist(form, { categoryName, city, state, vendorCount, level }),
-    [form, categoryName, city, state, vendorCount, level]
+    () => evaluateChecklist(form, { categoryName, city, state, vendorCount, level, duplicates }),
+    [form, categoryName, city, state, vendorCount, level, duplicates]
   );
   const passed = checks.filter((c) => c.level === 'pass').length;
 
@@ -37,7 +37,7 @@ export default function QualityChecklist({ form, categoryName, city, state, leve
           style={{ marginLeft: 'auto', color: 'var(--color-text-hint)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}
         />
       </button>
-      <p style={{ ...HINT, margin: '4px 0 0' }}>Advisory — you can publish regardless.</p>
+      <p style={{ ...HINT, margin: '4px 0 0' }}>Advisory — you can publish regardless. The duplicate-text check compares the last saved version.</p>
 
       {open && (
         <ul id="lp-checklist" style={{ listStyle: 'none', padding: 0, margin: '14px 0 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -45,9 +45,9 @@ export default function QualityChecklist({ form, categoryName, city, state, leve
             <li key={c.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
               {c.level === 'pass'
                 ? <CheckCircle2 size={15} aria-label="Passed" style={{ color: 'var(--success)', flexShrink: 0, marginTop: 1 }} />
-                : <AlertTriangle size={15} aria-label="Warning" style={{ color: 'var(--warning)', flexShrink: 0, marginTop: 1 }} />}
+                : <AlertTriangle size={15} aria-label="Warning" style={{ color: c.strong ? 'var(--danger)' : 'var(--warning)', flexShrink: 0, marginTop: 1 }} />}
               <span>
-                <span style={{ fontSize: 13, color: 'var(--color-text)' }}>{c.label}</span>
+                <span style={{ fontSize: 13, color: c.strong ? 'var(--danger)' : 'var(--color-text)', fontWeight: c.strong ? 600 : 400 }}>{c.label}</span>
                 {c.hint && <span style={{ ...HINT, display: 'block', marginTop: 1 }}>{c.hint}</span>}
               </span>
             </li>

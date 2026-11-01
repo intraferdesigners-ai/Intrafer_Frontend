@@ -8,6 +8,7 @@ import api from '@/lib/api';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { parseLocations, MAX_LOCATIONS } from '@/lib/landingBulkParse';
+import { placeList } from '@/lib/landingChecklist';
 import {
   CARD, SECTION_LABEL, FIELD_LABEL, HINT, publicPath, useLandingCategories, storeDuplicateWarnings,
 } from '../_components/shared';
@@ -131,7 +132,7 @@ export default function BulkCreateLandingPages() {
     setChecking(true);
     try {
       const { data } = await api.post('/admin/landing-pages/bulk', payload(true));
-      setCheck({ key: inputKey, rows: mergeRows(data.data.results), summary: data.data.summary, warnings: data.data.warnings || [] });
+      setCheck({ key: inputKey, rows: mergeRows(data.data.results), summary: data.data.summary, warnings: data.data.warnings || [], textDuplicates: data.data.textDuplicates || null });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Check failed.');
     }
@@ -236,6 +237,16 @@ export default function BulkCreateLandingPages() {
           </Button>
           {stale && <span style={{ ...HINT, marginTop: 0, color: 'var(--warning)' }}>Inputs changed — check again before creating.</span>}
         </div>
+        {/* Advisory: every page created from the template copies its text. */}
+        {check && !stale && creatable > 0 && check.textDuplicates && (check.textDuplicates.existing.length > 0 || check.textDuplicates.inBatch > 0) && (
+          <p style={{ fontSize: 12, lineHeight: 1.6, marginTop: 12, padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--warning-bg)', color: 'var(--color-text)' }}>
+            <strong>Same text:</strong> each new page will have text identical (after replacing the city name) to
+            {check.textDuplicates.existing.length > 0 && ` ${check.textDuplicates.existing.length} existing page${check.textDuplicates.existing.length === 1 ? '' : 's'} (${placeList(check.textDuplicates.existing)})`}
+            {check.textDuplicates.existing.length > 0 && check.textDuplicates.inBatch > 0 && ' and'}
+            {check.textDuplicates.inBatch > 0 && ` the ${check.textDuplicates.inBatch} other new page${check.textDuplicates.inBatch === 1 ? '' : 's'} in this batch`}
+            . Write city-specific FAQs and intro for each before publishing.
+          </p>
+        )}
       </section>
 
       {shown && (

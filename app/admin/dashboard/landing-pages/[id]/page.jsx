@@ -121,9 +121,18 @@ export default function LandingPageEditor() {
     setSaved(JSON.stringify(toPayload(f, levelOf(p))));
   }, []);
 
+  // Duplicate-text report for the saved version (null = unique); reloaded
+  // after every save. Advisory only.
+  const [duplicates, setDuplicates] = useState(undefined);
+  const loadDuplicates = useCallback(() => {
+    api.get(`/admin/landing-pages/${id}`)
+      .then(({ data }) => setDuplicates(data.data.duplicates ?? null))
+      .catch(() => {});
+  }, [id]);
+
   useEffect(() => {
     api.get(`/admin/landing-pages/${id}`)
-      .then(({ data }) => applyServerPage(data.data.page))
+      .then(({ data }) => { applyServerPage(data.data.page); setDuplicates(data.data.duplicates ?? null); })
       .catch((err) => setLoadError(err.response?.data?.message || 'Failed to load landing page.'));
   }, [id, applyServerPage]);
 
@@ -183,6 +192,7 @@ export default function LandingPageEditor() {
       }
       toast.success({ save: 'Saved.', publish: 'Published.', unpublish: 'Unpublished — back to draft.' }[kind]);
       loadVersions();
+      loadDuplicates();
     } catch (err) {
       const res = err.response?.data;
       if (res?.errors && Object.keys(res.errors).length) {
@@ -376,6 +386,7 @@ export default function LandingPageEditor() {
         level={level}
         vendorCount={vendorCount}
         published={published}
+        duplicates={duplicates}
       />
 
       <BannerFields banner={form.banner} onChange={setBanner} errors={errors} />

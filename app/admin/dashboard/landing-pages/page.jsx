@@ -13,6 +13,7 @@ import {
   SELECT_STYLE, ICON_BUTTON, StatusBadge, LevelChip, useLandingCategories, indexingLabel, pagePath, locationLabel,
 } from './_components/shared';
 import { levelOf } from '@/lib/landingLevel';
+import { duplicateBadge, placeList } from '@/lib/landingChecklist';
 import DeleteLandingPageModal from './_components/DeleteLandingPageModal';
 import DuplicateLandingPageModal from './_components/DuplicateLandingPageModal';
 
@@ -326,6 +327,18 @@ export default function AdminLandingPagesPage() {
                 {levelOf(p) === 'city'
                   ? <RowLink page={p}>{p.city}</RowLink>
                   : <span style={{ fontSize: 13, color: 'var(--color-text-hint)' }}>—</span>}
+                {duplicateBadge(p.duplicates) && (
+                  <span
+                    title={`Same text after replacing the city name: ${placeList([...(p.duplicates.sameText || []), ...(p.duplicates.sameFaq || [])])}`}
+                    style={{
+                      display: 'block', width: 'fit-content', marginTop: 4, padding: '1px 7px', borderRadius: 10, fontSize: 11, fontWeight: 500,
+                      background: p.duplicates.indexable ? 'var(--danger-bg)' : 'var(--warning-bg)',
+                      color: p.duplicates.indexable ? 'var(--danger)' : 'var(--warning)',
+                    }}
+                  >
+                    {duplicateBadge(p.duplicates)}
+                  </span>
+                )}
               </div>
               <div style={{ flex: COL.status.flex }}><StatusBadge status={p.status} /></div>
               <div style={{ flex: COL.indexing.flex, fontSize: 12, color: 'var(--color-text-sub)' }}>
@@ -418,6 +431,20 @@ export default function AdminLandingPagesPage() {
             ? 'They become public immediately. Pages that fail validation are skipped and listed afterwards.'
             : 'They go back to draft; their URLs show the automatic page again.'}
         </p>
+        {/* Advisory: selected pages whose text matches other pages. Never blocks publishing. */}
+        {confirming === 'publish' && selectedPages.some((p) => duplicateBadge(p.duplicates)) && (
+          <div style={{ fontSize: 12, lineHeight: 1.6, margin: '-8px 0 18px', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--warning-bg)', color: 'var(--color-text)' }}>
+            <strong>Same text as other pages</strong> (after replacing the city name) — write city-specific FAQs and intro:
+            <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+              {selectedPages.filter((p) => duplicateBadge(p.duplicates)).map((p) => (
+                <li key={p._id} style={p.duplicates.indexable ? { color: 'var(--danger)', fontWeight: 600 } : undefined}>
+                  {p.city || p.state || p.category?.name}: {duplicateBadge(p.duplicates).toLowerCase()} ({placeList([...(p.duplicates.sameText || []), ...(p.duplicates.sameFaq || [])])})
+                  {p.duplicates.indexable && ' — indexable'}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <Button variant="secondary" size="sm" onClick={() => setConfirming(null)} disabled={bulkBusy}>Cancel</Button>
           <Button variant={confirming === 'publish' ? 'success' : 'primary'} size="sm" loading={bulkBusy} onClick={() => runBulk(confirming)}>
