@@ -19,6 +19,8 @@ import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
 import { placeholderValues } from '@/lib/landingLevel';
 import { landingPageTitle } from '@/lib/landingSerp';
 import { SITE_URL } from '@/lib/siteUrl';
+import JsonLd from '@/components/seo/JsonLd';
+import { ORG_ID, idRef, pageNode } from '@/lib/structuredData';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -85,7 +87,7 @@ function buildServiceJsonLd(category) {
     '@type': 'Service',
     name: category.name,
     serviceType: category.name,
-    provider: { '@id': `${SITE_URL}/#organization` },
+    provider: idRef(ORG_ID),
     areaServed: 'India',
   };
 }
@@ -95,6 +97,7 @@ function buildCollectionJsonLd(params, category, states) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
+    ...pageNode(`/${params.category}/`),
     name: `${category.name} in India`,
     mainEntity: {
       '@type': 'ItemList',
@@ -157,26 +160,13 @@ export default async function CategoryHubPage({ params }) {
 
   const serviceJsonLd = buildServiceJsonLd(category);
   const collectionJsonLd = buildCollectionJsonLd(params, category, states);
-  const faqJsonLd = !faq ? null : buildFaqJsonLd(faq);
+  const faqJsonLd = !faq ? null : buildFaqJsonLd(faq, `/${params.category}/`);
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
-      />
-      {collectionJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-        />
-      )}
-      {faqJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
-      )}
+      <JsonLd data={serviceJsonLd} />
+      <JsonLd data={collectionJsonLd} />
+      <JsonLd data={faqJsonLd} />
 
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: category.name }]} />
 
@@ -239,27 +229,14 @@ function AuthoredCategoryPage({ params, category, landing, states }) {
 
   const serviceJsonLd = buildServiceJsonLd(category);
   const collectionJsonLd = buildCollectionJsonLd(params, category, states);
-  const faqJsonLd = faqItems.length > 0 ? buildFaqJsonLd(faqItems) : (builtInFaq && buildFaqJsonLd(builtInFaq));
+  const faqJsonLd = faqItems.length > 0 ? buildFaqJsonLd(faqItems, `/${params.category}/`) : (builtInFaq && buildFaqJsonLd(builtInFaq, `/${params.category}/`));
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
       {landing.preview === true && <LandingPreviewStrip published={landing.page.status === 'published'} path={`/${params.category}/`} />}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
-      />
-      {collectionJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-        />
-      )}
-      {faqJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
-      )}
+      <JsonLd data={serviceJsonLd} />
+      <JsonLd data={collectionJsonLd} />
+      <JsonLd data={faqJsonLd} />
 
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: category.name }]} />
 

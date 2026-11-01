@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { TEL_URL } from '@/lib/siteConfig';
 
 export default function StickyMobileCTA() {
   const pathname = usePathname();
@@ -24,7 +25,7 @@ export default function StickyMobileCTA() {
         }}
       >
         <a
-          href="tel:+919217211408"
+          href={TEL_URL}
           style={{
             width: '110px', flexShrink: 0,
             textAlign: 'center', height: '48px',

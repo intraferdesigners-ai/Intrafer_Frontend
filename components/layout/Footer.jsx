@@ -5,6 +5,25 @@ import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import Honeypot from '../ui/Honeypot';
 import { realCount, realAvgRating } from '../../lib/trustStats';
+import { SOCIAL_PROFILES, WHATSAPP_URL } from '@/lib/siteConfig';
+
+// Icons for lib/siteConfig.js SOCIAL_PROFILES, keyed by label.
+const SOCIAL_ICONS = {
+  Instagram: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+      <circle cx="12" cy="12" r="4"/>
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+    </svg>
+  ),
+  LinkedIn: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/>
+      <rect x="2" y="9" width="4" height="12"/>
+      <circle cx="4" cy="4" r="2"/>
+    </svg>
+  ),
+};
 
 const FOOTER_LINKS = [
   {
@@ -190,7 +209,7 @@ export default function Footer() {
               India&apos;s interior designer marketplace. Verified designers across India.
             </p>
             <a
-              href="https://wa.me/919217211408"
+              href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -318,20 +337,11 @@ export default function Footer() {
           </span>
           {/* Social icons */}
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <a href="https://instagram.com/intrafer" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{ color: 'rgba(240,246,255,.4)', display: 'flex' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                <circle cx="12" cy="12" r="4"/>
-                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-              </svg>
+            {SOCIAL_PROFILES.map(({ label, url }) => (
+            <a key={label} href={url} target="_blank" rel="noopener noreferrer" aria-label={label} style={{ color: 'rgba(240,246,255,.4)', display: 'flex' }}>
+              {SOCIAL_ICONS[label]}
             </a>
-            <a href="https://linkedin.com/company/intrafer" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" style={{ color: 'rgba(240,246,255,.4)', display: 'flex' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/>
-                <rect x="2" y="9" width="4" height="12"/>
-                <circle cx="4" cy="4" r="2"/>
-              </svg>
-            </a>
+            ))}
           </div>
         </div>
       </div>

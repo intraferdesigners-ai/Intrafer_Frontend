@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import LegalSection from '@/components/ui/LegalSection';
 import { SITE_URL } from '@/lib/siteUrl';
+import { LEGAL_EMAIL } from '@/lib/siteConfig';
+import Breadcrumb from '@/components/seo/Breadcrumb';
 
 export const metadata = {
   title: 'Terms of Service',
@@ -14,6 +16,7 @@ export default function TermsOfServicePage() {
       maxWidth: '720px', margin: '0 auto',
       padding: 'clamp(80px, 12vw, 120px) clamp(16px, 5vw, 40px) 80px',
     }}>
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Terms of Service' }]} />
       {/* Header */}
       <div style={{ marginBottom: '48px' }}>
         <div style={{
@@ -165,9 +168,9 @@ export default function TermsOfServicePage() {
         }}>
           <strong>Intrafer</strong><br />
           Email:{' '}
-          <a href="mailto:support@intrafer.in"
+          <a href={`mailto:${LEGAL_EMAIL}`}
             style={{ color: 'var(--primary)' }}>
-            support@intrafer.in
+            {LEGAL_EMAIL}
           </a><br />
           Website: intrafer.in
         </div>

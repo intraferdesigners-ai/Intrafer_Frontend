@@ -13,6 +13,8 @@ import Reveal from '../../../../components/ui/Reveal';
 import Breadcrumb from '../../../../components/seo/Breadcrumb';
 import { slugify } from '../../../../lib/slug';
 import { SITE_URL } from '../../../../lib/siteUrl';
+import JsonLd from '../../../../components/seo/JsonLd';
+import { reviewAuthorName, vendorJsonLd } from '../../../../lib/vendorSchema';
 import { TAGS } from '../../../../lib/cacheTags';
 import { fetchVendor, fetchVendorList } from './vendorData';
 import { notFound } from 'next/navigation';
@@ -88,20 +90,20 @@ export default async function VendorProfilePage({ params }) {
   // already shown unconditionally on this page.
   const vendorContactEmail = vendor.businessEmail || vendor.userId?.email || '';
 
-  // Step 6 of the SEO restructuring project: links this profile back up
-  // into the /[category]/[state]/[city]/ hierarchy from Steps 3-5, using
-  // the vendor's populated primaryCategory (Step 1) and
-  // location.placeId (Step 2). Either can be unset — a vendor signed up
-  // before category collection existed, or a free-text city that never
-  // resolved during Step 2's backfill — so the breadcrumb (and its
-  // matching JSON-LD, emitted by the Breadcrumb component itself) is
-  // omitted entirely rather than ever linking to a slug we can't be sure
-  // resolves. ServiceCategory already stores its own slug (Step 1); state
-  // and city slugs are derived with the same lib/slug.js helper Steps 4-5
-  // used to build those pages' real URLs.
+  // Breadcrumb (visible trail + BreadcrumbList JSON-LD, one component).
+  // The page is cached per vendor (ISR), so it can't follow the referrer;
+  // it always leads back up the vendor's own primary trail, and every crumb
+  // is a real page:
+  // - category + resolved city (location.placeId): Home > Category > State
+  //   > City > Vendor — the /[category]/[state]/[city]/ page that lists
+  //   this vendor (state/city slugs via lib/slug.js, as those pages do);
+  // - category only (free-text city that never resolved): Home > Category
+  //   > Vendor;
+  // - neither: Home > Designers (/vendors/) > Vendor.
   const category = vendor.primaryCategory;
   const place = vendor.location?.placeId;
-  const breadcrumbItems = (category?.slug && category?.name && place?.name && place?.state)
+  const hasCategory = Boolean(category?.slug && category?.name);
+  const breadcrumbItems = hasCategory && place?.name && place?.state
     ? [
         { label: 'Home', href: '/' },
         { label: category.name, href: `/${category.slug}/` },
@@ -109,26 +111,21 @@ export default async function VendorProfilePage({ params }) {
         { label: place.name, href: `/${category.slug}/${slugify(place.state)}/${slugify(place.name)}/` },
         { label: vendor.businessName },
       ]
-    : null;
+    : hasCategory
+      ? [
+          { label: 'Home', href: '/' },
+          { label: category.name, href: `/${category.slug}/` },
+          { label: vendor.businessName },
+        ]
+      : [
+          { label: 'Home', href: '/' },
+          { label: 'Designers', href: '/vendors/' },
+          { label: vendor.businessName },
+        ];
 
-  // Category's own schema.org business type (Step 1's ServiceCategory) when
-  // known; a generic LocalBusiness type otherwise — never fabricates a
-  // specific category the vendor doesn't actually have set.
-  const vendorJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': category?.schemaOrgType || 'LocalBusiness',
-    name: vendor.businessName,
-    url: `${SITE_URL}/vendors/${vendor._id}/`,
-    ...(vendor.description && { description: vendor.description }),
-    ...(vendor.profilePhoto && { image: vendor.profilePhoto }),
-    ...(location && { areaServed: location }),
-    // Only real review data earns an aggregateRating — an unrated vendor
-    // gets none, rather than fabricated 0-star markup (same rule Step 5's
-    // city-page vendor listings already follow).
-    ...(vendor.rating > 0 && vendor.reviewCount > 0 && {
-      aggregateRating: { '@type': 'AggregateRating', ratingValue: vendor.rating, reviewCount: vendor.reviewCount },
-    }),
-  };
+  // lib/vendorSchema.js: category's schema.org type, every served city,
+  // specializations/services as offers, and only the reviews listed below.
+  const businessJsonLd = vendorJsonLd(vendor, reviews);
 
   // Top padding matches the fixed Navbar's height (same clamp() the sibling
   // /vendors listing page uses) — the flat 40px here left the "All
@@ -139,11 +136,8 @@ export default async function VendorProfilePage({ params }) {
       <VendorProfileTracker vendorId={String(vendor._id)} />
       <VendorMobileCTA vendorId={String(vendor._id)} />
       <VendorEnquiryOverlay vendor={vendor} />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(vendorJsonLd) }}
-      />
-      {breadcrumbItems && <Breadcrumb items={breadcrumbItems} />}
+      <JsonLd data={businessJsonLd} />
+      <Breadcrumb items={breadcrumbItems} />
       <Link
         href="/vendors/"
         className="back-link"
@@ -443,7 +437,7 @@ export default async function VendorProfilePage({ params }) {
                       </span>
                     </div>
                     <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', margin: '8px 0 0' }}>
-                      {review.leadId?.contactName || review.userId?.name || 'Anonymous'}
+                      {reviewAuthorName(review)}
                     </p>
                     {review.comment && (
                       <p style={{ fontSize: '13px', color: 'var(--text-sub)', lineHeight: 1.6, margin: '6px 0 0' }}>

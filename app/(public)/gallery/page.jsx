@@ -2,6 +2,7 @@ import GalleryGrid from '@/components/vendor/GalleryGrid';
 import { cachedJson } from '@/lib/cachedFetch';
 import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
 import { SITE_URL } from '@/lib/siteUrl';
+import Breadcrumb from '@/components/seo/Breadcrumb';
 
 // Cached (ISR, 5 min), purged on 'projects'. Same unpaginated
 // GET /public/gallery call as before; a failure throws at runtime so the
@@ -24,6 +25,7 @@ export default async function GalleryPage() {
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '108px 32px 80px' }}>
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]} />
       <p className="caps-label-primary" style={{ marginBottom: '8px' }}>DESIGN GALLERY</p>
       <h1 className="page-heading" style={{ marginBottom: '10px' }}>Find your style</h1>
       <p style={{ fontSize: '14px', color: 'var(--text-mid)', marginBottom: '36px' }}>

@@ -5,6 +5,7 @@ import Reveal from '../../../../components/ui/Reveal';
 import RevealItem from '../../../../components/ui/RevealItem';
 import { TAGS } from '../../../../lib/cacheTags';
 import { SITE_URL } from '../../../../lib/siteUrl';
+import Breadcrumb from '@/components/seo/Breadcrumb';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -123,6 +124,8 @@ export default async function CityPage({ params }) {
       </div>
 
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '64px clamp(16px,4vw,40px) 80px' }}>
+        {/* No /cities/ index page exists, so the trail is Home -> city. */}
+        <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: cityData.name }]} />
         {/* Stats strip */}
         <Reveal>
           {cityStats.length > 0 && <div className="city-stats-grid" data-count={cityStats.length} style={{ marginBottom: '48px' }}>

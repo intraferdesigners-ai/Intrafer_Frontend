@@ -1,6 +1,7 @@
 import Reveal from '@/components/ui/Reveal';
 import LandingMarkdown from '@/components/seo/LandingMarkdown';
 import { resolveLandingPage } from '@/lib/landingPlaceholders';
+import { faqPageJsonLd } from '@/lib/structuredData';
 
 // Render pieces shared by every admin-authored landing page — the city
 // route (Phase 2) and the state/category hubs (Phase 4C). Server
@@ -34,16 +35,10 @@ export function visibleFaqItems(sections) {
 }
 
 // `questions`: [{ question, answer }] — must be exactly the visible text.
-export function buildFaqJsonLd(questions) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: questions.map((q) => ({
-      '@type': 'Question',
-      name: q.question,
-      acceptedAnswer: { '@type': 'Answer', text: q.answer },
-    })),
-  };
+// FAQPage for the questions this page renders (FaqSection below), with the
+// page's url and the WebSite link (lib/structuredData.js).
+export function buildFaqJsonLd(questions, path) {
+  return faqPageJsonLd({ path, items: questions.map((q) => ({ q: q.question, a: q.answer })) });
 }
 
 // Shared by the automatic pages' FAQs and authored FAQ sections.

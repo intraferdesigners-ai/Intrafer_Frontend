@@ -54,7 +54,7 @@ test('the scan covers the pricing pages', () => {
   const paths = FILES.map((f) => f.path);
   for (const f of [
     'app/(vendor-site)/plans/PlansClient.jsx', 'app/(vendor-site)/for-designers/ForDesignersClient.jsx',
-    'app/vendor/dashboard/subscription/page.jsx', 'app/(public)/faq/page.jsx', 'app/(public)/terms/page.jsx',
+    'app/vendor/dashboard/subscription/page.jsx', 'app/(public)/faq/page.jsx', 'lib/faqData.js', 'app/(public)/terms/page.jsx',
   ]) assert.ok(paths.includes(f), f);
   assert.ok(FILES.length > 100);
 });
@@ -92,7 +92,7 @@ test('every page that shows or charges a plan price reads it from /subscriptions
 test('plan pages carry no per-month savings / best-value claims (false at the current prices)', () => {
   const PLAN_FILES = [
     'app/(vendor-site)/plans/PlansClient.jsx', 'app/(vendor-site)/for-designers/ForDesignersClient.jsx',
-    'app/vendor/dashboard/subscription/page.jsx', 'app/(public)/faq/page.jsx',
+    'app/vendor/dashboard/subscription/page.jsx', 'app/(public)/faq/page.jsx', 'lib/faqData.js',
     'app/(public)/terms/page.jsx', 'app/(vendor-site)/for-designers/terms/page.jsx',
   ];
   for (const f of PLAN_FILES) {
@@ -102,7 +102,7 @@ test('plan pages carry no per-month savings / best-value claims (false at the cu
 });
 
 test('static legal/FAQ copy quotes no plan terms, so it cannot drift from the API', () => {
-  for (const f of ['app/(public)/faq/page.jsx', 'app/(public)/terms/page.jsx', 'app/(vendor-site)/for-designers/terms/page.jsx']) {
+  for (const f of ['app/(public)/faq/page.jsx', 'lib/faqData.js', 'app/(public)/terms/page.jsx', 'app/(vendor-site)/for-designers/terms/page.jsx']) {
     assert.doesNotMatch(FILES.find((x) => x.path === f).src, /\b1, 6,? or 12\b|\b3, 6,? or 12\b/, f);
   }
 });

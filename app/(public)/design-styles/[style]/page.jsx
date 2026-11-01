@@ -6,6 +6,7 @@ import Reveal from '../../../../components/ui/Reveal';
 import RevealItem from '../../../../components/ui/RevealItem';
 import { TAGS } from '../../../../lib/cacheTags';
 import { SITE_URL } from '../../../../lib/siteUrl';
+import Breadcrumb from '@/components/seo/Breadcrumb';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -91,6 +92,11 @@ export default async function StylePage({ params }) {
       </div>
 
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '64px 40px 80px' }}>
+        <Breadcrumb items={[
+          { label: 'Home', href: '/' },
+          { label: 'Design styles', href: '/design-styles/' },
+          { label: meta.label },
+        ]} />
         <Reveal>
           <p style={{ fontSize: '16px', color: 'var(--text-mid)', lineHeight: 1.8, maxWidth: '680px', marginBottom: '64px' }}>
             {meta.desc}

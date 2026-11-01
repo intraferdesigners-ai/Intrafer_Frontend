@@ -16,6 +16,8 @@ import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
 import { placeholderValues } from '@/lib/landingLevel';
 import { landingPageTitle } from '@/lib/landingSerp';
 import { SITE_URL } from '@/lib/siteUrl';
+import JsonLd from '@/components/seo/JsonLd';
+import { ORG_ID, idRef, pageNode } from '@/lib/structuredData';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -89,7 +91,7 @@ function buildServiceJsonLd(category, state) {
     '@type': 'Service',
     name: category.name,
     serviceType: category.name,
-    provider: { '@id': `${SITE_URL}/#organization` },
+    provider: idRef(ORG_ID),
     areaServed: state,
   };
 }
@@ -99,6 +101,7 @@ function buildCollectionJsonLd(params, category, state, cities) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
+    ...pageNode(`/${params.category}/${params.state}/`),
     name: `${category.name} in ${state}`,
     mainEntity: {
       '@type': 'ItemList',
@@ -163,16 +166,8 @@ export default async function StateHubPage({ params }) {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
-      />
-      {collectionJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-        />
-      )}
+      <JsonLd data={serviceJsonLd} />
+      <JsonLd data={collectionJsonLd} />
 
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
@@ -237,27 +232,14 @@ function AuthoredStatePage({ params, category, landing, cities }) {
   const serviceJsonLd = buildServiceJsonLd(category, state);
   const collectionJsonLd = buildCollectionJsonLd(params, category, state, cities);
 
-  const faqJsonLd = faqItems.length === 0 ? null : buildFaqJsonLd(faqItems);
+  const faqJsonLd = faqItems.length === 0 ? null : buildFaqJsonLd(faqItems, `/${params.category}/${params.state}/`);
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
       {landing.preview === true && <LandingPreviewStrip published={landing.page.status === 'published'} path={`/${params.category}/${params.state}/`} />}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
-      />
-      {collectionJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-        />
-      )}
-      {faqJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
-      )}
+      <JsonLd data={serviceJsonLd} />
+      <JsonLd data={collectionJsonLd} />
+      <JsonLd data={faqJsonLd} />
 
       <Breadcrumb items={[
         { label: 'Home', href: '/' },

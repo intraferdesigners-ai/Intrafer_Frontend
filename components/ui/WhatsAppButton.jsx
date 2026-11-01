@@ -1,5 +1,7 @@
 'use client';
 
+import { WHATSAPP_URL } from '@/lib/siteConfig';
+
 export default function WhatsAppButton() {
   return (
     <>
@@ -32,7 +34,7 @@ export default function WhatsAppButton() {
           }}
         />
         <a
-          href="https://wa.me/919217211408"
+          href={WHATSAPP_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="wa-btn"

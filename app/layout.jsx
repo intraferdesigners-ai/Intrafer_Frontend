@@ -5,7 +5,9 @@ import ThemeProvider from '../context/ThemeContext';
 import CompareProvider from '../context/CompareContext';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import LeadCapturePopup from '../components/ui/LeadCapturePopup';
-import { SITE_URL, absoluteUrl } from '../lib/siteUrl';
+import { SITE_URL } from '../lib/siteUrl';
+import { organizationJsonLd, websiteJsonLd } from '../lib/structuredData';
+import JsonLd from '../components/seo/JsonLd';
 
 // Self-hosted via next/font — no render-blocking request to
 // fonts.googleapis.com, no FOUC. Weights match what the old @import loaded.
@@ -44,29 +46,12 @@ export const metadata = {
   icons: { icon: '/images/logo/logo.png' },
 };
 
-// Sitewide Organization + WebSite entity data — tells Google the brand's
-// canonical entity page is the homepage, independent of which page is
-// currently being crawled. Values sourced from what's actually live
-// elsewhere in the app (Footer.jsx social links) rather than invented.
-const ORGANIZATION_JSON_LD = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  '@id': absoluteUrl('/#organization'),
-  name: 'Intrafer',
-  url: SITE_URL,
-  logo: absoluteUrl('/images/logo/logo.png'),
-  sameAs: [
-    'https://instagram.com/intrafer',
-    'https://linkedin.com/company/intrafer',
-  ],
-};
-
-const WEBSITE_JSON_LD = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: 'Intrafer',
-  url: SITE_URL,
-};
+// Sitewide Organization + WebSite entities, defined once here with their
+// @ids (lib/structuredData.js); page-level blocks reference them by @id.
+// Contact details and social profiles come from lib/siteConfig.js — the
+// same module the footer and the contact page render.
+const ORGANIZATION_JSON_LD = organizationJsonLd();
+const WEBSITE_JSON_LD = websiteJsonLd();
 
 export const viewport = {
   themeColor: '#0F172A',
@@ -80,14 +65,8 @@ export default function RootLayout({ children }) {
       className={`${cormorantGaramond.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSON_LD) }}
-        />
+        <JsonLd data={ORGANIZATION_JSON_LD} />
+        <JsonLd data={WEBSITE_JSON_LD} />
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
             try {

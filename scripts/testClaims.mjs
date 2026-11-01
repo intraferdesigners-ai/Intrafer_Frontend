@@ -5,7 +5,9 @@
 // AggregateRating is built only from a vendor's stored rating/reviewCount
 // (recomputed from Review documents in the backend's review.controller.js),
 // guarded so an unrated vendor gets none — never a literal, and never on the
-// sitewide Organization/WebSite entities.
+// sitewide Organization/WebSite entities; schema.org Review markup exists
+// only in lib/vendorSchema.js, one per stored review the vendor page lists,
+// its Rating read from that review's own `review.rating`.
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -78,6 +80,8 @@ test('no stat falls back to a literal number', () => {
 // `<x>.rating > 0 && <x>.reviewCount > 0` guard just before it. Any other
 // ratingValue, any schema.org Review, or a rating on the sitewide entities
 // fails.
+const REVIEW_FILE = 'lib/vendorSchema.js';
+
 function ratingProblems(path, src) {
   const problems = [];
   const literals = [...src.matchAll(/['"]@type['"]\s*:\s*['"]AggregateRating['"][^}]*\}/g)];
@@ -96,9 +100,16 @@ function ratingProblems(path, src) {
     const guard = new RegExp(`${x}\\.rating\\s*>\\s*0\\s*&&\\s*${x}\\.reviewCount\\s*>\\s*0`);
     if (!guard.test(before)) problems.push(`${path}: AggregateRating for ${v[1]} not guarded by rating > 0 && reviewCount > 0`);
   }
+  // A Review's Rating: allowed only in REVIEW_FILE, and only as
+  // `ratingValue: review.rating` (the stored review being rendered).
+  const reviewRatings = [...src.matchAll(/['"]@type['"]\s*:\s*['"]Rating['"][^}]*\}/g)];
+  const storedReviewRating = (m) => /ratingValue\s*:\s*review\.rating\b/.test(m[0]);
+  if (reviewRatings.length > 0 && (path !== REVIEW_FILE || !reviewRatings.every(storedReviewRating))) {
+    problems.push(`${path}: Rating not built from a stored review's review.rating`);
+  }
   const ratingValues = (src.match(/ratingValue\s*:/g) || []).length;
-  if (ratingValues !== literals.length) problems.push(`${path}: ratingValue outside an AggregateRating literal`);
-  if (/['"]@type['"]\s*:\s*['"]Review['"]/.test(src)) problems.push(`${path}: schema.org Review markup`);
+  if (ratingValues !== literals.length + reviewRatings.length) problems.push(`${path}: ratingValue outside an AggregateRating/Rating literal`);
+  if (/['"]@type['"]\s*:\s*['"]Review['"]/.test(src) && path !== REVIEW_FILE) problems.push(`${path}: schema.org Review markup outside ${REVIEW_FILE}`);
   if (/aggregateRating/i.test(src) && /['"]@type['"]\s*:\s*['"](Organization|WebSite)['"]/.test(src)) {
     problems.push(`${path}: rating alongside Organization/WebSite JSON-LD`);
   }
@@ -112,7 +123,11 @@ test('rating checker rejects made-up and unguarded ratings (self-test)', () => {
     "const r = { '@type': 'AggregateRating', ratingValue: v.rating, reviewCount: v.reviewCount };",
     "const r = { ratingValue: stats.avgRating };",
     "const r = { '@type': 'Review', reviewRating: 5 };",
+    "const r = { '@type': 'Review', reviewRating: { '@type': 'Rating', ratingValue: 5 } };",
   ];
+  // Review markup is only allowed in lib/vendorSchema.js, from review.rating.
+  assert.notDeepEqual(ratingProblems('lib/vendorSchema.js', "const r = { '@type': 'Rating', ratingValue: 4 };"), []);
+  assert.deepEqual(ratingProblems('lib/vendorSchema.js', "const r = { '@type': 'Review', reviewRating: { '@type': 'Rating', ratingValue: review.rating, bestRating: 5 } };"), []);
   for (const src of bad) assert.notDeepEqual(ratingProblems('sample', src), [], src);
   const good = "const a = v.rating > 0 && v.reviewCount > 0\n  ? { '@type': 'AggregateRating', ratingValue: v.rating, reviewCount: v.reviewCount }\n  : undefined;";
   assert.deepEqual(ratingProblems('sample', good), []);

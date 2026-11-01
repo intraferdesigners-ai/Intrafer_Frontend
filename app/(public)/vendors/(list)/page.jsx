@@ -6,6 +6,7 @@ import CompareBar from '../../../../components/vendor/CompareBar';
 import VendorResultsGrid from '../../../../components/vendor/VendorResultsGrid';
 import AnimatedCounter from '../../../../components/ui/AnimatedCounter';
 import { SITE_URL } from '@/lib/siteUrl';
+import Breadcrumb from '@/components/seo/Breadcrumb';
 
 export const metadata = {
   title: 'Find Interior Designers',
@@ -52,6 +53,7 @@ export default async function VendorsPage({ searchParams }) {
 
   return (
     <main style={{ padding: 'clamp(80px, 10vw, 108px) clamp(16px, 4vw, 40px) 60px', maxWidth: 1280, margin: '0 auto' }}>
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Designers' }]} />
       <p className="caps-label-primary" style={{ margin: '0 0 8px' }}>Design directory</p>
       <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--text)', margin: '0 0 6px' }}>
         Interior designers

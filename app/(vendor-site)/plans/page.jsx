@@ -2,6 +2,8 @@ import { cachedJson } from '@/lib/cachedFetch';
 import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
 import { sortPlans } from '@/lib/plans';
 import PlansClient from './PlansClient';
+import JsonLd from '@/components/seo/JsonLd';
+import { plansJsonLd } from '@/lib/structuredData';
 
 // Cached (ISR, 5 min). Prices come only from the backend's plans endpoint
 // and the backend purges the plans tag on every boot, i.e. on every deploy
@@ -16,6 +18,14 @@ async function fetchPlans() {
   return sortPlans(json?.data?.plans);
 }
 
+// Product + Offer per tier, built from the same `plans` array the price
+// cards render (scripts/checkStructuredData.mjs compares the two live).
 export default async function PlansPage() {
-  return <PlansClient plans={await fetchPlans()} />;
+  const plans = await fetchPlans();
+  return (
+    <>
+      <JsonLd data={plansJsonLd(plans)} />
+      <PlansClient plans={plans} />
+    </>
+  );
 }

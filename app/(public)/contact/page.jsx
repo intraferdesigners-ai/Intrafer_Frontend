@@ -11,11 +11,17 @@ import Button from '@/components/ui/Button';
 import Honeypot from '@/components/ui/Honeypot';
 import Reveal from '@/components/ui/Reveal';
 import WhatsAppButton from '@/components/ui/WhatsAppButton';
+import { CONTACT_EMAIL, PHONE, WHATSAPP_URL } from '@/lib/siteConfig';
+import Breadcrumb from '@/components/seo/Breadcrumb';
+import JsonLd from '@/components/seo/JsonLd';
+import { contactPageJsonLd } from '@/lib/structuredData';
 
+// Values from lib/siteConfig.js — the same module the footer and the
+// Organization/ContactPoint JSON-LD (root layout) read.
 const CONTACT_INFO = [
-  { Icon: Mail,           label: 'Email',    value: 'Intraferpvtltd@gmail.com' },
-  { Icon: Phone,          label: 'Phone',    value: '+91 92172 11408 (Mon–Sat, 9am–6pm)' },
-  { Icon: MessageCircle,  label: 'WhatsApp', value: '+91 92172 11408' },
+  { Icon: Mail,           label: 'Email',    value: CONTACT_EMAIL },
+  { Icon: Phone,          label: 'Phone',    value: `${PHONE.display} (${PHONE.hoursLabel})` },
+  { Icon: MessageCircle,  label: 'WhatsApp', value: PHONE.display },
 ];
 
 const SUBJECTS = ['General enquiry', 'Find a designer', 'List my studio', 'Report an issue', 'Partnership'];
@@ -62,6 +68,10 @@ export default function ContactPage() {
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
       <WhatsAppButton />
+      {/* The phone/email live in the root layout's Organization ContactPoint
+          (lib/siteConfig.js); this block points at it by @id. */}
+      <JsonLd data={contactPageJsonLd({ name: 'Contact Us' })} />
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Contact' }]} />
 
       {/* Header */}
       <Reveal>
@@ -98,7 +108,7 @@ export default function ContactPage() {
           ))}
 
           <a
-            href="https://wa.me/919217211408"
+            href={WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
             style={{

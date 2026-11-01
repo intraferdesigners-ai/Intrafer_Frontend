@@ -6,6 +6,9 @@ import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import { TAGS } from '@/lib/cacheTags';
 import { SITE_URL } from '@/lib/siteUrl';
 import { realCount, realAvgRating } from '@/lib/trustStats';
+import Breadcrumb from '@/components/seo/Breadcrumb';
+import JsonLd from '@/components/seo/JsonLd';
+import { aboutPageJsonLd } from '@/lib/structuredData';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -54,7 +57,11 @@ export default async function AboutPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
       {/* ── HERO ── */}
+      <JsonLd data={aboutPageJsonLd({ name: metadata.title.absolute, description: metadata.description })} />
       <section style={{ background: 'var(--bg-parchment)', padding: '108px 40px 80px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'left' }}>
+          <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'About' }]} />
+        </div>
         <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '12px' }}>ABOUT INTRAFER</p>
           <h1 className="section-heading" style={{ marginBottom: '18px' }}>

@@ -2,6 +2,8 @@ import { cachedJson } from '@/lib/cachedFetch';
 import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
 import { sortPlans } from '@/lib/plans';
 import ForDesignersClient from './ForDesignersClient';
+import JsonLd from '@/components/seo/JsonLd';
+import { forDesignersJsonLd } from '@/lib/structuredData';
 
 // Cached (ISR, 5 min). Prices come only from the backend's plans endpoint
 // and the backend purges the plans tag on every boot, i.e. on every deploy
@@ -16,6 +18,13 @@ async function fetchPlans() {
   return sortPlans(json?.data?.plans);
 }
 
+// For-professionals page: a WebPage aimed at designers, about the
+// Organization. No Product/Offer here — plan markup lives on /plans/ only.
 export default async function ForDesignersPage() {
-  return <ForDesignersClient plans={await fetchPlans()} />;
+  return (
+    <>
+      <JsonLd data={forDesignersJsonLd()} />
+      <ForDesignersClient plans={await fetchPlans()} />
+    </>
+  );
 }

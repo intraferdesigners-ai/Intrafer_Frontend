@@ -7,6 +7,8 @@ export default function BeforeAfterSlider({
   after,
   beforeLabel = 'BEFORE',
   afterLabel  = 'AFTER',
+  beforeAlt = 'Before',
+  afterAlt  = 'After',
   height = '280px',
 }) {
   const [sliderPos, setSliderPos] = useState(50);
@@ -69,14 +71,14 @@ export default function BeforeAfterSlider({
     >
       {/* Before image */}
       <div style={{ position: 'absolute', inset: 0 }}>
-        <Image src={before} alt="Before" fill style={{ objectFit: 'cover' }}
+        <Image src={before} alt={beforeAlt} fill style={{ objectFit: 'cover' }}
           sizes="(max-width:768px) 100vw, 50vw" />
       </div>
 
       {/* After image — clipped */}
       <div style={{ position: 'absolute', inset: 0, clipPath: `inset(0 0 0 ${sliderPos}%)`,
         transition: dragging.current ? 'none' : 'clip-path 600ms ease-in-out' }}>
-        <Image src={after} alt="After" fill style={{ objectFit: 'cover' }}
+        <Image src={after} alt={afterAlt} fill style={{ objectFit: 'cover' }}
           sizes="(max-width:768px) 100vw, 50vw" />
       </div>
 

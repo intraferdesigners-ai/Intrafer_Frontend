@@ -4,28 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
-import { POPULAR_PLAN, cheapestPlan, planLabel, planPeriod, termList } from '@/lib/plans';
+import { PLAN_FEATURES, POPULAR_PLAN, cheapestPlan, planLabel, planPeriod, termList } from '@/lib/plans';
 import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
+import Breadcrumb from '@/components/seo/Breadcrumb';
 
 
-// Every plan shows this same feature list — price/duration is the only
-// distinction between tiers, so the list is the union of what used to be
-// spread unevenly across the three (the strongest phrasing wins where two
-// tiers had overlapping items, e.g. "Full analytics + export" over the old
-// 6-month tier's "Advanced analytics dashboard"). "Best value — 12 month
-// billing" was dropped rather than generalized — it's a claim about the
-// 12-month plan specifically, not a feature every tier can honestly list.
-const PLAN_FEATURES = [
-  'Unlimited leads sent directly to you',
-  'Verified designer badge',
-  'Portfolio showcase',
-  'Top featured placement in search',
-  'Full analytics dashboard + export',
-  'Priority email + WhatsApp support',
-  'Dedicated account manager',
-  'Lead quality guarantee',
-];
+// PLAN_FEATURES (lib/plans.js): the one feature list every card shows; the
+// /plans/ Product JSON-LD reads the same constant.
 
 function FAQItem({ q, a }) {
   const [open, setOpen] = useState(false);
@@ -101,6 +87,9 @@ export default function PlansClient({ plans }) {
 
       {/* Header */}
       <section className="vendor-page-offset" style={{ background: 'var(--bg-parchment)', paddingLeft: '40px', paddingRight: '40px', paddingBottom: '60px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', paddingTop: '16px', textAlign: 'left' }}>
+          <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Plans' }]} />
+        </div>
         <Reveal style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PRICING</p>
           <h1 className="section-heading" style={{ marginBottom: '14px' }}>

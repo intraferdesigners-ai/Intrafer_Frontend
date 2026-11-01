@@ -1,6 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { SITE_URL } from '@/lib/siteUrl';
+import Breadcrumb from '@/components/seo/Breadcrumb';
+import JsonLd from '@/components/seo/JsonLd';
+import { GUIDES } from '@/lib/guides-data';
+import { guidePath, guidesIndexJsonLd } from '@/lib/structuredData';
 
 export const metadata = {
   title: 'Interior Design Guides | Room-by-Room Expertise',
@@ -8,20 +12,13 @@ export const metadata = {
   alternates: { canonical: `${SITE_URL}/guides/` },
 };
 
-const GUIDES = [
-  { slug:'modular-kitchen', title:'The Complete Modular Kitchen Guide', category:'Kitchen', readTime:'8 min', image:'/images/guides/kitchen-guide.jpg', desc:'Everything about kitchen layouts, materials, hardware, and costs.' },
-  { slug:'bedroom-design', title:'Bedroom Design Checklist for Indian Homes', category:'Bedroom', readTime:'6 min', image:'/images/guides/bedroom-guide.jpg', desc:'Wardrobe design, lighting, colour palette, and space planning for bedrooms.' },
-  { slug:'living-room-design', title:'Living Room Interior Design Checklist', category:'Living Room', readTime:'5 min', image:'/images/guides/living-room-guide.jpg', desc:'Sofa placement, lighting tiers, TV unit, and making small spaces feel large.' },
-  { slug:'bathroom-design', title:'Bathroom Interior Design Checklist', category:'Bathroom', readTime:'4 min', image:'/images/guides/bathroom-guide.jpg', desc:'Fixtures, tiles, vanity design, and wet vs dry zone planning.' },
-  { slug:'dining-room-design', title:'Dining Room Design Ideas for Indian Homes', category:'Dining', readTime:'4 min', image:'/images/guides/dining-guide.jpg', desc:'Table sizes, lighting, and crockery unit designs for Indian dining rooms.' },
-  { slug:'kids-bedroom-design', title:'Kids Bedroom Design Ideas & Safety Tips', category:'Kids Room', readTime:'5 min', image:'/images/guides/kids-room-guide.jpg', desc:'Safe, fun, and functional kids room designs that grow with your child.' },
-  { slug:'study-room-design', title:'Study Room Interior Design Ideas', category:'Study Room', readTime:'4 min', image:'/images/guides/study-room-guide.jpg', desc:'Ergonomic study setups, lighting, and storage for home offices and study rooms.' },
-  { slug:'balcony-design', title:'How to Design Your Balcony', category:'Balcony', readTime:'3 min', image:'/images/guides/balcony-guide.jpg', desc:'Transform your balcony into a green retreat or an outdoor lounge.' },
-];
-
 export default function GuidesPage() {
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '108px clamp(16px,4vw,40px) 80px' }}>
+      {/* CollectionPage + ItemList, not Blog: the guides are undated,
+          evergreen how-to articles, not a chronological blog. */}
+      <JsonLd data={guidesIndexJsonLd({ name: metadata.title, description: metadata.description, guides: GUIDES })} />
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Guides' }]} />
       <p className="caps-label-primary" style={{ marginBottom: '10px' }}>DESIGN GUIDES</p>
       <h1 className="section-heading" style={{ marginBottom: '8px' }}>Room-by-room design expertise</h1>
       <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '48px' }}>
@@ -30,7 +27,7 @@ export default function GuidesPage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 160px), 1fr))', gap: '16px' }}>
         {GUIDES.map((guide) => (
-          <Link key={guide.slug} href={`/guides/${guide.slug}`} style={{ textDecoration: 'none' }}>
+          <Link key={guide.slug} href={guidePath(guide)} style={{ textDecoration: 'none' }}>
             <div style={{
               background: 'var(--surface)', border: '1px solid var(--border)',
               borderRadius: '14px', overflow: 'hidden',

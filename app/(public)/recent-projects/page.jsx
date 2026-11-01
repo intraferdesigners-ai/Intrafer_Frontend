@@ -5,6 +5,7 @@ import ProjectImageSlider from '../../../components/vendor/ProjectImageSlider';
 import { cachedJson } from '../../../lib/cachedFetch';
 import { LIST_WINDOW, TAGS } from '../../../lib/cacheTags';
 import { SITE_URL } from '@/lib/siteUrl';
+import Breadcrumb from '@/components/seo/Breadcrumb';
 
 // Cached (ISR, 5 min), purged on 'projects'; a failure throws at runtime so
 // the last good page stays up (see lib/cachedFetch.js).
@@ -28,6 +29,7 @@ export default async function RecentProjectsPage() {
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '108px 40px 80px' }}>
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Recent projects' }]} />
       <Reveal>
         <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PORTFOLIO</p>
         <h1 className="section-heading" style={{ marginBottom: '8px' }}>Recent projects</h1>

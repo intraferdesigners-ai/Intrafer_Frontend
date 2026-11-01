@@ -4,6 +4,9 @@ import { GUIDES, getGuide } from '../../../../lib/guides-data';
 import { notFound } from 'next/navigation';
 import Reveal from '../../../../components/ui/Reveal';
 import { SITE_URL } from '@/lib/siteUrl';
+import Breadcrumb from '@/components/seo/Breadcrumb';
+import JsonLd from '@/components/seo/JsonLd';
+import { guideArticleJsonLd, guidePath } from '@/lib/structuredData';
 
 export async function generateMetadata({ params }) {
   const guide = getGuide(params.slug);
@@ -29,6 +32,12 @@ export default function GuideDetailPage({ params }) {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
+      <JsonLd data={guideArticleJsonLd(guide)} />
+      <Breadcrumb items={[
+        { label: 'Home', href: '/' },
+        { label: 'Guides', href: '/guides/' },
+        { label: guide.title },
+      ]} />
       <Reveal style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '60px', alignItems: 'start' }} className="guide-grid">
         {/* Main content */}
         <div>
@@ -131,7 +140,7 @@ export default function GuideDetailPage({ params }) {
         <div style={{ position: 'sticky', top: '100px' }}>
           <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '.1em', color: 'var(--text-hint)', textTransform: 'uppercase', marginBottom: '16px' }}>MORE GUIDES</p>
           {related.map((g) => (
-            <Link key={g.slug} href={`/guides/${g.slug}`} style={{ textDecoration: 'none', display: 'block', marginBottom: '12px' }}>
+            <Link key={g.slug} href={guidePath(g)} style={{ textDecoration: 'none', display: 'block', marginBottom: '12px' }}>
               <div style={{ display: 'flex', gap: '12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }} className="card-hover">
                 <div style={{ position: 'relative', width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
                   <Image src={g.image} alt={g.title} fill style={{ objectFit: 'cover' }} sizes="64px" />

@@ -1,30 +1,19 @@
 import Link from 'next/link';
-import { SITE_URL } from '@/lib/siteUrl';
+import JsonLd from './JsonLd';
+import { breadcrumbJsonLd } from '@/lib/structuredData';
 
 // Generic breadcrumb trail — visible nav plus matching BreadcrumbList
 // JSON-LD, kept in the same component so the two can never drift apart.
 // `items`: [{ label, href }], in order, first-to-last. The last item is
 // the current page — pass it with no `href` (rendered as plain text, not
 // a link, and omitted from the JSON-LD's `item` URL per schema.org's own
-// guidance for the terminal breadcrumb entry).
+// guidance for the terminal breadcrumb entry). Every page with a breadcrumb
+// uses this component; the JSON-LD comes from lib/structuredData.js's
+// breadcrumbJsonLd(), unit-tested in scripts/testStructuredData.mjs.
 export default function Breadcrumb({ items }) {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: items.map((item, i) => ({
-      '@type': 'ListItem',
-      position: i + 1,
-      name: item.label,
-      ...(item.href ? { item: `${SITE_URL}${item.href}` } : {}),
-    })),
-  };
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={breadcrumbJsonLd(items)} />
       <nav aria-label="Breadcrumb" style={{ marginBottom: '24px' }}>
         <ol
           style={{

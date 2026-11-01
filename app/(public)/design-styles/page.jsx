@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { IMAGES } from '../../../lib/images';
 import { TAGS } from '../../../lib/cacheTags';
 import { SITE_URL } from '../../../lib/siteUrl';
+import Breadcrumb from '@/components/seo/Breadcrumb';
 
 // Cached (ISR): regenerated at most every 5 minutes. A failed fetch keeps
 // the page's existing fallback, so a backend blip during regeneration can
@@ -40,6 +41,7 @@ export default async function DesignStylesPage() {
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '108px 40px 80px' }}>
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Design styles' }]} />
       <p className="caps-label-primary" style={{ marginBottom: '10px' }}>EXPLORE STYLES</p>
       <h1 className="section-heading" style={{ marginBottom: '8px' }}>Find your design language</h1>
       <p style={{ fontSize: '15px', color: 'var(--text-mid)', marginBottom: '48px' }}>

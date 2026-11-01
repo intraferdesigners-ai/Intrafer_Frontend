@@ -19,6 +19,8 @@ import { placeholderValues } from '@/lib/landingLevel';
 import { landingPageTitle } from '@/lib/landingSerp';
 import { SITE_URL } from '@/lib/siteUrl';
 import { LIST_WINDOW, TAGS } from '@/lib/cacheTags';
+import JsonLd from '@/components/seo/JsonLd';
+import { ORG_ID, idRef, pageNode } from '@/lib/structuredData';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -162,6 +164,8 @@ async function fetchRelatedCategories(currentCategorySlug, stateSlug, citySlug) 
   return results.filter(Boolean);
 }
 
+const cityPath = (params) => `/${params.category}/${params.state}/${params.city}/`;
+
 function buildBusinessJsonLd(category, city) {
   // Category's own schema.org business type (e.g. HomeAndConstructionBusiness,
   // GeneralContractor, FurnitureStore) — not the generic Service block the
@@ -172,15 +176,16 @@ function buildBusinessJsonLd(category, city) {
     '@type': category.schemaOrgType,
     name: `${category.name} in ${city}`,
     areaServed: city,
-    provider: { '@id': `${SITE_URL}/#organization` },
+    provider: idRef(ORG_ID),
   };
 }
 
-function buildCollectionJsonLd(category, city, state, vendors) {
+function buildCollectionJsonLd(params, category, city, state, vendors) {
   if (vendors.length === 0) return null;
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
+    ...pageNode(cityPath(params)),
     name: `${category.name} in ${city}, ${state}`,
     mainEntity: {
       '@type': 'ItemList',
@@ -326,27 +331,14 @@ export default async function CityHubPage({ params }) {
   ]);
 
   const businessJsonLd = buildBusinessJsonLd(category, city);
-  const collectionJsonLd = buildCollectionJsonLd(category, city, state, vendors);
-  const faqJsonLd = !hasFaq ? null : buildFaqJsonLd(faq.questions);
+  const collectionJsonLd = buildCollectionJsonLd(params, category, city, state, vendors);
+  const faqJsonLd = !hasFaq ? null : buildFaqJsonLd(faq.questions, cityPath(params));
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }}
-      />
-      {collectionJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-        />
-      )}
-      {faqJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
-      )}
+      <JsonLd data={businessJsonLd} />
+      <JsonLd data={collectionJsonLd} />
+      <JsonLd data={faqJsonLd} />
 
       <Breadcrumb items={[
         { label: 'Home', href: '/' },
@@ -412,10 +404,10 @@ async function AuthoredCityPage({ params, category, landing }) {
   ]);
 
   const businessJsonLd = buildBusinessJsonLd(category, city);
-  const collectionJsonLd = buildCollectionJsonLd(category, city, state, vendors);
+  const collectionJsonLd = buildCollectionJsonLd(params, category, city, state, vendors);
   // Every enabled FAQ section's items, exactly as rendered below.
   const faqItems = visibleFaqItems(shown);
-  const faqJsonLd = faqItems.length === 0 ? null : buildFaqJsonLd(faqItems);
+  const faqJsonLd = faqItems.length === 0 ? null : buildFaqJsonLd(faqItems, cityPath(params));
 
   // With a banner image, that image is the LCP — no vendor card competes
   // for priority. Without one, same first-two-cards rule as the automatic page.
@@ -424,22 +416,9 @@ async function AuthoredCityPage({ params, category, landing }) {
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '108px 40px 80px' }}>
       {landing.preview === true && <LandingPreviewStrip published={landing.page.status === 'published'} path={`/${params.category}/${params.state}/${params.city}/`} />}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }}
-      />
-      {collectionJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-        />
-      )}
-      {faqJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
-      )}
+      <JsonLd data={businessJsonLd} />
+      <JsonLd data={collectionJsonLd} />
+      <JsonLd data={faqJsonLd} />
 
       <Breadcrumb items={[
         { label: 'Home', href: '/' },

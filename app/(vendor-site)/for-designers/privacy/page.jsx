@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import LegalSection from '@/components/ui/LegalSection';
 import { SITE_URL } from '@/lib/siteUrl';
+import { LEGAL_EMAIL } from '@/lib/siteConfig';
+import Breadcrumb from '@/components/seo/Breadcrumb';
 
 export const metadata = {
   title: 'Vendor Privacy Policy',
@@ -14,6 +16,13 @@ export default function VendorPrivacyPolicyPage() {
       maxWidth: '720px', margin: '0 auto',
       paddingLeft: 'clamp(16px, 5vw, 40px)', paddingRight: 'clamp(16px, 5vw, 40px)', paddingBottom: '80px',
     }}>
+      <div style={{ paddingTop: '16px' }}>
+        <Breadcrumb items={[
+          { label: 'Home', href: '/' },
+          { label: 'For designers', href: '/for-designers/' },
+          { label: 'Vendor Privacy Policy' },
+        ]} />
+      </div>
       {/* Header */}
       <div style={{ marginBottom: '48px' }}>
         <div style={{
@@ -136,9 +145,9 @@ export default function VendorPrivacyPolicyPage() {
         </ul>
         <p style={{ marginTop: '12px' }}>
           To exercise any of these rights, contact us at{' '}
-          <a href="mailto:support@intrafer.in"
+          <a href={`mailto:${LEGAL_EMAIL}`}
             style={{ color: 'var(--primary)' }}>
-            support@intrafer.in
+            {LEGAL_EMAIL}
           </a>
         </p>
       </LegalSection>
@@ -170,9 +179,9 @@ export default function VendorPrivacyPolicyPage() {
         }}>
           <strong>Intrafer</strong><br />
           Email:{' '}
-          <a href="mailto:support@intrafer.in"
+          <a href={`mailto:${LEGAL_EMAIL}`}
             style={{ color: 'var(--primary)' }}>
-            support@intrafer.in
+            {LEGAL_EMAIL}
           </a><br />
           Website: intrafer.in
         </div>

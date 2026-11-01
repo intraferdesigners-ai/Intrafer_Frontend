@@ -4,6 +4,7 @@ import { Shield, Star, UserCheck, Lock } from 'lucide-react';
 import Reveal from '@/components/ui/Reveal';
 import RevealItem from '@/components/ui/RevealItem';
 import { SITE_URL } from '@/lib/siteUrl';
+import Breadcrumb from '@/components/seo/Breadcrumb';
 
 export const metadata = {
   // absolute: the brand is already in it, so skip the root "%s | Intrafer" template.
@@ -57,6 +58,8 @@ const TRUST_BADGES = [
 export default function HowItWorksPage() {
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: 'clamp(80px,10vw,108px) clamp(16px,4vw,40px) 80px' }}>
+      {/* No FAQPage here: this page has no question-and-answer section. */}
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'How it works' }]} />
       <Reveal>
         <p className="caps-label-primary" style={{ marginBottom: '10px' }}>PROCESS</p>
         <h1 className="section-heading" style={{ marginBottom: '8px' }}>How Intrafer works</h1>

@@ -6,6 +6,8 @@ import ProjectsSection from '../../../../components/vendor/ProjectsSection';
 import Reveal from '../../../../components/ui/Reveal';
 import Breadcrumb from '../../../../components/seo/Breadcrumb';
 import { SITE_URL } from '../../../../lib/siteUrl';
+import JsonLd from '../../../../components/seo/JsonLd';
+import { afterAlt, beforeAlt, galleryAlt, hasBeforeAfter, projectJsonLd } from '../../../../lib/projectSchema';
 import { isPublicProject } from '../../../../lib/projectSitemap';
 import { cachedJson } from '../../../../lib/cachedFetch';
 import { DETAIL_WINDOW, TAGS, projectTag, vendorTag } from '../../../../lib/cacheTags';
@@ -122,43 +124,13 @@ export default async function ProjectDetailPage({ params }) {
         { label: project.title },
       ];
 
-  // Real fields only — no rating/review, no fabricated date beyond the
-  // project's own createdAt (the one real timestamp Project.model.js has;
-  // completedYear is just a year number, not precise enough for
-  // datePublished). ImageObject entries per image/before/after — the
-  // "CreativeWork+ImageObject combination" the task calls for when
-  // before/after images exist.
-  // Deduped: beforeImage/afterImage are sometimes the same URL as one of
-  // the gallery images (real data can double up), and repeating an
-  // identical ImageObject entry would just be redundant structured data.
-  const allImages = [...new Set([
-    ...(project.images || []),
-    ...(project.beforeImage ? [project.beforeImage] : []),
-    ...(project.afterImage ? [project.afterImage] : []),
-  ])];
-  const projectJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'CreativeWork',
-    name: project.title,
-    url: `${SITE_URL}/projects/${project._id}/`,
-    ...(project.description && { description: project.description }),
-    ...(project.createdAt && { datePublished: new Date(project.createdAt).toISOString() }),
-    creator: {
-      '@type': 'Organization',
-      name: vendor.businessName,
-      url: `${SITE_URL}/vendors/${vendor._id}/`,
-    },
-    ...(allImages.length > 0 && {
-      image: allImages.map((url) => ({ '@type': 'ImageObject', contentUrl: url })),
-    }),
-  };
+  // lib/projectSchema.js: CreativeWork with the visible project type, and
+  // one ImageObject per image shown, captioned with that image's alt text.
+  const projectStructuredData = projectJsonLd(project, vendor);
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: 'clamp(80px,10vw,120px) clamp(16px,5vw,40px) 80px' }}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(projectJsonLd) }}
-      />
+      <JsonLd data={projectStructuredData} />
       <Breadcrumb items={breadcrumbItems} />
 
       {/* Back link */}
@@ -198,10 +170,15 @@ export default async function ProjectDetailPage({ params }) {
         {/* LEFT: Images + description */}
         <div>
           {/* Before/after slider if set */}
-          {project.beforeImage && project.afterImage && (
+          {hasBeforeAfter(project) && (
             <div style={{ marginBottom: 24 }}>
               <span style={LABEL}>BEFORE &amp; AFTER</span>
-              <BeforeAfterSlider before={project.beforeImage} after={project.afterImage} />
+              <BeforeAfterSlider
+                before={project.beforeImage}
+                after={project.afterImage}
+                beforeAlt={beforeAlt(project)}
+                afterAlt={afterAlt(project)}
+              />
             </div>
           )}
 
@@ -221,7 +198,7 @@ export default async function ProjectDetailPage({ params }) {
                   }}>
                     <Image
                       src={img}
-                      alt={`${project.title} ${i + 1}`}
+                      alt={galleryAlt(project, i)}
                       fill
                       style={{ objectFit: 'cover' }}
                       sizes="(max-width: 768px) 100vw, 280px"

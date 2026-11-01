@@ -11,6 +11,8 @@ import api from '@/lib/api';
 import { realAvgRating } from '@/lib/trustStats';
 import { formatINR } from '@/lib/utils';
 import { POPULAR_PLAN, planLabel, planPeriod } from '@/lib/plans';
+import Breadcrumb from '@/components/seo/Breadcrumb';
+import { FOR_DESIGNERS_LEAD, FOR_DESIGNERS_TITLE } from '@/lib/forDesignersCopy';
 
 const BENEFITS = [
   { Icon: TrendingUp, title: 'Qualified leads only',    desc: "Every lead is from a verified homeowner actively planning an interior project. No tire-kickers, no spam." },
@@ -55,7 +57,7 @@ const FAQS = [
 // `plans` comes from the server page (GET /subscriptions/plans, sorted by
 // duration). Empty only if the API was unreachable during `next build`.
 export default function ForDesignersClient({ plans }) {
-  useEffect(() => { document.title = 'List Your Interior Design Studio | Intrafer'; }, []);
+  useEffect(() => { document.title = `${FOR_DESIGNERS_TITLE} | Intrafer`; }, []);
   const [openFaq, setOpenFaq] = useState(null);
   // Shown only when backed by real stored reviews (lib/trustStats.js) —
   // no fallback figure; the rating tile is dropped otherwise.
@@ -77,6 +79,9 @@ export default function ForDesignersClient({ plans }) {
           this wrapper's own marginTop instead of fighting that specificity,
           same clamp() used by the CTA section further down this page. */}
       <section className="vendor-page-offset" style={{ background: 'var(--bg-parchment)', paddingLeft: '40px', paddingRight: '40px', paddingBottom: '80px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', paddingTop: '16px' }}>
+          <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'For designers' }]} />
+        </div>
         <Reveal style={{ maxWidth: '1280px', margin: 'clamp(40px, 5vw, 60px) auto 0', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '64px', alignItems: 'center' }} className="grid-mobile-1">
           <div>
             <p className="caps-label-primary" style={{ marginBottom: '12px' }}>FOR INTERIOR DESIGNERS</p>
@@ -84,7 +89,7 @@ export default function ForDesignersClient({ plans }) {
               Grow your <em style={{ color: 'var(--primary)', fontStyle: 'italic' }}>design business</em> with Intrafer
             </h1>
             <p style={{ fontSize: '15px', color: 'var(--text-mid)', lineHeight: 1.75, maxWidth: '480px' }}>
-              Verified designers receive qualified leads directly from homeowners actively looking for interior design services. No cold calling, no agencies, no commission.
+              {FOR_DESIGNERS_LEAD}
             </p>
 
             {/* Stats row */}
