@@ -7,7 +7,7 @@
 //
 // Pages: home, a category hub, a state hub, an authored and a programmatic
 // city page, a vendor, a project, about, contact, how-it-works, faq, plans,
-// guides index + one guide, gallery. Anything not given is discovered from
+// guides index + one guide, gallery, privacy, terms. Anything not given is discovered from
 // real <a href> links (vendor from /vendors/, project from /gallery/, guide
 // from /guides/, state from the category hub) or, for city pages, from the
 // sitemap (index children followed). For each page it asserts:
@@ -15,6 +15,8 @@
 // - every @id reference resolves to a node defined on the page (the layout's
 //   Organization/WebSite/ContactPoint included);
 // - FAQ question/answer text appears in the page's HTML text;
+// - every email shown (text or mailto:) is the Organization email in the
+//   JSON-LD (designer profiles, which show the designer's own, excepted);
 // - /plans/ Offer prices equal the prices the cards show, per term;
 // - AggregateRating/Review only when backed by reviews visible on the page;
 // - no Product, and no priced Offer, outside /plans/ (unpriced
@@ -162,6 +164,16 @@ async function checkPage(label, path) {
   // Product / Offer only on /plans/; plan prices equal the visible card prices.
   const isPlans = path === '/plans/';
   const isVendor = /^\/vendors\/[a-f0-9]{24}\/$/i.test(path);
+
+  // One company email: every address shown (text or mailto:) equals the
+  // Organization email in the JSON-LD. Designer profiles show the
+  // designer's own email and are exempt.
+  const orgEmail = nodes.find(({ node }) => node['@type'] === 'Organization' && node['@id'] === `${WWW}/#organization`)?.node.email;
+  if (!isVendor) {
+    const shown = [...text.matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[a-z]{2,}/g)].map((m) => m[0]);
+    const mailtos = [...body.matchAll(/href="mailto:([^"?]+)/g)].map((m) => decode(m[1]));
+    for (const e of new Set([...shown, ...mailtos])) if (e !== orgEmail) fail(`email ${e} shown, but the Organization email is ${orgEmail}`);
+  }
   for (const { node, parentType, key } of nodes) {
     if (node['@type'] === 'Product' && !isPlans) fail('Product markup outside /plans/');
     if (node['@type'] === 'Offer' && !isPlans) {
@@ -251,6 +263,8 @@ const PAGES = [
   ['guides index', '/guides/'],
   ['guide', opts.guide || await firstLink('/guides/', /^\/guides\/[a-z0-9-]+\/?$/)],
   ['gallery', '/gallery/'],
+  ['privacy', '/privacy/'],
+  ['terms', '/terms/'],
   ...opts.path.map((p) => ['extra', p]),
 ];
 

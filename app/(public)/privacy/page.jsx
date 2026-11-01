@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import LegalSection from '@/components/ui/LegalSection';
 import { SITE_URL } from '@/lib/siteUrl';
-import { LEGAL_EMAIL } from '@/lib/siteConfig';
+import { SUPPORT_EMAIL } from '@/lib/siteConfig';
 import Breadcrumb from '@/components/seo/Breadcrumb';
 
 export const metadata = {
@@ -135,9 +135,9 @@ export default function PrivacyPolicyPage() {
         </ul>
         <p style={{ marginTop: '12px' }}>
           To exercise any of these rights, contact us at{' '}
-          <a href={`mailto:${LEGAL_EMAIL}`}
+          <a href={`mailto:${SUPPORT_EMAIL}`}
             style={{ color: 'var(--primary)' }}>
-            {LEGAL_EMAIL}
+            {SUPPORT_EMAIL}
           </a>
         </p>
       </LegalSection>
@@ -177,9 +177,9 @@ export default function PrivacyPolicyPage() {
         }}>
           <strong>Intrafer</strong><br />
           Email:{' '}
-          <a href={`mailto:${LEGAL_EMAIL}`}
+          <a href={`mailto:${SUPPORT_EMAIL}`}
             style={{ color: 'var(--primary)' }}>
-            {LEGAL_EMAIL}
+            {SUPPORT_EMAIL}
           </a><br />
           Website: intrafer.in
         </div>

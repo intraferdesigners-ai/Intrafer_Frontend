@@ -11,7 +11,7 @@ import Button from '@/components/ui/Button';
 import Honeypot from '@/components/ui/Honeypot';
 import Reveal from '@/components/ui/Reveal';
 import WhatsAppButton from '@/components/ui/WhatsAppButton';
-import { CONTACT_EMAIL, PHONE, WHATSAPP_URL } from '@/lib/siteConfig';
+import { PHONE, SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/siteConfig';
 import Breadcrumb from '@/components/seo/Breadcrumb';
 import JsonLd from '@/components/seo/JsonLd';
 import { contactPageJsonLd } from '@/lib/structuredData';
@@ -19,7 +19,7 @@ import { contactPageJsonLd } from '@/lib/structuredData';
 // Values from lib/siteConfig.js — the same module the footer and the
 // Organization/ContactPoint JSON-LD (root layout) read.
 const CONTACT_INFO = [
-  { Icon: Mail,           label: 'Email',    value: CONTACT_EMAIL },
+  { Icon: Mail,           label: 'Email',    value: SUPPORT_EMAIL, href: `mailto:${SUPPORT_EMAIL}` },
   { Icon: Phone,          label: 'Phone',    value: `${PHONE.display} (${PHONE.hoursLabel})` },
   { Icon: MessageCircle,  label: 'WhatsApp', value: PHONE.display },
 ];
@@ -87,7 +87,7 @@ export default function ContactPage() {
             Whether you have a question about our platform, need help finding a designer, or want to list your studio — we&apos;re here to help.
           </p>
 
-          {CONTACT_INFO.map(({ Icon, label, value }) => (
+          {CONTACT_INFO.map(({ Icon, label, value, href }) => (
             <div key={label} style={{
               background: 'var(--surface)', border: '1px solid var(--border)',
               borderRadius: 'var(--r-lg)', padding: '16px',
@@ -102,7 +102,9 @@ export default function ContactPage() {
               </div>
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.1em', color: 'var(--text-hint)', textTransform: 'uppercase', marginBottom: '2px' }}>{label}</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-sub)' }}>{value}</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-sub)' }}>
+                  {href ? <a href={href} style={{ color: 'inherit', textDecoration: 'none' }}>{value}</a> : value}
+                </div>
               </div>
             </div>
           ))}

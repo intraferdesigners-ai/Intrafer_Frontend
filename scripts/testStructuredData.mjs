@@ -18,7 +18,7 @@ import {
 } from '../lib/structuredData.js';
 import { vendorJsonLd, vendorAreasServed, reviewAuthorName, DEFAULT_VENDOR_TYPE } from '../lib/vendorSchema.js';
 import { projectJsonLd, projectImages, galleryAlt, beforeAlt, afterAlt } from '../lib/projectSchema.js';
-import { CONTACT_EMAIL, LEGAL_EMAIL, ORG_EMAIL, PHONE, SOCIAL_PROFILES, WHATSAPP_URL } from '../lib/siteConfig.js';
+import { PHONE, SOCIAL_PROFILES, SUPPORT_EMAIL, WHATSAPP_URL } from '../lib/siteConfig.js';
 import { FAQ_GROUPS, faqItems } from '../lib/faqData.js';
 import { GUIDES } from '../lib/guides-data.js';
 import { PLAN_FEATURES, planLabel, planPeriod } from '../lib/plans.js';
@@ -61,9 +61,8 @@ test('Organization: @id, logo, ContactPoint and sameAs all from siteConfig, www 
   assert.equal(cp['@id'], CONTACT_POINT_ID);
   assert.equal(cp.contactType, 'customer support');
   assert.equal(cp.telephone, PHONE.e164);
-  assert.equal(cp.email, ORG_EMAIL);
-  assert.equal(org.email, ORG_EMAIL);
-  assert.equal(ORG_EMAIL, LEGAL_EMAIL, 'the business chose the support@ address for the schema');
+  assert.equal(cp.email, SUPPORT_EMAIL);
+  assert.equal(org.email, SUPPORT_EMAIL);
   assert.equal(cp.areaServed, 'IN');
   assert.deepEqual(cp.availableLanguage, ['English']);
   assert.deepEqual(cp.hoursAvailable.dayOfWeek, [...PHONE.hours.days]);
@@ -115,7 +114,7 @@ test('AboutPage / ContactPage reference the Organization / ContactPoint by @id o
   assert.equal(contact['@type'], 'ContactPage');
   assert.deepEqual(contact.mainEntity, { '@id': CONTACT_POINT_ID });
   // No duplicated phone/email literal: the ContactPoint lives in the layout.
-  assert.doesNotMatch(JSON.stringify(contact), new RegExp(`${PHONE.e164.slice(1)}|${ORG_EMAIL}|${CONTACT_EMAIL}`));
+  assert.doesNotMatch(JSON.stringify(contact), new RegExp(`${PHONE.e164.slice(1)}|${SUPPORT_EMAIL}`));
 });
 
 test('FAQPage on /faq/: one Question per visible item, text identical to the rendered array', () => {
@@ -273,7 +272,7 @@ test('Organization/WebSite defined only in the root layout; #organization/#websi
 
 test('contact/brand literals (business phone, emails, social URLs) live only in lib/siteConfig.js', () => {
   const digits = PHONE.e164.slice(3);
-  const re = new RegExp(`${digits}|${digits.slice(0, 5)} ${digits.slice(5)}|${CONTACT_EMAIL}|${LEGAL_EMAIL}|${SOCIAL_PROFILES.map((p) => p.url.replace(/^https:\/\//, '').replace(/\./g, '\\.')).join('|')}`, 'i');
+  const re = new RegExp(`${digits}|${digits.slice(0, 5)} ${digits.slice(5)}|${SUPPORT_EMAIL}|${SOCIAL_PROFILES.map((p) => p.url.replace(/^https:\/\//, '').replace(/\./g, '\\.')).join('|')}`, 'i');
   assert.deepEqual(SOURCES.filter((p) => p !== 'lib/siteConfig.js' && !p.startsWith('app/admin/') && re.test(read(p))), []);
 });
 
