@@ -5,10 +5,13 @@
 //   node scripts/checkSeoHost.mjs <origin> [page paths...] [--404 <path>]...
 //   node scripts/checkSeoHost.mjs http://localhost:3000 /vendors/<id>/ --404 /projects/000000000000000000000000/
 //
-// Checks: robots.txt's Sitemap line; the sitemap index's child <loc>s and
+// Checks: robots.txt's Sitemap line; each page's Search Console
+// verification meta (exactly once in <head>, siteConfig token); the sitemap index's child <loc>s and
 // every <loc> in every child; each page's
 // canonical, og:url and JSON-LD url/@id/item values. Each --404 path must
 // answer HTTP 404 with a noindex robots meta. Exits 1 on any failure.
+
+import { GOOGLE_SITE_VERIFICATION } from '../lib/siteConfig.js';
 
 const WWW_ORIGIN = 'https://www.intrafer.in';
 const args = process.argv.slice(2);
@@ -77,6 +80,13 @@ for (const path of pages) {
     .flatMap((m) => [...m[1].matchAll(/"(?:url|@id|item)":"([^"]+)"/g)].map((u) => u[1]))
     .filter((u) => /intrafer|^https?:\/\//.test(u) && !/instagram|linkedin|schema\.org/.test(u));
   ldUrls.forEach((u) => onHost(`${path} JSON-LD`, u));
+  // Search Console verification: exactly once, in the server-rendered <head>.
+  const head = body.split('</head>')[0];
+  const verif = [...body.matchAll(/<meta name="google-site-verification" content="([^"]*)"/g)].map((m) => m[1]);
+  const verifInHead = [...head.matchAll(/<meta name="google-site-verification" content="([^"]*)"/g)].length;
+  if (verif.length !== 1 || verifInHead !== 1 || verif[0] !== GOOGLE_SITE_VERIFICATION) {
+    failures.push(`${path}: google-site-verification ${verif.length}x (${verifInHead} in <head>)${verif[0] && verif[0] !== GOOGLE_SITE_VERIFICATION ? `, token ${verif[0]}` : ''}`);
+  }
   console.log(`${path} ${status}: canonical ${canonical}${ogUrl ? `, og:url ${ogUrl}` : ''}, ${ldUrls.length} JSON-LD urls`);
 }
 

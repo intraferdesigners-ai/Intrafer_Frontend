@@ -6,6 +6,7 @@ import CompareProvider from '../context/CompareContext';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import LeadCapturePopup from '../components/ui/LeadCapturePopupLazy';
 import { SITE_URL } from '../lib/siteUrl';
+import { GOOGLE_SITE_VERIFICATION } from '../lib/siteConfig';
 import { organizationJsonLd, websiteJsonLd } from '../lib/structuredData';
 import JsonLd from '../components/seo/JsonLd';
 
@@ -47,6 +48,8 @@ export const metadata = {
   },
   description: "India's interior designer marketplace. Find verified designers, compare portfolios, and transform your space.",
   icons: { icon: '/images/logo/logo.png' },
+  // Search Console ownership; every page inherits it (none sets its own).
+  verification: { google: GOOGLE_SITE_VERIFICATION },
 };
 
 // Sitewide Organization + WebSite entities, defined once here with their
